@@ -59,17 +59,22 @@
   <?php endif; ?>
 
   <div class="row g-3">
-    <div class="<?php echo $is_active ? 'col-lg-5' : 'col-lg-7'; ?>">
+    <?php
+      // Đơn đang phục vụ: món đã hủy không hiện trong danh sách (món đã báo bếp vẫn được giữ
+      // ngầm để lần "Thông báo" sau in mục HỦY). Đơn đã đóng: hiện đủ để xem lại lịch sử.
+      $visible_items = $is_active ? $active_items : $items;
+    ?>
+    <div class="<?php echo $is_active ? 'col-lg-5 order-lg-2' : 'col-lg-7'; ?>">
       <div class="card border-0 shadow-sm rounded-4 mb-3">
         <div class="card-header bg-white fw-semibold d-flex justify-content-between">
           <span>Món đã gọi</span>
           <?php if ($is_active && $pending_count): ?><span class="badge bg-warning text-dark"><?php echo $pending_count; ?> món chưa báo bếp</span><?php endif; ?>
         </div>
         <div class="list-group list-group-flush" id="orderedItemsList">
-          <?php foreach ($items as $it): ?>
+          <?php foreach ($visible_items as $it): ?>
             <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active, 'kitchen_status' => isset($kitchen_status_by_product[$it['product_id']]) ? $kitchen_status_by_product[$it['product_id']] : NULL)); ?>
           <?php endforeach; ?>
-          <?php if (empty($items)): ?>
+          <?php if (empty($visible_items)): ?>
             <div class="list-group-item text-muted text-center py-4">Chưa có món nào — chọn món ở thực đơn.</div>
           <?php endif; ?>
         </div>
@@ -109,18 +114,27 @@
     </div>
 
     <?php if ($is_active): ?>
-    <div class="col-lg-7">
+    <div class="col-lg-7 order-lg-1">
       <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white fw-semibold">Thực đơn</div>
+        <div class="card-header bg-white">
+          <div class="fw-semibold mb-2">Thực đơn</div>
+          <?php // Lọc theo danh mục ngay trên trang (không tải lại) — mặc định "Tất cả". ?>
+          <div class="d-flex flex-wrap gap-2" id="categoryFilter">
+            <button type="button" class="btn btn-sm btn-brand" data-cat="all" onclick="filterCategory('all', this)">Tất cả</button>
+            <?php $cat_index = 0; foreach (array_keys($products_by_category) as $cat_name): ?>
+              <button type="button" class="btn btn-sm btn-outline-brand" data-cat="<?php echo $cat_index++; ?>" onclick="filterCategory(this.dataset.cat, this)"><?php echo htmlspecialchars($cat_name); ?></button>
+            <?php endforeach; ?>
+          </div>
+        </div>
         <div class="card-body" style="max-height:65vh; overflow-y:auto;">
           <?php echo form_open('me/orders/'.$order['id'].'/add-item', array('id' => 'addItemForm')); ?>
           <?php if (empty($products_by_category)): ?>
             <div class="text-muted text-center py-4">Chưa có sản phẩm nào đang bán.</div>
           <?php endif; ?>
-          <?php foreach ($products_by_category as $cat_name => $products): ?>
-            <div class="fw-semibold text-brand mt-2 mb-1"><?php echo htmlspecialchars($cat_name); ?></div>
+          <?php $cat_index = 0; foreach ($products_by_category as $cat_name => $products): $cat_key = $cat_index++; ?>
+            <div class="fw-semibold text-brand mt-2 mb-1 menu-cat-heading" data-cat="<?php echo $cat_key; ?>"><?php echo htmlspecialchars($cat_name); ?></div>
             <?php foreach ($products as $p): ?>
-            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2 menu-product" data-cat="<?php echo $cat_key; ?>">
               <div class="d-flex align-items-center gap-2" role="button" onclick="stepAddItemQty(<?php echo $p['id']; ?>,1)">
                 <?php if ($p['image']): ?>
                   <img src="<?php echo base_url('assets/'.$p['image']); ?>" style="width:40px;height:40px;object-fit:cover;" class="rounded border flex-shrink-0">
@@ -288,6 +302,17 @@ setInterval(refreshKitchenBorders, 5000);
 <?php endif; ?>
 
 <?php if ($is_active): ?>
+// ---- Lọc thực đơn theo danh mục (giữ nguyên số lượng đang chọn) ----
+function filterCategory(cat, btn){
+  document.querySelectorAll('.menu-product, .menu-cat-heading').forEach(function(el){
+    el.classList.toggle('d-none', cat !== 'all' && el.dataset.cat !== cat);
+  });
+  document.querySelectorAll('#categoryFilter button').forEach(function(b){
+    b.classList.toggle('btn-brand', b === btn);
+    b.classList.toggle('btn-outline-brand', b !== btn);
+  });
+}
+
 // ---- Giỏ chọn món (chưa thêm vào đơn) ----
 var addItemCart = {};
 

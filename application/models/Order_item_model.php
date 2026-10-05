@@ -66,6 +66,11 @@ class Order_item_model extends CI_Model
         return $this->db->where('id', $id)->update($this->table, array('status' => 'CANCELLED'));
     }
 
+    public function delete($id)
+    {
+        return $this->db->where('id', $id)->delete($this->table);
+    }
+
     public function get_by_id($id)
     {
         return $this->db->where('id', $id)->get($this->table)->row_array();

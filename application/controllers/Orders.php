@@ -197,9 +197,19 @@ class Orders extends MY_Controller
         $item = $this->_item_of_active_order($order_id, $item_id);
         if ($item)
         {
-            $this->Order_item_model->cancel($item_id);
+            // Bếp chưa biết món này -> xoá hẳn khỏi đơn. Đã báo bếp -> giữ dòng ở trạng thái
+            // CANCELLED (ẩn khỏi danh sách) để lần "Thông báo" sau in mục HỦY cho bếp.
+            if ((int) $item['notified_qty'] === 0)
+            {
+                $this->Order_item_model->delete($item_id);
+                $this->audit('order_item', 'DELETE_ITEM', $item, NULL);
+            }
+            else
+            {
+                $this->Order_item_model->cancel($item_id);
+                $this->audit('order_item', 'CANCEL_ITEM', NULL, array('item_id' => $item_id));
+            }
             $this->Order_model->recalc_totals($order_id);
-            $this->audit('order_item', 'CANCEL_ITEM', NULL, array('item_id' => $item_id));
         }
         redirect('me/orders/'.$order_id);
     }

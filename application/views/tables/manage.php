@@ -23,7 +23,6 @@
           <td><span class="badge bg-<?php echo table_status_badge($t['status']); ?>"><?php echo $t['status']; ?></span></td>
           <td class="text-nowrap">
             <a href="<?php echo site_url('me/tables/manage/'.$t['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-            <a href="<?php echo site_url('me/tables/'.$t['id'].'/qr'); ?>" target="_blank" class="btn btn-sm btn-outline-secondary">QR</a>
             <?php if ($t['status'] !== 'AVAILABLE'): ?>
               <?php echo form_open('me/tables/manage/'.$t['id'].'/reset-status', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Bắt bàn này về trạng thái Trống? Đơn hàng đang mở (nếu có) sẽ bị hủy.');")); ?>
                 <button class="btn btn-sm btn-outline-warning">Đặt lại</button>

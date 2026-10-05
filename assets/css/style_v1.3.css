@@ -30,18 +30,6 @@ body{
   transition: transform .1s ease;
 }
 .table-card:active{ transform: scale(.97); }
-.call-alert-badge{
-  position:absolute; top:-8px; right:-8px; z-index:2;
-  width:28px; height:28px; border-radius:50%;
-  background:#dc3545; color:#fff; display:flex; align-items:center; justify-content:center;
-  font-size:.9rem; box-shadow:0 2px 6px rgba(0,0,0,.3);
-  animation: call-pulse 1s infinite;
-}
-@keyframes call-pulse{
-  0%   { box-shadow: 0 0 0 0 rgba(220,53,69,.6); }
-  70%  { box-shadow: 0 0 0 8px rgba(220,53,69,0); }
-  100% { box-shadow: 0 0 0 0 rgba(220,53,69,0); }
-}
 
 /* Viền chớp cho khối tiêu đề đơn hàng khi bếp còn đang xử lý (NEW/PREPARING) — dừng chớp khi COMPLETED. */
 .order-kitchen-flash.border-danger{ animation: order-kitchen-flash-danger 1s ease-in-out infinite; }
@@ -140,11 +128,23 @@ body{
   #printArea{ position:absolute; left:0; top:0; width:80mm; }
   .no-print{ display:none !important; }
 }
+/* Phiếu in ngay trên trang (POS: phiếu bếp / tạm tính) — ẩn trên màn hình, chỉ phiếu đang in (#printArea) hiện khi in. */
+.print-slip{ display:none; }
+@media print{ .print-slip#printArea{ display:block !important; } }
+.pos-actions .btn{ min-height:64px; }
+/* Phiếu K80 in ngay trên trang (Thông báo / Tạm tính) — cùng định dạng với hóa đơn
+   views/cashier/invoice.php; trung hòa style mặc định của Bootstrap (hr mờ, line-height 1.5). */
 .receipt-k80{
-  width:80mm; margin:0 auto; font-family: 'Courier New', monospace; font-size:12px; color:#000;
+  width:80mm; margin:0 auto; padding:8px; font-family:'Courier New',monospace; font-size:12px; line-height:normal; color:#000;
 }
-.receipt-k80 hr{ border-top:1px dashed #000; }
-.receipt-k80 table{ width:100%; }
+.receipt-k80 hr{ border:0; border-top:1px dashed #000; opacity:1; color:#000; margin:.5em 0; }
+.receipt-k80 table{ width:100%; border-collapse:collapse; }
+.receipt-k80 td{ vertical-align:top; padding:2px 0; }
+.receipt-k80 .center{ text-align:center; }
+.receipt-k80 .right{ text-align:right; }
+.receipt-k80 .bold{ font-weight:bold; }
+.receipt-k80 .big{ font-size:14px; }
+.receipt-k80 .strike{ text-decoration:line-through; }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 575.98px){

@@ -3,8 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * Endpoint công khai (không cần đăng nhập) để Telegram gọi webhook mỗi khi
- * có tin nhắn mới hoặc nút bấm (callback_query) tới bot — cùng kiểu "public
- * API" với Api_order. Xác thực bằng header
+ * có tin nhắn mới hoặc nút bấm (callback_query) tới bot. Xác thực bằng header
  * X-Telegram-Bot-Api-Secret-Token (đặt khi gọi setWebhook) để tránh request
  * giả mạo, không dùng session/CSRF vì Telegram không gửi cookie của app.
  */

@@ -9,13 +9,12 @@ class Api_tables extends MY_Api_Controller
     {
         parent::__construct();
         $this->require_role(array('STAFF', 'ADMIN', 'CASHIER'));
-        $this->load->model(array('Table_model', 'Table_session_model', 'Order_model', 'Assistance_call_model'));
+        $this->load->model(array('Table_model', 'Table_session_model', 'Order_model'));
     }
 
     public function status()
     {
-        $tables = $this->Table_model->get_all();
-        $pending_calls = $this->Assistance_call_model->get_pending_by_table();
+        $tables = $this->Table_model->get_all(TRUE);
 
         foreach ($tables as &$t)
         {
@@ -29,7 +28,6 @@ class Api_tables extends MY_Api_Controller
                     if ($order) $t['total_amount'] = (float) $order['total_amount'];
                 }
             }
-            $t['pending_calls'] = isset($pending_calls[$t['id']]) ? $pending_calls[$t['id']] : array();
         }
 
         json_response(array('success' => TRUE, 'tables' => $tables));

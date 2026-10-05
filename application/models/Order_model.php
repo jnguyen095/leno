@@ -5,11 +5,11 @@ class Order_model extends CI_Model
 {
     protected $table = 'order_sessions';
 
-    public function create_for_table_session($table_session_id)
+    public function create_for_table_session($table_session_id, $order_type = 'DINE_IN')
     {
         $data = array(
             'order_no'          => gen_no('ORD'),
-            'order_type'        => 'DINE_IN',
+            'order_type'        => $order_type,
             'table_session_id'  => $table_session_id,
             'status'            => 'OPEN',
             'subtotal'          => 0,
@@ -24,7 +24,7 @@ class Order_model extends CI_Model
 
     /**
      * Shared "open a table" orchestration — used by staff opening a table
-     * manually or a customer auto-opening via QR.
+     * from the table map.
      * Closes any stray OPEN sessions first, opens a fresh one, creates its
      * order, and flips the table to OPEN. Returns ['session_id'=>, 'order_id'=>].
      */
@@ -34,28 +34,11 @@ class Order_model extends CI_Model
 
         $this->Table_session_model->close_stray_open_sessions($table_id);
         $session_id = $this->Table_session_model->open($table_id, $opened_by);
-        $order_id = $this->create_for_table_session($session_id);
+        $table = $this->Table_model->get_by_id($table_id);
+        $order_id = $this->create_for_table_session($session_id, ( ! empty($table['is_takeaway'])) ? 'TAKEAWAY' : 'DINE_IN');
         $this->Table_model->set_status($table_id, 'OPEN');
 
         return array('session_id' => $session_id, 'order_id' => $order_id);
-    }
-
-    /** Takeaway order: no table, no table_session — just a standalone bill. */
-    public function create_takeaway()
-    {
-        $data = array(
-            'order_no'          => gen_no('TA'),
-            'order_type'        => 'TAKEAWAY',
-            'table_session_id'  => NULL,
-            'status'            => 'OPEN',
-            'subtotal'          => 0,
-            'discount_amount'   => 0,
-            'vat_amount'        => 0,
-            'total_amount'      => 0,
-            'created_at'        => date('Y-m-d H:i:s'),
-        );
-        $this->db->insert($this->table, $data);
-        return $this->db->insert_id();
     }
 
     public function get_by_id($id)
@@ -119,6 +102,20 @@ class Order_model extends CI_Model
     public function cancel($id)
     {
         return $this->db->where('id', $id)->update($this->table, array('status' => 'CANCELLED'));
+    }
+
+    /** Đơn đang phục vụ (OPEN/WAIT_PAYMENT) kèm tên bàn — dùng cho thanh chuyển nhanh giữa các khách ở tab Thực đơn. */
+    public function get_active_orders()
+    {
+        return $this->db->select('order_sessions.id, order_sessions.order_no, order_sessions.total_amount, order_sessions.status, table_sessions.table_id, cafe_tables.table_name, cafe_tables.is_takeaway')
+            ->from($this->table)
+            ->join('table_sessions', 'table_sessions.id = order_sessions.table_session_id', 'left')
+            ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left')
+            ->where_in('order_sessions.status', array('OPEN', 'WAIT_PAYMENT'))
+            ->order_by('cafe_tables.is_takeaway', 'DESC')
+            ->order_by('cafe_tables.sort_order', 'ASC')
+            ->order_by('order_sessions.id', 'ASC')
+            ->get()->result_array();
     }
 
     public function get_detail($id)

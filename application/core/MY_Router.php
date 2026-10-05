@@ -7,7 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * "directory/class" target, unlike normal (non-default) routes which resolve
  * subdirectories fine via _validate_request(). Since the public-facing
  * homepage now lives at application/controllers/public/Public_site.php (see
- * [[064_allow_recipe_as_ingredient]] sibling refactor — Public/Menu/Trung_thu
+ * [[064_allow_recipe_as_ingredient]] sibling refactor — public pages
  * moved into their own controllers/public + views/public folders), the empty
  * URI ("/") needs default_controller = 'public/public_site' to resolve into
  * that subdirectory. This override adds that support, mirroring how

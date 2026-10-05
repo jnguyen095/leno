@@ -21,6 +21,35 @@ class Order_item_model extends CI_Model
         return $this->db->insert_id();
     }
 
+    /**
+     * Thêm món vào đơn — gộp vào dòng ACTIVE cùng sản phẩm (không ghi chú) nếu đã có,
+     * để bấm thêm nhiều lần không sinh nhiều dòng; phần tăng thêm sẽ được báo bếp ở
+     * lần "Thông báo" kế tiếp (qty > notified_qty).
+     */
+    public function add_or_merge($order_session_id, $product_id, $qty, $price, $note = NULL)
+    {
+        if ($note === NULL || $note === '')
+        {
+            $existing = $this->db->where('order_session_id', $order_session_id)
+                ->where('product_id', $product_id)
+                ->where('status', 'ACTIVE')
+                ->group_start()->where('note IS NULL', NULL, FALSE)->or_where('note', '')->group_end()
+                ->order_by('id', 'DESC')->limit(1)
+                ->get($this->table)->row_array();
+            if ($existing)
+            {
+                $this->update_qty($existing['id'], $existing['qty'] + $qty);
+                return $existing['id'];
+            }
+        }
+        return $this->add($order_session_id, $product_id, $qty, $price, $note ?: NULL);
+    }
+
+    public function set_notified_qty($id, $qty)
+    {
+        return $this->db->where('id', $id)->update($this->table, array('notified_qty' => $qty));
+    }
+
     public function update_qty($id, $qty)
     {
         $item = $this->get_by_id($id);

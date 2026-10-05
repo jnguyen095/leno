@@ -180,7 +180,6 @@ if ( ! function_exists('audit_module_label'))
             'order_item'             => 'Món trong đơn',
             'kitchen_ticket'         => 'Ticket bếp',
             'payment'                => 'Thanh toán',
-            'assistance_call'        => 'Gọi hỗ trợ',
             'inventory_category'     => 'Danh mục kho',
             'inventory_unit'         => 'Đơn vị tính',
             'inventory_item'         => 'Sản phẩm kho',

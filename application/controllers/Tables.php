@@ -8,13 +8,19 @@ class Tables extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model(array('Table_model', 'Table_session_model', 'Order_model', 'Order_item_model', 'Kitchen_ticket_model', 'Assistance_call_model'));
+        $this->load->model(array('Table_model', 'Table_session_model', 'Order_model', 'Order_item_model', 'Kitchen_ticket_model', 'Setting_model'));
     }
 
     public function index()
     {
         $tables = $this->Table_model->get_all();
-        $pending_calls = $this->Assistance_call_model->get_pending_by_table();
+
+        // Bàn "Mang đi" đứng đầu sơ đồ khi bật bán mang đi; nếu đã tắt nhưng còn đơn dở thì vẫn hiện để xử lý cho xong.
+        $takeaway = $this->Table_model->get_takeaway();
+        if ($takeaway && ($this->Setting_model->is_takeaway_enabled() || $takeaway['status'] !== 'AVAILABLE'))
+        {
+            array_unshift($tables, $takeaway);
+        }
 
         foreach ($tables as &$t)
         {
@@ -28,14 +34,15 @@ class Tables extends MY_Controller
                     $t['session_id'] = $session['id'];
                 }
             }
-            $t['pending_calls'] = isset($pending_calls[$t['id']]) ? $pending_calls[$t['id']] : array();
         }
 
         $data = array(
             'page_title'   => 'Sơ đồ bàn',
             'current_user' => $this->current_user,
             'tables'       => $tables,
+            'paid_order_id' => $this->session->flashdata('paid_order_id'),
         );
+        $data = array_merge($data, $this->pos_tabs_data('tables'));
         $this->load->view('layout/header', $data);
         $this->load->view('tables/index', $data);
         $this->load->view('layout/footer');
@@ -44,7 +51,8 @@ class Tables extends MY_Controller
     public function open($id)
     {
         $table = $this->Table_model->get_by_id($id);
-        if ( ! $table || $table['status'] !== 'AVAILABLE')
+        if ( ! $table || $table['status'] !== 'AVAILABLE'
+            || ($table['is_takeaway'] && ! $this->Setting_model->is_takeaway_enabled()))
         {
             redirect('me/tables');
             return;
@@ -214,7 +222,7 @@ class Tables extends MY_Controller
     {
         $this->_require_admin();
         $table = $this->Table_model->get_by_id($id);
-        if ( ! $table) show_404();
+        if ( ! $table || $table['is_takeaway']) show_404();
         $error = NULL;
 
         if ($this->input->method() === 'post')
@@ -250,7 +258,7 @@ class Tables extends MY_Controller
         $this->_require_admin();
         $table = $this->Table_model->get_by_id($id);
 
-        if ($table && $table['status'] === 'AVAILABLE')
+        if ($table && ! $table['is_takeaway'] && $table['status'] === 'AVAILABLE')
         {
             $has_history = $this->db->where('table_id', $id)->get('table_sessions')->num_rows() > 0;
 
@@ -301,40 +309,5 @@ class Tables extends MY_Controller
             $this->load->view('errors/forbidden', array('current_user' => $this->current_user));
             exit;
         }
-    }
-
-    public function qr($id)
-    {
-        $table = $this->Table_model->get_by_id($id);
-        if ( ! $table)
-        {
-            show_404();
-        }
-        $data = array(
-            'table'    => $table,
-            'menu_url' => site_url('menu/'.$table['qr_token']),
-        );
-        $this->load->view('tables/qr', $data);
-    }
-
-    public function print_provisional($id)
-    {
-        $table = $this->Table_model->get_by_id($id);
-        $session = $this->Table_session_model->get_open_by_table($id);
-        $order = $session ? $this->Order_model->get_active_by_table_session($session['id']) : NULL;
-
-        if ( ! $order)
-        {
-            show_404();
-        }
-
-        $items = $this->Order_item_model->get_active_by_order($order['id']);
-
-        $data = array(
-            'table' => $table,
-            'order' => $order,
-            'items' => $items,
-        );
-        $this->load->view('tables/print_provisional', $data);
     }
 }

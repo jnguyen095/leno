@@ -2,6 +2,9 @@
   // Viền ảnh món tô theo trạng thái pha chế (ưu tiên NEW > PREPARING > COMPLETED) —
   // chớp khi còn NEW/PREPARING, viền đặc khi COMPLETED. Món hủy hoặc chưa lên bếp thì không tô.
   $kitchen_status = isset($kitchen_status) ? $kitchen_status : NULL;
+  $is_active = isset($is_active) ? $is_active : in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE);
+  // Phần chưa báo bếp: dương = món mới/thêm số lượng, âm = đã bớt/hủy nhưng bếp chưa biết.
+  $pending_delta = ($it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0) - (int) $it['notified_qty'];
   $img_classes = 'rounded border flex-shrink-0 item-kitchen-img';
   if ($kitchen_status && $it['status'] !== 'CANCELLED')
   {
@@ -20,13 +23,20 @@
       <div class="d-flex align-items-center justify-content-center bg-light text-muted flex-shrink-0 <?php echo $img_classes; ?>" style="width:44px;height:44px;"><i class="bi bi-cup-straw"></i></div>
     <?php endif; ?>
     <div>
-      <div class="fw-semibold"><?php echo htmlspecialchars($it['product_name']); ?></div>
+      <div class="fw-semibold">
+        <?php echo htmlspecialchars($it['product_name']); ?>
+        <?php if ($is_active && $pending_delta > 0): ?>
+          <span class="badge bg-warning text-dark">Chưa báo<?php echo (int) $it['notified_qty'] > 0 ? ' +'.$pending_delta : ''; ?></span>
+        <?php elseif ($is_active && $pending_delta < 0): ?>
+          <span class="badge bg-danger">Chờ báo hủy <?php echo abs($pending_delta); ?></span>
+        <?php endif; ?>
+      </div>
       <div class="small text-muted"><?php echo money_format_vnd($it['price']); ?> x <?php echo $it['qty']; ?><?php if ($it['note']): ?> — <?php echo htmlspecialchars($it['note']); ?><?php endif; ?></div>
     </div>
   </div>
   <div class="d-flex align-items-center gap-2">
     <div class="fw-semibold"><?php echo money_format_vnd($it['amount']); ?></div>
-    <?php if ($it['status'] === 'ACTIVE' && $order['status'] === 'OPEN'): ?>
+    <?php if ($it['status'] === 'ACTIVE' && $is_active): ?>
     <div class="dropdown">
       <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">

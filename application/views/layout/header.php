@@ -39,7 +39,6 @@
 
         $can_admin_tables_manage = $current_user['role'] === 'ADMIN'; // luôn gắn với inline _require_admin() trong Tables::manage*, không đưa vào RBAC động
         $can_admin_recipes = $current_user['role'] === 'ADMIN'; // Recipes::$allowed_roles, không đưa vào RBAC động
-        $can_admin_trung_thu = $current_user['role'] === 'ADMIN'; // Trung_thu_admin::$allowed_roles, không đưa vào RBAC động
         $can_admin_categories = $can('admin.categories');
         $can_admin_products = $can('admin.products');
         $can_admin_inventory_categories = $can('admin.inventory_categories');
@@ -47,10 +46,9 @@
         $can_admin_dispense_points = $can('admin.dispense_points');
         $can_admin_users = $can('admin.users');
         $can_admin_payroll = $can('admin.payroll');
-        $can_admin_reports = $can('admin.reports');
         $can_admin_audit_logs = $can('admin.audit_logs');
         $can_admin_settings = $can('admin.settings');
-        $show_admin_menu = $can_admin_tables_manage || $can_admin_recipes || $can_admin_trung_thu || $can_admin_categories || $can_admin_products || $can_admin_inventory_categories
+        $show_admin_menu = $can_admin_tables_manage || $can_admin_recipes || $can_admin_categories || $can_admin_products || $can_admin_inventory_categories
           || $can_admin_inventory_units || $can_admin_dispense_points || $can_admin_users || $can_admin_payroll || $can_admin_reports || $can_admin_audit_logs || $can_admin_settings;
       ?>
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -62,9 +60,6 @@
         <?php endif; ?>
         <?php if ($can('orders')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/orders'); ?>"><i class="bi bi-receipt"></i> Đơn hàng</a></li>
-        <?php endif; ?>
-        <?php if ($can('takeaway')): ?>
-        <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/takeaway/create'); ?>"><i class="bi bi-bag-check"></i> Bán mang đi</a></li>
         <?php endif; ?>
         <?php if ($can('pha_che')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/pha-che'); ?>"><i class="bi bi-cup-straw"></i> Pha chế</a></li>
@@ -102,7 +97,6 @@
           <ul class="dropdown-menu">
             <!-- <?php if ($can_admin_tables_manage): ?><li><a class="dropdown-item" href="<?php echo site_url('me/tables/manage'); ?>">Quản lý bàn</a></li><?php endif; ?> -->
             <?php if ($can_admin_recipes): ?><li><a class="dropdown-item" href="<?php echo site_url('me/recipes'); ?>"><i class="bi bi-egg-fried"></i> Công thức pha chế</a></li><?php endif; ?>
-            <?php if ($can_admin_trung_thu): ?><li><a class="dropdown-item" href="<?php echo site_url('me/trung-thu/admin'); ?>"><i class="bi bi-moon-stars"></i> Đăng ký quà Trung Thu</a></li><?php endif; ?>
             <?php if ($can_admin_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/categories'); ?>">Danh mục</a></li><?php endif; ?>
             <?php if ($can_admin_products): ?><li><a class="dropdown-item" href="<?php echo site_url('me/products'); ?>">Sản phẩm</a></li><?php endif; ?>
             <?php if ($can_admin_inventory_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/categories'); ?>">Danh mục kho</a></li><?php endif; ?>
@@ -111,7 +105,6 @@
             <?php if ($can_admin_users): ?><li><a class="dropdown-item" href="<?php echo site_url('me/users'); ?>">Người dùng</a></li><?php endif; ?>
             <?php if ($current_user['role'] === 'ADMIN'): ?><li><a class="dropdown-item" href="<?php echo site_url('me/menu-permissions'); ?>">Gán quyền menu</a></li><?php endif; ?>
             <?php if ($can_admin_payroll): ?><li><a class="dropdown-item" href="<?php echo site_url('me/payroll/admin'); ?>">Quản lý lương</a></li><?php endif; ?>
-            <?php if ($can_admin_reports): ?><li><a class="dropdown-item" href="<?php echo site_url('me/reports'); ?>">Báo cáo doanh thu</a></li><?php endif; ?>
             <?php if ($can_admin_audit_logs): ?><li><a class="dropdown-item" href="<?php echo site_url('me/audit-logs'); ?>"><i class="bi bi-journal-text"></i> Nhật ký hệ thống</a></li><?php endif; ?>
             <?php if ($can_admin_settings): ?>
             <li><hr class="dropdown-divider"></li>
@@ -122,17 +115,6 @@
         <?php endif; ?>
       </ul>
       <ul class="navbar-nav">
-        <?php if (in_array($current_user['role'], array('STAFF','CASHIER','ADMIN'), TRUE)): ?>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle position-relative" href="#" id="assistBell" data-bs-toggle="dropdown">
-            <i class="bi bi-bell-fill"></i>
-            <span id="assistCountBadge" class="badge bg-danger rounded-pill d-none">0</span>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" style="min-width:280px;" id="assistDropdown">
-            <li><div class="px-3 py-2 text-muted small text-center">Không có yêu cầu nào</div></li>
-          </ul>
-        </li>
-        <?php endif; ?>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user['fullname']); ?>
@@ -148,85 +130,5 @@
     </div>
   </div>
 </nav>
-<?php if (in_array($current_user['role'], array('STAFF','CASHIER','ADMIN'), TRUE)): ?>
-<script>
-(function(){
-  var lastPendingIds = null; // null = first load, don't beep yet
-  var TYPE_LABEL = {HELP:'Cần hỗ trợ', PAYMENT:'Yêu cầu thanh toán'};
-  var TYPE_ICON = {HELP:'bi-question-circle text-warning', PAYMENT:'bi-credit-card text-success'};
-
-  function beep(){
-    try {
-      var ctx = new (window.AudioContext || window.webkitAudioContext)();
-      var o = ctx.createOscillator(); var g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = 880; g.gain.value = 0.15;
-      o.start(); o.stop(ctx.currentTime + 0.2);
-    } catch (e){}
-  }
-
-  function timeAgo(dt){
-    var then = new Date(dt.replace(' ','T'));
-    var now = new Date();
-    var diffMin = Math.floor((now.getTime() - then.getTime())/60000);
-
-    var sameDay = then.getFullYear() === now.getFullYear() && then.getMonth() === now.getMonth() && then.getDate() === now.getDate();
-
-    if (sameDay){
-      if (diffMin < 1) return 'Vừa xong';
-      if (diffMin < 60) return diffMin+' phút trước';
-      var hours = Math.floor(diffMin/60);
-      var mins = diffMin % 60;
-      return hours+' giờ'+(mins > 0 ? ' '+mins+' phút' : '')+' trước';
-    }
-
-    var pad = function(n){ return n < 10 ? '0'+n : n; };
-    return pad(then.getDate())+'/'+pad(then.getMonth()+1)+' '+pad(then.getHours())+':'+pad(then.getMinutes());
-  }
-
-  function loadAssistance(){
-    fetch('<?php echo base_url('api/assistance/pending'); ?>')
-      .then(function(r){ return r.json(); })
-      .then(function(res){
-        if (!res.success) return;
-        var calls = res.calls;
-        var badge = document.getElementById('assistCountBadge');
-        var dropdown = document.getElementById('assistDropdown');
-
-        var newIds = calls.map(function(c){ return c.id; });
-        if (lastPendingIds !== null){
-          var hasNew = newIds.some(function(id){ return lastPendingIds.indexOf(id) === -1; });
-          if (hasNew) beep();
-        }
-        lastPendingIds = newIds;
-
-        badge.textContent = calls.length;
-        badge.classList.toggle('d-none', calls.length === 0);
-
-        if (calls.length === 0){
-          dropdown.innerHTML = '<li><div class="px-3 py-2 text-muted small text-center">Không có yêu cầu nào</div></li>';
-          return;
-        }
-
-        dropdown.innerHTML = calls.map(function(c){
-          return '<li><div class="px-3 py-2 d-flex justify-content-between align-items-center border-bottom">'+
-            '<div><i class="bi '+TYPE_ICON[c.type]+' me-1"></i><strong>'+c.table_name+'</strong>'+
-            '<div class="small text-muted">'+TYPE_LABEL[c.type]+' — '+timeAgo(c.created_at)+'</div></div>'+
-            '<button class="btn btn-sm btn-outline-success" onclick="resolveAssistance('+c.id+', event)">Đã xử lý</button>'+
-          '</div></li>';
-        }).join('');
-      });
-  }
-
-  window.resolveAssistance = function(id, evt){
-    if (evt) evt.stopPropagation();
-    fetch('<?php echo base_url('api/assistance'); ?>/'+id+'/resolve', {method:'POST'}).then(function(){ loadAssistance(); });
-  };
-
-  loadAssistance();
-  setInterval(loadAssistance, 5000);
-})();
-</script>
-<?php endif; ?>
 <?php endif; ?>
 <main>

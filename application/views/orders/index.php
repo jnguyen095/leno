@@ -1,7 +1,6 @@
 <div class="container-fluid py-3 py-md-4">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h4 class="fw-bold mb-0">Danh sách đơn hàng</h4>
-    <a href="<?php echo site_url('me/takeaway/create'); ?>" class="btn btn-sm btn-brand"><i class="bi bi-bag-check"></i> Bán mang đi</a>
   </div>
 
   <?php

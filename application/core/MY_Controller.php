@@ -87,4 +87,28 @@ class MY_Controller extends CI_Controller
         $this->load->model('Audit_log_model');
         $this->Audit_log_model->log($module, $action, $old_data, $new_data, $this->current_user['id']);
     }
+
+    /**
+     * Dữ liệu cho thanh tab POS "Bàn | Thực đơn" (views/orders/_pos_tabs.php):
+     * đơn đang chọn (ghi nhớ trong session, bỏ nếu đơn đã đóng) + mọi đơn đang phục vụ
+     * để chuyển nhanh giữa các khách.
+     */
+    protected function pos_tabs_data($active_tab)
+    {
+        $this->load->model('Order_model');
+        $orders = $this->Order_model->get_active_orders();
+
+        $pos_order_id = (int) $this->session->userdata('pos_order_id');
+        if ($pos_order_id && ! in_array($pos_order_id, array_map('intval', array_column($orders, 'id')), TRUE))
+        {
+            $this->session->unset_userdata('pos_order_id');
+            $pos_order_id = 0;
+        }
+
+        return array(
+            'pos_tab'      => $active_tab,
+            'pos_order_id' => $pos_order_id,
+            'pos_orders'   => $orders,
+        );
+    }
 }

@@ -3,9 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * Base controller for internal JSON REST endpoints under /api/kitchen, /api/tables,
- * which require an authenticated staff session. Public ordering APIs
- * (Api_Order, Api_Payment) intentionally do NOT extend this — they are
- * authorized by the QR token + open table_session instead of a login session.
+ * /api/payment, which require an authenticated staff session.
  */
 class MY_Api_Controller extends CI_Controller
 {

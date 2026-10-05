@@ -36,16 +36,10 @@ class Setting_model extends CI_Model
         return (float) $this->get('vat_percent', 8);
     }
 
-    /** Thời điểm mở đăng ký quà Trung Thu, định dạng 'Y-m-d H:i:s'. Rỗng/NULL = không giới hạn (mở sẵn). */
-    public function get_trung_thu_open_at()
+    /** Bật bán mang đi = hiện bàn "Mang đi" trên sơ đồ bàn. */
+    public function is_takeaway_enabled()
     {
-        return $this->get('trung_thu_open_at') ?: NULL;
-    }
-
-    /** Thời điểm đóng đăng ký quà Trung Thu, định dạng 'Y-m-d H:i:s'. Rỗng/NULL = không giới hạn (không tự đóng). */
-    public function get_trung_thu_close_at()
-    {
-        return $this->get('trung_thu_close_at') ?: NULL;
+        return $this->get('takeaway_enabled', '0') === '1';
     }
 
     // ---- Thông tin website public (site/xem application/controllers/Public.php) ----

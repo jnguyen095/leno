@@ -22,4 +22,20 @@
       <?php echo form_close(); ?>
     </div>
   </div>
+
+  <div class="card border-0 shadow-sm rounded-4 mt-3">
+    <div class="card-header bg-white fw-semibold">Bán mang đi</div>
+    <div class="card-body">
+      <?php echo form_open(current_url()); ?>
+        <input type="hidden" name="form" value="takeaway">
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" role="switch" name="takeaway_enabled" value="1" id="takeawayEnabled"
+                 <?php echo $takeaway_enabled ? 'checked' : ''; ?> onchange="this.form.submit()">
+          <label class="form-check-label" for="takeawayEnabled">Bật bán mang đi</label>
+        </div>
+        <div class="form-text">Khi bật, Sơ đồ bàn có thêm bàn "Mang đi" — mở, gọi món và thanh toán giống bàn thường.</div>
+        <noscript><button class="btn btn-brand w-100 mt-2">Lưu thay đổi</button></noscript>
+      <?php echo form_close(); ?>
+    </div>
+  </div>
 </div>

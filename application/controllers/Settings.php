@@ -15,6 +15,16 @@ class Settings extends MY_Controller
     {
         $error = NULL;
 
+        if ($this->input->method() === 'post' && $this->input->post('form') === 'takeaway')
+        {
+            $old = $this->Setting_model->is_takeaway_enabled();
+            $new = (bool) $this->input->post('takeaway_enabled');
+            $this->Setting_model->set('takeaway_enabled', $new ? '1' : '0');
+            $this->audit('settings', 'UPDATE_TAKEAWAY', array('takeaway_enabled' => $old), array('takeaway_enabled' => $new));
+            redirect('me/settings');
+            return;
+        }
+
         if ($this->input->method() === 'post')
         {
             $vat_percent = $this->input->post('vat_percent');
@@ -37,6 +47,7 @@ class Settings extends MY_Controller
             'page_title'          => 'Cài đặt',
             'current_user'        => $this->current_user,
             'vat_percent'         => $this->Setting_model->get_vat_percent(),
+            'takeaway_enabled'    => $this->Setting_model->is_takeaway_enabled(),
             'error'               => $error,
         );
         $this->load->view('layout/header', $data);

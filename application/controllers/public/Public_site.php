@@ -5,7 +5,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Website public giới thiệu Leno (khách hàng, không cần đăng
  * nhập) — tách biệt hoàn toàn với hệ thống quản lý nội bộ. Không kế thừa
  * MY_Controller vì controller đó bắt buộc đăng nhập (xem
- * application/core/MY_Controller.php) — cùng cách làm với Menu.php/Trung_thu.php.
+ * application/core/MY_Controller.php) — cùng cách làm với Menu.php.
  *
  * Chỉ còn 1 trang duy nhất (landing page one-page) — các mục Khu vui chơi/
  * Cà phê/Photobooth/Khuyến mãi/Liên hệ đều là section trong cùng

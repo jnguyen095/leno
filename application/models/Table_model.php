@@ -5,9 +5,19 @@ class Table_model extends CI_Model
 {
     protected $table = 'cafe_tables';
 
-    public function get_all()
+    /** Bàn thường. $include_takeaway = TRUE để lấy kèm bàn "Mang đi" (is_takeaway = 1). */
+    public function get_all($include_takeaway = FALSE)
     {
-        return $this->db->order_by('sort_order', 'ASC')->order_by('table_name', 'ASC')->get($this->table)->result_array();
+        if ( ! $include_takeaway)
+        {
+            $this->db->where('is_takeaway', 0);
+        }
+        return $this->db->order_by('is_takeaway', 'DESC')->order_by('sort_order', 'ASC')->order_by('table_name', 'ASC')->get($this->table)->result_array();
+    }
+
+    public function get_takeaway()
+    {
+        return $this->db->where('is_takeaway', 1)->get($this->table)->row_array();
     }
 
     public function get_by_id($id)
@@ -20,14 +30,8 @@ class Table_model extends CI_Model
         return $this->db->where('table_code', $code)->get($this->table)->row_array();
     }
 
-    public function get_by_token($token)
-    {
-        return $this->db->where('qr_token', $token)->get($this->table)->row_array();
-    }
-
     public function create($data)
     {
-        $data['qr_token'] = gen_token(32);
         $data['created_at'] = date('Y-m-d H:i:s');
         $data['updated_at'] = date('Y-m-d H:i:s');
         $this->db->insert($this->table, $data);

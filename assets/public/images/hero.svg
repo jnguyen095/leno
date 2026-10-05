@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Leno">
+  <defs>
+    <linearGradient id="ghero" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0190db"/>
+      <stop offset="100%" stop-color="#014f73"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#ghero)"/>
+  <text x="50%" y="45%" font-size="150" text-anchor="middle" dominant-baseline="middle">🏓🧸☕</text>
+  <text x="50%" y="72%" font-family="Arial, sans-serif" font-size="40" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" font-weight="700" opacity="0.95">Leno</text>
+</svg>

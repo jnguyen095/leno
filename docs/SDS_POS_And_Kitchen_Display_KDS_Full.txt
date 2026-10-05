@@ -1,0 +1,429 @@
+
+SOFTWARE DESIGN SPECIFICATION (SDS)
+PROJECT: POS + Kitchen Display System (KDS) for Cafe
+Technology: CodeIgniter 3, PHP 8.x, MySQL 8, Bootstrap 5, jQuery
+
+=====================================================================
+1. PROJECT OVERVIEW
+=====================================================================
+
+Mục tiêu:
+Xây dựng hệ thống POS cho quán cafe với QR Ordering, Kitchen Display System,
+quản lý bàn, quản lý đơn hàng, thanh toán, in hóa đơn và báo cáo doanh thu.
+
+Quy mô:
+- 20 đến 100 bàn
+- 5 đến 50 nhân viên
+- 1 hoặc nhiều khu vực phục vụ
+
+=====================================================================
+2. SYSTEM ARCHITECTURE
+=====================================================================
+
+Customer QR
+    |
+    v
+Frontend Website
+    |
+    v
+CodeIgniter 3 Application
+    |
+    +--- Order Module
+    +--- POS Module
+    +--- KDS Module
+    +--- Payment Module
+    +--- Report Module
+    |
+    v
+MySQL Database
+
+=====================================================================
+3. USER ROLES
+=====================================================================
+
+CUSTOMER
+STAFF
+BARISTA
+CASHIER
+ADMIN
+
+=====================================================================
+4. BUSINESS WORKFLOW
+=====================================================================
+
+1. Staff mở bàn
+2. Tạo Table Session
+3. Khách scan QR
+4. Khách order
+5. Tạo Kitchen Ticket
+6. Barista nhận ticket
+7. Barista hoàn thành món
+8. Staff phục vụ
+9. Cashier đóng bill
+10. Thanh toán
+11. In hóa đơn
+12. Đóng session
+
+=====================================================================
+5. DATABASE DESIGN
+=====================================================================
+
+TABLE: users
+- id
+- username
+- password
+- fullname
+- role
+- status
+- created_at
+- updated_at
+
+TABLE: cafe_tables
+- id
+- table_code
+- table_name
+- capacity
+- qr_token
+- status
+
+TABLE: table_sessions
+- id
+- table_id
+- session_no
+- opened_by
+- opened_at
+- closed_at
+- status
+
+TABLE: categories
+- id
+- name
+- sort_order
+- status
+
+TABLE: products
+- id
+- category_id
+- sku
+- product_name
+- price
+- image
+- description
+- status
+
+TABLE: order_sessions
+- id
+- order_no
+- table_session_id
+- status
+- subtotal
+- discount_amount
+- vat_amount
+- total_amount
+- created_at
+- paid_at
+
+TABLE: order_items
+- id
+- order_session_id
+- product_id
+- qty
+- price
+- amount
+- note
+- status
+
+TABLE: kitchen_tickets
+- id
+- order_session_id
+- table_id
+- status
+- created_at
+
+TABLE: kitchen_ticket_items
+- id
+- ticket_id
+- product_id
+- qty
+- note
+- status
+
+TABLE: payments
+- id
+- order_session_id
+- payment_method
+- amount
+- received_amount
+- change_amount
+- paid_by
+- paid_at
+
+TABLE: audit_logs
+- id
+- module
+- action
+- old_data
+- new_data
+- user_id
+- created_at
+
+=====================================================================
+6. ORDER STATUS
+=====================================================================
+
+OPEN
+WAIT_PAYMENT
+PAID
+CANCELLED
+
+=====================================================================
+7. KITCHEN STATUS
+=====================================================================
+
+NEW
+PREPARING
+COMPLETED
+
+=====================================================================
+8. TABLE STATUS
+=====================================================================
+
+AVAILABLE
+OPEN
+WAIT_PAYMENT
+PAID
+
+=====================================================================
+9. QR ORDERING
+=====================================================================
+
+URL:
+
+/menu/{token}
+
+Rules:
+
+- Token phải unique.
+- Token 32 ký tự.
+- Session OPEN mới được order.
+- Session CLOSED không được order.
+- Sau thanh toán không được truy cập menu.
+
+=====================================================================
+10. POS FUNCTIONS
+=====================================================================
+
+STAFF:
+
+- Mở bàn
+- Thêm món
+- Sửa món
+- Hủy món
+- Chuyển bàn
+- Gộp bàn
+- In tạm tính
+
+CASHIER:
+
+- Đóng bill
+- Thanh toán
+- In hóa đơn
+
+ADMIN:
+
+- Quản lý menu
+- Quản lý người dùng
+- Báo cáo
+
+=====================================================================
+11. KDS FUNCTIONS
+=====================================================================
+
+Dashboard:
+
+NEW
+PREPARING
+COMPLETED
+
+Mỗi lần order mới tạo ticket mới.
+
+=====================================================================
+12. API CONTRACT
+=====================================================================
+
+POST /api/order/create
+
+Request:
+{
+  table_id,
+  items
+}
+
+Response:
+{
+  success:true,
+  order_id
+}
+
+POST /api/order/add-item
+
+POST /api/order/remove-item
+
+GET /api/order/current/{table_id}
+
+POST /api/payment
+
+=====================================================================
+13. CONTROLLERS
+=====================================================================
+
+Auth.php
+Dashboard.php
+Tables.php
+Orders.php
+Products.php
+Categories.php
+Kitchen.php
+Cashier.php
+Payments.php
+Reports.php
+Users.php
+Api_Order.php
+Api_Payment.php
+
+=====================================================================
+14. MODELS
+=====================================================================
+
+User_model
+Table_model
+Table_session_model
+Product_model
+Category_model
+Order_model
+Order_item_model
+Kitchen_ticket_model
+Payment_model
+Audit_log_model
+
+=====================================================================
+15. ROUTES
+=====================================================================
+
+/login
+/dashboard
+/tables
+/orders
+/kitchen
+/cashier
+/reports
+/users
+
+=====================================================================
+16. SCREENS
+=====================================================================
+
+Customer:
+- Menu
+- Cart
+- Order History
+
+Staff:
+- Dashboard
+- Table Layout
+- Order Detail
+
+Barista:
+- Kitchen Dashboard
+- Ticket Detail
+
+Cashier:
+- Payment Screen
+- Invoice Screen
+
+Admin:
+- Product Management
+- User Management
+- Reports
+
+=====================================================================
+17. REPORTS
+=====================================================================
+
+Daily Revenue
+Monthly Revenue
+Top Products
+Table Usage
+Kitchen Performance
+Payment Summary
+
+=====================================================================
+18. SECURITY
+=====================================================================
+
+- Password Hashing
+- CSRF Protection
+- Session Validation
+- RBAC Permission
+- Audit Logging
+
+=====================================================================
+19. PRINTING
+=====================================================================
+
+K80 Receipt
+
+Fields:
+
+Store Name
+Invoice No
+Table
+Date Time
+Items
+Total
+Payment Method
+
+=====================================================================
+20. NON-FUNCTIONAL REQUIREMENTS
+=====================================================================
+
+Response Time < 2 sec
+
+Support:
+- Chrome
+- Edge
+- Safari
+
+Mobile Responsive
+
+AJAX Polling 5 seconds
+
+=====================================================================
+21. DEPLOYMENT
+=====================================================================
+
+Ubuntu 22.04
+Apache 2.4
+PHP 8.x
+MySQL 8
+
+Folder Structure:
+
+application/
+controllers/
+models/
+views/
+libraries/
+helpers/
+
+=====================================================================
+22. FUTURE ENHANCEMENTS
+=====================================================================
+
+- VietQR Dynamic
+- Loyalty Program
+- Voucher
+- Membership
+- Mobile App
+- WebSocket
+- Multi Branch

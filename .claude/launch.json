@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "kds-xampp",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "ping -t 127.0.0.1 >NUL"],
+      "port": 80
+    }
+  ]
+}

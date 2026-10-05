@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Góc Photobooth">
+  <defs>
+    <linearGradient id="gph1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec407a"/>
+      <stop offset="100%" stop-color="#ad1457"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#gph1)"/>
+  <text x="50%" y="45%" font-size="100" text-anchor="middle" dominant-baseline="middle">📸</text>
+  <text x="50%" y="72%" font-family="Arial, sans-serif" font-size="27" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" font-weight="700" opacity="0.95">Góc Photobooth</text>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Không gian an toàn cho bé">
+  <defs>
+    <linearGradient id="gk3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffc107"/>
+      <stop offset="100%" stop-color="#ff9800"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#gk3)"/>
+  <text x="50%" y="45%" font-size="100" text-anchor="middle" dominant-baseline="middle">🎠</text>
+  <text x="50%" y="72%" font-family="Arial, sans-serif" font-size="27" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" font-weight="700" opacity="0.95">Không gian an toàn cho bé</text>
+</svg>

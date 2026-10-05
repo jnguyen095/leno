@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Đồ uống & bánh ngọt">
+  <defs>
+    <linearGradient id="gc2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a1887f"/>
+      <stop offset="100%" stop-color="#6d4c41"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#gc2)"/>
+  <text x="50%" y="45%" font-size="100" text-anchor="middle" dominant-baseline="middle">🍰</text>
+  <text x="50%" y="72%" font-family="Arial, sans-serif" font-size="27" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" font-weight="700" opacity="0.95">Đồ uống & bánh ngọt</text>
+</svg>

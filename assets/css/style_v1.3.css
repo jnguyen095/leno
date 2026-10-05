@@ -1,0 +1,164 @@
+:root{
+  --brand: #0190db;
+  --brand-dark: #337ab7;
+  --brand-light: #f7f1ea;
+}
+
+body{
+  background: #f5f6f8;
+  font-size: .95rem;
+}
+
+.navbar-brand{ font-weight: 700; letter-spacing: .3px; }
+
+.bg-brand{ background-color: var(--brand) !important; }
+.text-brand{ color: var(--brand) !important; }
+.btn-brand{ background-color: var(--brand); border-color: var(--brand); color:#fff; }
+.btn-brand:hover{ background-color: var(--brand-dark); border-color: var(--brand-dark); color:#fff; }
+.btn-outline-brand{ border:1px solid var(--brand); color: var(--brand); background:#fff; }
+.btn-outline-brand:hover{ background-color: var(--brand); color:#fff; }
+
+/* ---------- Touch-friendly base (mobile customers) ---------- */
+.btn, .form-control, .form-select{ padding: 10px 5px; }
+.btn-icon{ width:44px; height:44px; padding:0; display:inline-flex; align-items:center; justify-content:center; }
+
+/* ---------- Table layout grid ---------- */
+.table-card{
+  border-radius: .75rem;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  transition: transform .1s ease;
+}
+.table-card:active{ transform: scale(.97); }
+.call-alert-badge{
+  position:absolute; top:-8px; right:-8px; z-index:2;
+  width:28px; height:28px; border-radius:50%;
+  background:#dc3545; color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:.9rem; box-shadow:0 2px 6px rgba(0,0,0,.3);
+  animation: call-pulse 1s infinite;
+}
+@keyframes call-pulse{
+  0%   { box-shadow: 0 0 0 0 rgba(220,53,69,.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(220,53,69,0); }
+  100% { box-shadow: 0 0 0 0 rgba(220,53,69,0); }
+}
+
+/* Viền chớp cho khối tiêu đề đơn hàng khi bếp còn đang xử lý (NEW/PREPARING) — dừng chớp khi COMPLETED. */
+.order-kitchen-flash.border-danger{ animation: order-kitchen-flash-danger 1s ease-in-out infinite; }
+.order-kitchen-flash.border-warning{ animation: order-kitchen-flash-warning 1s ease-in-out infinite; }
+@keyframes order-kitchen-flash-danger{
+  0%, 100% { border-color: #dc3545; }
+  50%      { border-color: rgba(220,53,69,.15); }
+}
+@keyframes order-kitchen-flash-warning{
+  0%, 100% { border-color: #ffc107; }
+  50%      { border-color: rgba(255,193,7,.15); }
+}
+.table-card .card-body{ padding: 1rem; }
+
+/* ---------- Customer menu page ---------- */
+.menu-header{
+  position: sticky; top:0; z-index: 1020;
+  background: var(--brand); color:#fff;
+}
+.category-nav{
+  position: sticky; top: 56px; z-index: 1010;
+  background:#fff; border-bottom: 1px solid #eee;
+  overflow-x:auto; white-space:nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+.category-nav::-webkit-scrollbar{ display:none; }
+.category-nav .btn{
+  border-radius: 999px; white-space:nowrap;
+}
+.menu-list{
+  background:#fff; border-radius:.75rem; box-shadow:0 1px 3px rgba(0,0,0,.08); overflow:hidden;
+}
+.menu-item{
+  display:flex; align-items:center; flex-wrap:nowrap; gap:.5rem;
+  padding:.4rem .6rem; border-bottom:1px solid #f0f0f0;
+}
+.menu-item:last-child{ border-bottom:none; }
+.menu-item-thumb, .menu-item-thumb-fallback{
+  width:38px; height:38px; flex:0 0 38px; border-radius:.5rem; object-fit:cover; background:#eee;
+}
+.menu-item-thumb-fallback{
+  display:flex; align-items:center; justify-content:center;
+  background: var(--brand-light); color: var(--brand); font-size:1rem;
+}
+.menu-item-name{
+  flex:1 1 auto; min-width:0; font-weight:600; font-size:16px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.menu-item-price{
+  flex:0 0 auto; color: var(--brand); font-weight:700; font-size:16px; white-space:nowrap;
+}
+.qty-stepper{ display:flex; align-items:center; gap:.25rem; flex:0 0 auto; }
+.qty-stepper button{ width:24px; height:24px; border-radius:50%; border:1px solid #ddd; background:#fff; line-height:1; padding:0; font-size:16px; }
+.qty-stepper span{ min-width:1em; text-align:center; font-weight:600; font-size:16px; }
+.menu-item-qty{ flex:0 0 auto; font-size:.8rem; font-weight:600; color:#666; white-space:nowrap; }
+
+.cart-fab{
+  position: fixed; left:1rem; right:1rem; bottom:1rem; z-index:1030;
+  border-radius: 999px; box-shadow: 0 6px 18px rgba(0,0,0,.25);
+}
+
+.cart-offcanvas .list-group-item{ border-left:none; border-right:none; }
+
+/* ---------- Kitchen Display ---------- */
+.kds-column{ min-height: 70vh; }
+.kds-ticket{
+  border-radius:.75rem; border:none; box-shadow:0 1px 4px rgba(0,0,0,.12);
+}
+.kds-ticket .card-header{ font-weight:600; }
+.kds-ticket.status-new{ border-left:5px solid #dc3545; }
+.kds-ticket.status-preparing{ border-left:5px solid #fd7e14; }
+.kds-ticket.status-completed{ border-left:5px solid #198754; opacity:.75; }
+.kds-item{
+  display:flex; align-items:center; flex-wrap:nowrap; gap:.5rem;
+  padding:.35rem 0; border-bottom:1px solid #f0f0f0;
+}
+.kds-item:last-child{ border-bottom:none; }
+.kds-item-thumb, .kds-item-thumb-fallback{
+  width:38px; height:38px; flex:0 0 38px; border-radius:.5rem; object-fit:cover; background:#eee;
+}
+.kds-item-thumb-fallback{
+  display:flex; align-items:center; justify-content:center;
+  background: var(--brand-light); color: var(--brand); font-size:1rem;
+}
+.kds-item-name{
+  flex:1 1 auto; min-width:0; font-weight:600; font-size:.85rem;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.kds-item-note{ font-size:.8em; color:#888; font-weight:400; }
+.kds-item-qty{ flex:0 0 auto; font-weight:700; font-size:.85rem; color: var(--brand); min-width:1.8em; text-align:center; }
+
+/* ---------- Receipt / K80 print ---------- */
+@media print{
+  body *{ visibility:hidden; }
+  #printArea, #printArea *{ visibility:visible; }
+  #printArea{ position:absolute; left:0; top:0; width:80mm; }
+  .no-print{ display:none !important; }
+}
+.receipt-k80{
+  width:80mm; margin:0 auto; font-family: 'Courier New', monospace; font-size:12px; color:#000;
+}
+.receipt-k80 hr{ border-top:1px dashed #000; }
+.receipt-k80 table{ width:100%; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 575.98px){
+  body{ font-size:16px; }
+  .table-card .card-body{ padding: .75rem; }
+  h1, .h1{ font-size:1.5rem; }
+  h4, .h4{ font-size:1.1rem; }
+}
+button.btn.btn-light.btn-sm.rounded-pill {
+  position: relative;
+}
+span#orderItemCountBadge {
+  position: absolute;
+  left: -18px;
+  top: -7px;
+  font-size: 16px;
+}

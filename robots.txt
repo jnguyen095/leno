@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /login
+Disallow: /orders
+Disallow: /tables
+Disallow: /bookings
+Disallow: /payroll
+Disallow: /users
+Disallow: /settings
+Disallow: /inventory
+Disallow: /stock
+Disallow: /categories
+Disallow: /products
+Disallow: /reports
+Disallow: /audit-logs
+Disallow: /court-time-slots
+Disallow: /trung-thu/admin
+Disallow: /menu-permissions
+Disallow: /api/
+
+Sitemap: https://Leno.com/sitemap.xml

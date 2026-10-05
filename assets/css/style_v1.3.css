@@ -132,6 +132,26 @@ body{
 .print-slip{ display:none; }
 @media print{ .print-slip#printArea{ display:block !important; } }
 .pos-actions .btn{ min-height:64px; }
+/* POS tab Thực đơn: lưới món (bấm = thêm ngay) + nút −/+ to hơn ở "Món đã gọi". */
+.pos-product-card{
+  display:flex; flex-direction:column; align-items:stretch; height:100%; padding:0; text-align:left;
+  background:#fff; border:1px solid #e5e5e5; border-radius:.75rem; overflow:hidden; transition:transform .08s ease, box-shadow .15s ease;
+}
+.pos-product-card:hover{ box-shadow:0 2px 8px rgba(0,0,0,.12); }
+.pos-product-card:active{ transform:scale(.97); }
+.pos-product-img{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#f5f5f5; }
+.pos-product-img-empty{ display:flex; align-items:center; justify-content:center; color:#aaa; font-size:2rem; }
+.pos-product-name{ padding:.4rem .5rem 0; font-weight:600; font-size:.9rem; line-height:1.25; text-align: center; }
+.pos-product-price{ padding:.15rem .5rem .5rem; color: var(--brand); font-weight:600; font-size:.85rem; margin-top:auto; text-align: center; }
+.pos-product-added{ animation: pos-product-pulse .35s ease; }
+@keyframes pos-product-pulse{ 0%{ box-shadow:0 0 0 0 rgba(13,110,253,.5); } 100%{ box-shadow:0 0 0 10px rgba(13,110,253,0); } }
+#orderedItemsList .qty-stepper button{ width:32px; height:32px; }
+.pos-item-amount{ min-width:76px; }
+@media (max-width: 575.98px){
+  #orderedItemsList .qty-stepper button{ width:28px; height:28px; }
+  .pos-item-amount{ min-width:0; }
+}
+
 /* Phiếu K80 in ngay trên trang (Thông báo / Tạm tính) — cùng định dạng với hóa đơn
    views/cashier/invoice.php; trung hòa style mặc định của Bootstrap (hr mờ, line-height 1.5). */
 .receipt-k80{

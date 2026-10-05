@@ -73,31 +73,18 @@ class Orders extends MY_Controller
             show_404();
         }
 
-        $is_active = in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE);
-        if ($is_active)
+        $panel = $this->_panel_data($order);
+        if ($panel['is_active'])
         {
             $this->session->set_userdata('pos_order_id', (int) $id);
         }
 
-        $items = $this->Order_item_model->get_by_order($id);
-        $pending_count = 0;
-        foreach ($items as $it)
-        {
-            $target = $it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0;
-            if ($target !== (int) $it['notified_qty']) $pending_count++;
-        }
-
-        $data = array(
-            'page_title'            => ($order['table_name'] ?: 'Mang đi').' — '.$order['order_no'],
+        $data = array_merge($panel, array(
+            'page_title'            => $panel['table_label'].' — '.$order['order_no'],
             'current_user'          => $this->current_user,
-            'order'                 => $order,
-            'is_active'             => $is_active,
-            'items'                 => $items,
-            'pending_count'         => $pending_count,
-            'products_by_category'  => $is_active ? $this->Product_model->get_active_grouped_by_category() : array(),
-            'tickets'               => $this->Kitchen_ticket_model->tickets_with_items_for_order($id),
+            'products_by_category'  => $panel['is_active'] ? $this->Product_model->get_active_grouped_by_category() : array(),
             'kitchen_slip'          => $this->session->flashdata('kitchen_slip'),
-        );
+        ));
         $data = array_merge($data, $this->pos_tabs_data('menu'));
 
         $this->load->view('layout/header', $data);
@@ -112,11 +99,13 @@ class Orders extends MY_Controller
         json_response(array('success' => TRUE, 'tickets' => $tickets));
     }
 
-    /** Thêm món đã chọn vào đơn — CHƯA báo bếp (chờ bấm "Thông báo"). */
+    /**
+     * Thêm món vào đơn — CHƯA báo bếp (chờ bấm "Thông báo"). Bấm vào món ở thực đơn gửi
+     * AJAX (product_id[]=X, qty[]=1); bấm lại cùng món thì cộng dồn số lượng.
+     */
     public function add_item($id)
     {
-        $order = $this->_active_order_or_redirect($id);
-        if ( ! $order) return;
+        if ( ! $this->_active_order_or_respond($id)) return;
 
         $added = $this->_add_posted_items($id);
         if ($added)
@@ -124,7 +113,7 @@ class Orders extends MY_Controller
             $this->Order_model->recalc_totals($id);
             $this->audit('order', 'ADD_ITEM', NULL, array('order_id' => $id, 'items' => $added));
         }
-        redirect('me/orders/'.$id);
+        $this->_respond($id);
     }
 
     /**
@@ -179,17 +168,25 @@ class Orders extends MY_Controller
         redirect('me/orders/'.$id);
     }
 
+    /** Nút −/+ ở "Món đã gọi". Giảm về 0 = hủy món. */
     public function update_item($order_id, $item_id)
     {
         $item = $this->_item_of_active_order($order_id, $item_id);
         if ($item)
         {
-            $qty = max(1, (int) $this->input->post('qty'));
-            $this->Order_item_model->update_qty($item_id, $qty);
+            $qty = (int) $this->input->post('qty');
+            if ($qty < 1)
+            {
+                $this->_remove_item($item);
+            }
+            else
+            {
+                $this->Order_item_model->update_qty($item_id, $qty);
+                $this->audit('order_item', 'UPDATE_QTY', NULL, array('item_id' => $item_id, 'qty' => $qty));
+            }
             $this->Order_model->recalc_totals($order_id);
-            $this->audit('order_item', 'UPDATE_QTY', NULL, array('item_id' => $item_id, 'qty' => $qty));
         }
-        redirect('me/orders/'.$order_id);
+        $this->_respond($order_id);
     }
 
     public function cancel_item($order_id, $item_id)
@@ -197,21 +194,116 @@ class Orders extends MY_Controller
         $item = $this->_item_of_active_order($order_id, $item_id);
         if ($item)
         {
-            // Bếp chưa biết món này -> xoá hẳn khỏi đơn. Đã báo bếp -> giữ dòng ở trạng thái
-            // CANCELLED (ẩn khỏi danh sách) để lần "Thông báo" sau in mục HỦY cho bếp.
-            if ((int) $item['notified_qty'] === 0)
+            $this->_remove_item($item);
+            $this->Order_model->recalc_totals($order_id);
+        }
+        $this->_respond($order_id);
+    }
+
+    /**
+     * Bếp chưa biết món này -> xoá hẳn khỏi đơn. Đã báo bếp -> giữ dòng ở trạng thái
+     * CANCELLED (ẩn khỏi danh sách) để lần "Thông báo" sau in mục HỦY cho bếp.
+     */
+    private function _remove_item($item)
+    {
+        if ((int) $item['notified_qty'] === 0)
+        {
+            $this->Order_item_model->delete($item['id']);
+            $this->audit('order_item', 'DELETE_ITEM', $item, NULL);
+        }
+        else
+        {
+            $this->Order_item_model->cancel($item['id']);
+            $this->audit('order_item', 'CANCEL_ITEM', NULL, array('item_id' => $item['id']));
+        }
+    }
+
+    /** Dữ liệu dùng chung cho trang đơn và các phản hồi AJAX (khối "Món đã gọi" + phiếu tạm tính). */
+    private function _panel_data($order)
+    {
+        $is_active = in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE);
+        $items = $this->Order_item_model->get_by_order($order['id']);
+        $active_items = array_values(array_filter($items, function ($it) { return $it['status'] === 'ACTIVE'; }));
+
+        $pending_count = 0;
+        foreach ($items as $it)
+        {
+            $target = $it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0;
+            if ($target !== (int) $it['notified_qty']) $pending_count++;
+        }
+
+        // Trạng thái pha chế theo sản phẩm (NEW > PREPARING > COMPLETED) để tô viền ảnh món.
+        $tickets = $this->Kitchen_ticket_model->tickets_with_items_for_order($order['id']);
+        $kitchen_status_by_product = array();
+        if ($is_active)
+        {
+            $rank = array('NEW' => 3, 'PREPARING' => 2, 'COMPLETED' => 1);
+            foreach ($tickets as $t)
             {
-                $this->Order_item_model->delete($item_id);
-                $this->audit('order_item', 'DELETE_ITEM', $item, NULL);
+                foreach ($t['items'] as $ti)
+                {
+                    $pid = $ti['product_id'];
+                    if ( ! isset($kitchen_status_by_product[$pid]) || $rank[$ti['status']] > $rank[$kitchen_status_by_product[$pid]])
+                    {
+                        $kitchen_status_by_product[$pid] = $ti['status'];
+                    }
+                }
+            }
+        }
+
+        return array(
+            'order'                     => $order,
+            'is_active'                 => $is_active,
+            'table_label'               => $order['table_name'] ?: 'Mang đi',
+            'items'                     => $items,
+            'active_items'              => $active_items,
+            // Đơn đang phục vụ ẩn món đã hủy; đơn đã đóng hiện đủ để xem lại lịch sử.
+            'visible_items'             => $is_active ? $active_items : $items,
+            'pending_count'             => $pending_count,
+            'tickets'                   => $tickets,
+            'kitchen_status_by_product' => $kitchen_status_by_product,
+            'kitchen_poll_active'       => $tickets && $is_active,
+        );
+    }
+
+    /** AJAX: trả khối "Món đã gọi" + phiếu tạm tính đã render lại; không phải AJAX: quay lại trang đơn. */
+    private function _respond($order_id, $error = NULL)
+    {
+        if ( ! $this->input->is_ajax_request())
+        {
+            if ($error) $this->session->set_flashdata('error', $error);
+            redirect('me/orders/'.$order_id);
+            return;
+        }
+
+        $panel = $this->_panel_data($this->Order_model->get_detail($order_id));
+        json_response(array(
+            'success'       => $error === NULL,
+            'message'       => $error,
+            'panel_html'    => $this->load->view('orders/_order_panel', $panel, TRUE),
+            'slip_html'     => $this->load->view('orders/_provisional_slip', $panel, TRUE),
+            'total'         => (float) $panel['order']['total_amount'],
+            'total_text'    => money_format_vnd($panel['order']['total_amount']),
+            'pending_count' => $panel['pending_count'],
+        ));
+    }
+
+    private function _active_order_or_respond($id)
+    {
+        $order = $this->Order_model->get_detail($id);
+        if ( ! $order || ! in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE))
+        {
+            if ($this->input->is_ajax_request())
+            {
+                json_response(array('success' => FALSE, 'message' => 'Đơn đã đóng, không thể thay đổi món.'), 409);
             }
             else
             {
-                $this->Order_item_model->cancel($item_id);
-                $this->audit('order_item', 'CANCEL_ITEM', NULL, array('item_id' => $item_id));
+                redirect('me/orders/'.$id);
             }
-            $this->Order_model->recalc_totals($order_id);
+            return NULL;
         }
-        redirect('me/orders/'.$order_id);
+        return $order;
     }
 
     /** "Thanh toán": chốt đơn ngay trên tab Thực đơn — ghi nhận thanh toán, đóng phiên bàn, bàn về Trống. */

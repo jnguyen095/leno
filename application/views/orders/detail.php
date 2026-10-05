@@ -1,26 +1,3 @@
-<?php
-  // Trạng thái pha chế theo từng sản phẩm (ưu tiên NEW > PREPARING > COMPLETED trong
-  // mọi ticket của đơn này) — dùng để tô viền ảnh món trong danh sách "Món đã gọi".
-  $kitchen_status_by_product = array();
-  $kitchen_poll_active = ($tickets && $is_active);
-  if ($kitchen_poll_active)
-  {
-      $rank = array('NEW' => 3, 'PREPARING' => 2, 'COMPLETED' => 1);
-      foreach ($tickets as $t)
-      {
-          foreach ($t['items'] as $ti)
-          {
-              $pid = $ti['product_id'];
-              if ( ! isset($kitchen_status_by_product[$pid]) || $rank[$ti['status']] > $rank[$kitchen_status_by_product[$pid]])
-              {
-                  $kitchen_status_by_product[$pid] = $ti['status'];
-              }
-          }
-      }
-  }
-  $table_label = $order['table_name'] ?: 'Mang đi';
-  $active_items = array_filter($items, function ($it) { return $it['status'] === 'ACTIVE'; });
-?>
 <div class="container-fluid py-3 py-md-4">
   <?php if ($is_active): ?>
     <?php $this->load->view('orders/_pos_tabs'); ?>
@@ -50,6 +27,7 @@
     <?php endif; ?>
   </div>
 
+  <div id="ajaxError" class="alert alert-danger py-2 small d-none"></div>
   <?php if ($this->session->flashdata('error')): ?>
     <div class="alert alert-danger py-2 small"><?php echo $this->session->flashdata('error'); ?></div>
   <?php endif; ?>
@@ -59,39 +37,16 @@
   <?php endif; ?>
 
   <div class="row g-3">
-    <?php
-      // Đơn đang phục vụ: món đã hủy không hiện trong danh sách (món đã báo bếp vẫn được giữ
-      // ngầm để lần "Thông báo" sau in mục HỦY). Đơn đã đóng: hiện đủ để xem lại lịch sử.
-      $visible_items = $is_active ? $active_items : $items;
-    ?>
     <div class="<?php echo $is_active ? 'col-lg-5 order-lg-2' : 'col-lg-7'; ?>">
-      <div class="card border-0 shadow-sm rounded-4 mb-3">
-        <div class="card-header bg-white fw-semibold d-flex justify-content-between">
-          <span>Món đã gọi</span>
-          <?php if ($is_active && $pending_count): ?><span class="badge bg-warning text-dark"><?php echo $pending_count; ?> món chưa báo bếp</span><?php endif; ?>
-        </div>
-        <div class="list-group list-group-flush" id="orderedItemsList">
-          <?php foreach ($visible_items as $it): ?>
-            <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active, 'kitchen_status' => isset($kitchen_status_by_product[$it['product_id']]) ? $kitchen_status_by_product[$it['product_id']] : NULL)); ?>
-          <?php endforeach; ?>
-          <?php if (empty($visible_items)): ?>
-            <div class="list-group-item text-muted text-center py-4">Chưa có món nào — chọn món ở thực đơn.</div>
-          <?php endif; ?>
-        </div>
-        <div class="card-footer bg-white">
-          <div class="d-flex justify-content-between small"><span>Tạm tính</span><span><?php echo money_format_vnd($order['subtotal']); ?></span></div>
-          <div class="d-flex justify-content-between small"><span>Giảm giá</span><span>-<?php echo money_format_vnd($order['discount_amount']); ?></span></div>
-          <div class="d-flex justify-content-between small"><span>VAT</span><span><?php echo money_format_vnd($order['vat_amount']); ?></span></div>
-          <div class="d-flex justify-content-between fw-bold fs-5 mt-1"><span>Tổng cộng</span><span class="text-brand"><?php echo money_format_vnd($order['total_amount']); ?></span></div>
-        </div>
+      <div id="orderPanel">
+        <?php $this->load->view('orders/_order_panel'); ?>
       </div>
 
       <?php if ($is_active): ?>
       <div class="row g-2 pos-actions">
         <div class="col-4">
           <?php echo form_open('me/orders/'.$order['id'].'/notify', array('id' => 'notifyForm')); ?>
-            <div id="notifyInputs"></div>
-            <button type="submit" class="btn btn-warning btn-lg w-100 h-100" onclick="return prepareNotify();">
+            <button type="submit" class="btn btn-warning btn-lg w-100 h-100" onclick="return waitIdle(this);">
               <i class="bi bi-megaphone"></i><div class="small">Thông báo</div>
             </button>
           <?php echo form_close(); ?>
@@ -117,7 +72,6 @@
     <div class="col-lg-7 order-lg-1">
       <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white">
-          <div class="fw-semibold mb-2">Thực đơn</div>
           <?php // Lọc theo danh mục ngay trên trang (không tải lại) — mặc định "Tất cả". ?>
           <div class="d-flex flex-wrap gap-2" id="categoryFilter">
             <button type="button" class="btn btn-sm btn-brand" data-cat="all" onclick="filterCategory('all', this)">Tất cả</button>
@@ -126,41 +80,28 @@
             <?php endforeach; ?>
           </div>
         </div>
-        <div class="card-body" style="max-height:65vh; overflow-y:auto;">
-          <?php echo form_open('me/orders/'.$order['id'].'/add-item', array('id' => 'addItemForm')); ?>
+        <div class="card-body" style="max-height:70vh; overflow-y:auto;">
           <?php if (empty($products_by_category)): ?>
             <div class="text-muted text-center py-4">Chưa có sản phẩm nào đang bán.</div>
           <?php endif; ?>
-          <?php $cat_index = 0; foreach ($products_by_category as $cat_name => $products): $cat_key = $cat_index++; ?>
-            <div class="fw-semibold text-brand mt-2 mb-1 menu-cat-heading" data-cat="<?php echo $cat_key; ?>"><?php echo htmlspecialchars($cat_name); ?></div>
-            <?php foreach ($products as $p): ?>
-            <div class="d-flex justify-content-between align-items-center border-bottom py-2 menu-product" data-cat="<?php echo $cat_key; ?>">
-              <div class="d-flex align-items-center gap-2" role="button" onclick="stepAddItemQty(<?php echo $p['id']; ?>,1)">
-                <?php if ($p['image']): ?>
-                  <img src="<?php echo base_url('assets/'.$p['image']); ?>" style="width:40px;height:40px;object-fit:cover;" class="rounded border flex-shrink-0">
-                <?php else: ?>
-                  <div class="d-flex align-items-center justify-content-center bg-light rounded border text-muted flex-shrink-0" style="width:40px;height:40px;"><i class="bi bi-cup-straw"></i></div>
-                <?php endif; ?>
-                <div>
-                  <div><?php echo htmlspecialchars($p['product_name']); ?></div>
-                  <div class="small text-muted"><?php echo money_format_vnd($p['price']); ?></div>
-                </div>
+          <?php // Bấm vào món = thêm ngay 1 phần vào "Món đã gọi"; bấm tiếp để tăng số lượng. ?>
+          <div class="row g-2" id="productGrid">
+            <?php $cat_index = 0; foreach ($products_by_category as $cat_name => $products): $cat_key = $cat_index++; ?>
+              <?php foreach ($products as $p): ?>
+              <div class="col-sx-1 col-sm-2 col-xl-2 menu-product" data-cat="<?php echo $cat_key; ?>">
+                <button type="button" class="pos-product-card w-100" onclick="addProduct(<?php echo $p['id']; ?>, this)">
+                  <?php if ($p['image']): ?>
+                    <img src="<?php echo base_url('assets/'.$p['image']); ?>" alt="" class="pos-product-img">
+                  <?php else: ?>
+                    <div class="pos-product-img pos-product-img-empty"><i class="bi bi-cup-straw"></i></div>
+                  <?php endif; ?>
+                  <div class="pos-product-name"><?php echo htmlspecialchars($p['product_name']); ?></div>
+                  <div class="pos-product-price"><?php echo money_format_vnd($p['price']); ?></div>
+                </button>
               </div>
-              <div class="qty-stepper">
-                <button type="button" onclick="stepAddItemQty(<?php echo $p['id']; ?>,-1)"><i class="bi bi-dash-lg"></i></button>
-                <span id="add-item-qty-<?php echo $p['id']; ?>">0</span>
-                <button type="button" onclick="stepAddItemQty(<?php echo $p['id']; ?>,1)"><i class="bi bi-plus-lg"></i></button>
-              </div>
-            </div>
+              <?php endforeach; ?>
             <?php endforeach; ?>
-          <?php endforeach; ?>
-          <div id="addItemInputs"></div>
-          <?php echo form_close(); ?>
-        </div>
-        <div class="card-footer bg-white">
-          <button type="submit" form="addItemForm" class="btn btn-outline-brand w-100" onclick="return fillCartInputs('addItemInputs', true);">
-            <i class="bi bi-plus-circle"></i> Thêm vào đơn <span id="cartCount" class="badge bg-brand d-none">0</span>
-          </button>
+          </div>
         </div>
       </div>
     </div>
@@ -179,10 +120,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <?php if ($pending_count): ?>
-          <div class="alert alert-warning py-2 small"><i class="bi bi-exclamation-triangle"></i> Còn <?php echo $pending_count; ?> món chưa báo bếp.</div>
-        <?php endif; ?>
-        <div class="d-flex justify-content-between fs-4 fw-bold mb-3"><span>Tổng cộng</span><span class="text-brand"><?php echo money_format_vnd($order['total_amount']); ?></span></div>
+        <div class="alert alert-warning py-2 small <?php echo $pending_count ? '' : 'd-none'; ?>" id="payPendingWarn">
+          <i class="bi bi-exclamation-triangle"></i> Còn <span id="payPendingCount"><?php echo $pending_count; ?></span> món chưa báo bếp.
+        </div>
+        <div class="d-flex justify-content-between fs-4 fw-bold mb-3"><span>Tổng cộng</span><span class="text-brand" id="payTotal"><?php echo money_format_vnd($order['total_amount']); ?></span></div>
         <div class="mb-3">
           <label class="form-label">Phương thức</label>
           <select name="payment_method" id="paymentMethod" class="form-select form-select-lg" onchange="onPayMethodChange()">
@@ -210,33 +151,7 @@
 </div>
 
 <!-- Phiếu in (ẩn trên màn hình, chỉ hiện khi in) -->
-<div class="print-slip receipt-k80" data-slip="provisional">
-  <div class="center bold big">Leno</div>
-  <div class="center">PHIẾU TẠM TÍNH</div>
-  <hr>
-  <div><?php echo empty($order['table_id']) ? 'Mang đi' : 'Bàn: '.htmlspecialchars($table_label); ?></div>
-  <div>Mã đơn: <?php echo htmlspecialchars($order['order_no']); ?></div>
-  <div>Thời gian: <span class="js-print-time"></span></div>
-  <hr>
-  <table>
-    <?php foreach ($active_items as $it): ?>
-    <tr><td colspan="2"><?php echo htmlspecialchars($it['product_name']); ?></td></tr>
-    <tr>
-      <td><?php echo $it['qty']; ?> x <?php echo number_format($it['price'], 0, ',', '.'); ?></td>
-      <td class="right"><?php echo number_format($it['amount'], 0, ',', '.'); ?></td>
-    </tr>
-    <?php endforeach; ?>
-  </table>
-  <hr>
-  <table>
-    <tr><td>Tạm tính</td><td class="right"><?php echo number_format($order['subtotal'], 0, ',', '.'); ?></td></tr>
-    <tr><td>Giảm giá</td><td class="right">-<?php echo number_format($order['discount_amount'], 0, ',', '.'); ?></td></tr>
-    <tr><td>VAT</td><td class="right"><?php echo number_format($order['vat_amount'], 0, ',', '.'); ?></td></tr>
-    <tr class="bold big"><td>TỔNG CỘNG</td><td class="right"><?php echo number_format($order['total_amount'], 0, ',', '.'); ?></td></tr>
-  </table>
-  <hr>
-  <div class="center">-- Phiếu tạm tính, chưa phải hóa đơn --</div>
-</div>
+<div id="provisionalSlipWrap"><?php $this->load->view('orders/_provisional_slip'); ?></div>
 
 <?php if ($kitchen_slip): ?>
 <div class="print-slip receipt-k80" data-slip="kitchen">
@@ -302,57 +217,83 @@ setInterval(refreshKitchenBorders, 5000);
 <?php endif; ?>
 
 <?php if ($is_active): ?>
-// ---- Lọc thực đơn theo danh mục (giữ nguyên số lượng đang chọn) ----
+// ---- Thêm/đổi số lượng/hủy món qua AJAX — server render lại khối "Món đã gọi" ----
+var ORDER_URL = '<?php echo base_url('me/orders/'.$order['id']); ?>';
+var CSRF_NAME = '<?php echo $this->security->get_csrf_token_name(); ?>';
+var CSRF_HASH = '<?php echo $this->security->get_csrf_hash(); ?>';
+var ORDER_TOTAL = <?php echo (float) $order['total_amount']; ?>;
+var pending = Promise.resolve();   // xếp hàng các request để bấm nhanh liên tiếp không bị lệch số lượng
+var inFlight = 0;
+
+function postOrder(path, params){
+  var body = new URLSearchParams(params || {});
+  body.append(CSRF_NAME, CSRF_HASH);
+  inFlight++;
+  pending = pending.then(function(){
+    return fetch(ORDER_URL + path + '.html', {
+      method: 'POST',
+      headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body
+    })
+    .then(function(r){ return r.json(); })
+    .then(applyPanel)
+    .catch(function(){ showAjaxError('Mất kết nối, vui lòng thử lại.'); })
+    .then(function(){ inFlight--; });
+  });
+  return pending;
+}
+
+function applyPanel(res){
+  if (res.panel_html !== undefined){
+    document.getElementById('orderPanel').innerHTML = res.panel_html;
+    document.getElementById('provisionalSlipWrap').innerHTML = res.slip_html;
+    ORDER_TOTAL = res.total;
+    document.getElementById('payTotal').textContent = res.total_text;
+    document.getElementById('receivedAmount').value = Math.round(res.total);
+    document.getElementById('payPendingCount').textContent = res.pending_count;
+    document.getElementById('payPendingWarn').classList.toggle('d-none', ! res.pending_count);
+  }
+  showAjaxError(res.success === false ? (res.message || 'Không thực hiện được.') : null);
+}
+
+function showAjaxError(msg){
+  var el = document.getElementById('ajaxError');
+  el.textContent = msg || '';
+  el.classList.toggle('d-none', ! msg);
+}
+
+function addProduct(pid, btn){
+  btn.classList.remove('pos-product-added'); void btn.offsetWidth; btn.classList.add('pos-product-added');
+  postOrder('/add-item', {'product_id[]': pid, 'qty[]': 1, 'note[]': ''});
+}
+
+function changeItemQty(itemId, qty){
+  postOrder('/update-item/' + itemId, {qty: qty});
+}
+
+function removeItem(itemId){
+  if ( ! confirm('Hủy món này?')) return;
+  postOrder('/cancel-item/' + itemId);
+}
+
+// Chờ các thao tác thêm/đổi món xong rồi mới chạy (Thông báo / In tạm tính / Thanh toán).
+function whenIdle(fn){ pending.then(fn); }
+
+function waitIdle(btn){
+  if (inFlight === 0) return true;
+  whenIdle(function(){ btn.form.submit(); });
+  return false;
+}
+
+// ---- Lọc thực đơn theo danh mục ----
 function filterCategory(cat, btn){
-  document.querySelectorAll('.menu-product, .menu-cat-heading').forEach(function(el){
+  document.querySelectorAll('.menu-product').forEach(function(el){
     el.classList.toggle('d-none', cat !== 'all' && el.dataset.cat !== cat);
   });
   document.querySelectorAll('#categoryFilter button').forEach(function(b){
     b.classList.toggle('btn-brand', b === btn);
     b.classList.toggle('btn-outline-brand', b !== btn);
   });
-}
-
-// ---- Giỏ chọn món (chưa thêm vào đơn) ----
-var addItemCart = {};
-
-function cartCount(){
-  return Object.keys(addItemCart).reduce(function(s, k){ return s + addItemCart[k]; }, 0);
-}
-
-function stepAddItemQty(pid, delta){
-  var cur = Math.max(0, (addItemCart[pid] || 0) + delta);
-  if (cur === 0) delete addItemCart[pid]; else addItemCart[pid] = cur;
-  document.getElementById('add-item-qty-'+pid).textContent = cur;
-  var badge = document.getElementById('cartCount');
-  var n = cartCount();
-  badge.textContent = n;
-  badge.classList.toggle('d-none', n === 0);
-}
-
-function fillCartInputs(containerId, required){
-  var container = document.getElementById(containerId);
-  container.innerHTML = '';
-  Object.keys(addItemCart).forEach(function(pid){
-    container.innerHTML += '<input type="hidden" name="product_id[]" value="'+pid+'">'
-      + '<input type="hidden" name="qty[]" value="'+addItemCart[pid]+'">'
-      + '<input type="hidden" name="note[]" value="">';
-  });
-  if (required && cartCount() === 0){ alert('Vui lòng chọn ít nhất 1 món.'); return false; }
-  return true;
-}
-
-// "Thông báo" gửi kèm các món đang chọn (thêm vào đơn rồi báo bếp luôn).
-function prepareNotify(){
-  return fillCartInputs('notifyInputs', false);
-}
-
-function blockIfCartPending(){
-  if (cartCount() > 0){
-    alert('Còn món đang chọn chưa thêm vào đơn — bấm "Thêm vào đơn" hoặc "Thông báo" trước.');
-    return true;
-  }
-  return false;
 }
 
 // ---- In phiếu ngay trên trang (khổ K80) ----
@@ -369,17 +310,15 @@ function printSlip(name){
 }
 
 function printProvisional(){
-  if (blockIfCartPending()) return;
-  printSlip('provisional');
+  whenIdle(function(){ printSlip('provisional'); });
 }
 
 // ---- Thanh toán ----
-var ORDER_TOTAL = <?php echo (float) $order['total_amount']; ?>;
-
 function openPayModal(){
-  if (blockIfCartPending()) return;
-  onPayMethodChange();
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('payModal')).show();
+  whenIdle(function(){
+    onPayMethodChange();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('payModal')).show();
+  });
 }
 
 function onPayMethodChange(){

@@ -11,11 +11,6 @@
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h4 class="fw-bold mb-0">Sơ đồ bàn</h4>
     <div class="d-flex align-items-center gap-2">
-      <div class="small">
-        <span class="badge bg-success">Trống</span>
-        <span class="badge bg-primary">Đang phục vụ</span>
-        <span class="badge bg-warning text-dark">Chờ TT</span>
-      </div>
       <?php if ($current_user['role'] === 'ADMIN'): ?>
       <a href="<?php echo site_url('me/tables/manage'); ?>" class="btn btn-sm btn-outline-dark"><i class="bi bi-sliders"></i> Quản lý bàn</a>
       <?php endif; ?>

@@ -58,6 +58,15 @@ class Tables extends MY_Controller
             return;
         }
 
+        // Bàn "Trống" nhưng còn đơn rỗng đang mở (đã chọn bàn mà chưa thêm món) -> mở lại đơn đó.
+        $session = $this->Table_session_model->get_open_by_table($id);
+        $existing = $session ? $this->Order_model->get_active_by_table_session($session['id']) : NULL;
+        if ($existing)
+        {
+            redirect('me/orders/'.$existing['id']);
+            return;
+        }
+
         $result = $this->Order_model->open_table_with_order($id, $this->current_user['id']);
         $order_id = $result['order_id'];
 
@@ -95,6 +104,16 @@ class Tables extends MY_Controller
 
             if ($target && $target['status'] === 'AVAILABLE' && $session)
             {
+                // Bàn đích "Trống" có thể còn phiên + đơn rỗng (đã chọn bàn mà chưa thêm món) -> bỏ đi
+                // trước khi chuyển, để mỗi bàn chỉ có một phiên đang mở.
+                $target_session = $this->Table_session_model->get_open_by_table($target_id);
+                if ($target_session)
+                {
+                    $target_order = $this->Order_model->get_active_by_table_session($target_session['id']);
+                    if ($target_order) $this->Order_model->cancel($target_order['id']);
+                    $this->Table_session_model->close($target_session['id']);
+                }
+
                 $this->db->where('id', $session['id'])->update('table_sessions', array('table_id' => $target_id));
                 $order = $this->Order_model->get_active_by_table_session($session['id']);
                 if ($order)
@@ -102,7 +121,7 @@ class Tables extends MY_Controller
                     $this->db->where('order_session_id', $order['id'])->update('kitchen_tickets', array('table_id' => $target_id));
                 }
                 $this->Table_model->set_status($id, 'AVAILABLE');
-                $this->Table_model->set_status($target_id, $table['status']);
+                if ($order) $this->Order_model->sync_table_status($order['id']);
 
                 $this->audit('table', 'TRANSFER', array('from' => $id), array('to' => $target_id));
             }
@@ -145,6 +164,7 @@ class Tables extends MY_Controller
                     $this->Order_model->recalc_totals($target_order['id']);
                     $this->Table_session_model->close($session['id']);
                     $this->Table_model->set_status($id, 'AVAILABLE');
+                    $this->Order_model->sync_table_status($target_order['id']);
 
                     $this->audit('table', 'MERGE', array('from' => $id), array('into' => $target_table_id));
 

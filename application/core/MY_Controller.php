@@ -105,6 +105,11 @@ class MY_Controller extends CI_Controller
             $pos_order_id = 0;
         }
 
+        // Đơn chưa có món (mới chọn bàn) không hiện thành chip, trừ đơn đang xem.
+        $orders = array_values(array_filter($orders, function ($o) use ($pos_order_id) {
+            return (int) $o['item_count'] > 0 || (int) $o['id'] === $pos_order_id;
+        }));
+
         return array(
             'pos_tab'      => $active_tab,
             'pos_order_id' => $pos_order_id,

@@ -123,6 +123,7 @@ class Orders extends MY_Controller
         if ($added)
         {
             $this->Order_model->recalc_totals($id);
+            $this->Order_model->sync_table_status($id);
             $this->audit('order', 'ADD_ITEM', NULL, array('order_id' => $id, 'items' => $added));
         }
 
@@ -237,9 +238,15 @@ class Orders extends MY_Controller
         );
     }
 
-    /** AJAX: trả khối "Món đã gọi" + phiếu tạm tính đã render lại; không phải AJAX: quay lại trang đơn. */
+    /**
+     * Gọi sau mỗi lần thêm/đổi số lượng/hủy món: cập nhật trạng thái bàn theo món (có món ->
+     * "Đang phục vụ", hết món -> "Trống"), rồi AJAX trả khối "Món đã gọi" + phiếu tạm tính
+     * đã render lại; không phải AJAX thì quay lại trang đơn.
+     */
     private function _respond($order_id, $error = NULL)
     {
+        $this->Order_model->sync_table_status($order_id);
+
         if ( ! $this->input->is_ajax_request())
         {
             if ($error) $this->session->set_flashdata('error', $error);

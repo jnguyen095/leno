@@ -25,8 +25,9 @@ class Order_model extends CI_Model
     /**
      * Shared "open a table" orchestration — used by staff opening a table
      * from the table map.
-     * Closes any stray OPEN sessions first, opens a fresh one, creates its
-     * order, and flips the table to OPEN. Returns ['session_id'=>, 'order_id'=>].
+     * Closes any stray OPEN sessions first, opens a fresh one and creates its
+     * order. The table itself stays AVAILABLE ("Trống") until the first item is
+     * added — see sync_table_status(). Returns ['session_id'=>, 'order_id'=>].
      */
     public function open_table_with_order($table_id, $opened_by = NULL)
     {
@@ -36,7 +37,6 @@ class Order_model extends CI_Model
         $session_id = $this->Table_session_model->open($table_id, $opened_by);
         $table = $this->Table_model->get_by_id($table_id);
         $order_id = $this->create_for_table_session($session_id, ( ! empty($table['is_takeaway'])) ? 'TAKEAWAY' : 'DINE_IN');
-        $this->Table_model->set_status($table_id, 'OPEN');
 
         return array('session_id' => $session_id, 'order_id' => $order_id);
     }
@@ -105,9 +105,29 @@ class Order_model extends CI_Model
     }
 
     /** Đơn đang phục vụ (OPEN/WAIT_PAYMENT) kèm tên bàn — dùng cho thanh chuyển nhanh giữa các khách ở tab Thực đơn. */
+    /**
+     * Trạng thái bàn theo món trong đơn: có món -> "Đang phục vụ" (OPEN, hoặc giữ WAIT_PAYMENT),
+     * không còn món nào -> "Trống" (AVAILABLE). Phiên/đơn rỗng vẫn mở để lần sau chọn lại bàn
+     * dùng tiếp (Tables::open), không tạo đơn mới.
+     */
+    public function sync_table_status($order_id)
+    {
+        $order = $this->get_detail($order_id);
+        if ( ! $order || ! $order['table_id'] || ! in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE))
+        {
+            return;
+        }
+        $has_items = $this->db->where('order_session_id', $order_id)->where('status', 'ACTIVE')->count_all_results('order_items') > 0;
+        $status = $has_items ? ($order['status'] === 'WAIT_PAYMENT' ? 'WAIT_PAYMENT' : 'OPEN') : 'AVAILABLE';
+
+        $this->load->model('Table_model');
+        $this->Table_model->set_status($order['table_id'], $status);
+    }
+
     public function get_active_orders()
     {
-        return $this->db->select('order_sessions.id, order_sessions.order_no, order_sessions.total_amount, order_sessions.status, table_sessions.table_id, cafe_tables.table_name, cafe_tables.is_takeaway')
+        return $this->db->select('order_sessions.id, order_sessions.order_no, order_sessions.total_amount, order_sessions.status, table_sessions.table_id, cafe_tables.table_name, cafe_tables.is_takeaway,
+                (SELECT COUNT(*) FROM order_items oi WHERE oi.order_session_id = order_sessions.id AND oi.status = \'ACTIVE\') AS item_count', FALSE)
             ->from($this->table)
             ->join('table_sessions', 'table_sessions.id = order_sessions.table_session_id', 'left')
             ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left')

@@ -55,6 +55,7 @@ $route['me/orders/(:num)/cancel-item/(:num)'] = 'orders/cancel_item/$1/$2';
 $route['me/orders/(:num)/notify'] = 'orders/notify/$1';
 $route['me/orders/(:num)/pay'] = 'orders/pay/$1';
 $route['me/orders/(:num)/invoice'] = 'orders/invoice/$1';
+$route['me/orders/(:num)/delete'] = 'orders/delete/$1';
 
 
 

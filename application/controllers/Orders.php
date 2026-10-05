@@ -334,6 +334,48 @@ class Orders extends MY_Controller
         redirect('me/tables');
     }
 
+    /** ADMIN xoá hẳn một đơn (kể cả đã thanh toán) từ danh sách Đơn hàng. Chỉ nhận POST. */
+    public function delete($id)
+    {
+        if ($this->current_user['role'] !== 'ADMIN')
+        {
+            $this->output->set_status_header(403);
+            echo $this->load->view('errors/forbidden', array('current_user' => $this->current_user), TRUE);
+            exit;
+        }
+        if ($this->input->method() !== 'post')
+        {
+            show_404();
+        }
+
+        $order = $this->Order_model->get_detail($id);
+        if ($order)
+        {
+            $snapshot = array(
+                'order'   => $order,
+                'items'   => $this->Order_item_model->get_by_order($id),
+                'payment' => $this->db->where('order_session_id', $id)->get('payments')->row_array(),
+            );
+            if ($this->Order_model->delete_order($id))
+            {
+                if ((int) $this->session->userdata('pos_order_id') === (int) $id)
+                {
+                    $this->session->unset_userdata('pos_order_id');
+                }
+                $this->audit('order', 'DELETE_ORDER', $snapshot, NULL);
+                $this->session->set_flashdata('success', 'Đã xoá đơn '.$order['order_no'].'.');
+            }
+            else
+            {
+                $this->session->set_flashdata('error', 'Không xoá được đơn '.$order['order_no'].'.');
+            }
+        }
+
+        // Quay lại đúng trang/bộ lọc đang xem (chỉ nhận query string, không nhận URL ngoài).
+        $back = preg_replace('/[^A-Za-z0-9_=&%.\-]/', '', (string) $this->input->post('back_qs'));
+        redirect('me/orders'.($back !== '' ? '?'.$back : ''));
+    }
+
     /** In hóa đơn sau thanh toán (dùng lại mẫu K80 của thu ngân). */
     public function invoice($id)
     {

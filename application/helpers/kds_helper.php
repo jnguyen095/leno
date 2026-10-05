@@ -49,6 +49,20 @@ if ( ! function_exists('table_status_badge'))
     }
 }
 
+if ( ! function_exists('payment_method_label'))
+{
+    function payment_method_label($method)
+    {
+        $map = array(
+            'CASH'     => 'Tiền mặt',
+            'TRANSFER' => 'Chuyển khoản',
+            'CARD'     => 'Thẻ',
+            'QR'       => 'QR Pay',
+        );
+        return isset($map[$method]) ? $map[$method] : $method;
+    }
+}
+
 if ( ! function_exists('role_label'))
 {
     function role_label($role)

@@ -3,6 +3,13 @@
     <h4 class="fw-bold mb-0">Danh sách đơn hàng</h4>
   </div>
 
+  <?php if ($this->session->flashdata('success')): ?>
+    <div class="alert alert-success py-2 small"><?php echo htmlspecialchars($this->session->flashdata('success')); ?></div>
+  <?php endif; ?>
+  <?php if ($this->session->flashdata('error')): ?>
+    <div class="alert alert-danger py-2 small"><?php echo htmlspecialchars($this->session->flashdata('error')); ?></div>
+  <?php endif; ?>
+
   <?php
     // Giữ khoảng ngày + bàn đang xem khi chuyển tab trạng thái/trang, và ngược lại — các bộ lọc độc lập nhau.
     // Luôn truyền date_from/date_to cả khi rỗng (chế độ "xem tất cả ngày"), nếu không controller sẽ
@@ -54,7 +61,7 @@
   <div class="table-responsive">
     <table class="table table-hover align-middle bg-white rounded shadow-sm">
       <thead class="table-light">
-        <tr><th>Mã đơn</th><th>Bàn</th><th class="text-end">Tổng tiền</th><th>Trạng thái</th><th>Thời gian</th><th></th></tr>
+        <tr><th>Mã đơn</th><th>Bàn</th><th class="text-end">Tổng tiền</th><th>Thanh toán</th><th>Người tạo</th><th>Trạng thái</th><th>Thời gian</th><th></th></tr>
       </thead>
       <tbody>
       <?php foreach ($orders as $o): ?>
@@ -62,13 +69,23 @@
           <td><?php echo htmlspecialchars($o['order_no']); ?></td>
           <td><?php echo $o['table_name'] ? htmlspecialchars($o['table_name']) : '<span class="badge bg-secondary"><i class="bi bi-bag-check"></i> Mang đi</span>'; ?></td>
           <td class="text-end"><?php echo money_format_vnd($o['total_amount']); ?></td>
+          <td><?php echo $o['payment_method'] ? htmlspecialchars(payment_method_label($o['payment_method'])) : '<span class="text-muted">—</span>'; ?></td>
+          <td><?php echo $o['created_by_name'] ? htmlspecialchars($o['created_by_name']) : '<span class="text-muted">—</span>'; ?></td>
           <td><span class="badge bg-<?php echo order_status_badge($o['status']); ?>"><?php echo $o['status']; ?></span></td>
           <td class="small text-muted"><?php echo date('d/m H:i', strtotime($o['created_at'])); ?></td>
-          <td><a href="<?php echo site_url('me/orders/'.$o['id']); ?>" class="btn btn-sm btn-outline-primary">Xem</a></td>
+          <td class="text-nowrap">
+            <a href="<?php echo site_url('me/orders/'.$o['id']); ?>" class="btn btn-sm btn-outline-primary">Xem</a>
+            <?php if ($current_user['role'] === 'ADMIN'): ?>
+              <?php echo form_open('me/orders/'.$o['id'].'/delete', array('class' => 'd-inline', 'onsubmit' => "return confirm('Xoá hẳn đơn ".htmlspecialchars($o['order_no'], ENT_QUOTES)."? Món, phiếu bếp và thanh toán của đơn cũng bị xoá, không khôi phục được.');")); ?>
+                <input type="hidden" name="back_qs" value="<?php echo htmlspecialchars((string) $this->input->server('QUERY_STRING')); ?>">
+                <button class="btn btn-sm btn-outline-danger" title="Xoá đơn"><i class="bi bi-trash"></i></button>
+              <?php echo form_close(); ?>
+            <?php endif; ?>
+          </td>
         </tr>
       <?php endforeach; ?>
       <?php if (empty($orders)): ?>
-        <tr><td colspan="6" class="text-center text-muted py-4">Không có đơn hàng nào.</td></tr>
+        <tr><td colspan="8" class="text-center text-muted py-4">Không có đơn hàng nào.</td></tr>
       <?php endif; ?>
       </tbody>
     </table>

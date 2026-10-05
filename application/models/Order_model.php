@@ -5,13 +5,14 @@ class Order_model extends CI_Model
 {
     protected $table = 'order_sessions';
 
-    public function create_for_table_session($table_session_id, $order_type = 'DINE_IN')
+    public function create_for_table_session($table_session_id, $order_type = 'DINE_IN', $created_by = NULL)
     {
         $data = array(
             'order_no'          => gen_no('ORD'),
             'order_type'        => $order_type,
             'table_session_id'  => $table_session_id,
             'status'            => 'OPEN',
+            'created_by'        => $created_by,
             'subtotal'          => 0,
             'discount_amount'   => 0,
             'vat_amount'        => 0,
@@ -36,7 +37,7 @@ class Order_model extends CI_Model
         $this->Table_session_model->close_stray_open_sessions($table_id);
         $session_id = $this->Table_session_model->open($table_id, $opened_by);
         $table = $this->Table_model->get_by_id($table_id);
-        $order_id = $this->create_for_table_session($session_id, ( ! empty($table['is_takeaway'])) ? 'TAKEAWAY' : 'DINE_IN');
+        $order_id = $this->create_for_table_session($session_id, ( ! empty($table['is_takeaway'])) ? 'TAKEAWAY' : 'DINE_IN', $opened_by);
 
         return array('session_id' => $session_id, 'order_id' => $order_id);
     }
@@ -138,6 +139,37 @@ class Order_model extends CI_Model
             ->get()->result_array();
     }
 
+    /**
+     * Xoá hẳn một đơn cùng món, phiếu bếp và thanh toán của nó. Đơn còn đang phục vụ thì
+     * đóng phiên bàn và trả bàn về "Trống". Trả về TRUE nếu đã xoá.
+     */
+    public function delete_order($id)
+    {
+        $order = $this->get_detail($id);
+        if ( ! $order) return FALSE;
+
+        $this->db->trans_start();
+        $ticket_ids = array_column($this->db->select('id')->where('order_session_id', $id)->get('kitchen_tickets')->result_array(), 'id');
+        if ($ticket_ids)
+        {
+            $this->db->where_in('ticket_id', $ticket_ids)->delete('kitchen_ticket_items');
+            $this->db->where_in('id', $ticket_ids)->delete('kitchen_tickets');
+        }
+        $this->db->where('order_session_id', $id)->delete('payments');
+        $this->db->where('order_session_id', $id)->delete('order_items');
+        $this->db->where('id', $id)->delete($this->table);
+
+        if ($order['table_session_id'] && in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE))
+        {
+            $this->load->model(array('Table_session_model', 'Table_model'));
+            $this->Table_session_model->close($order['table_session_id']);
+            $this->Table_model->set_status($order['table_id'], 'AVAILABLE');
+        }
+        $this->db->trans_complete();
+
+        return $this->db->trans_status();
+    }
+
     public function get_detail($id)
     {
         return $this->db->select('order_sessions.*, table_sessions.table_id, cafe_tables.table_name, cafe_tables.table_code')
@@ -150,10 +182,12 @@ class Order_model extends CI_Model
 
     public function get_list($filters = array(), $limit = NULL, $offset = 0)
     {
-        $this->db->select('order_sessions.*, cafe_tables.table_name, cafe_tables.table_code')
+        $this->db->select('order_sessions.*, cafe_tables.table_name, cafe_tables.table_code, creator.fullname AS created_by_name,
+                (SELECT p.payment_method FROM payments p WHERE p.order_session_id = order_sessions.id ORDER BY p.id DESC LIMIT 1) AS payment_method', FALSE)
             ->from($this->table)
             ->join('table_sessions', 'table_sessions.id = order_sessions.table_session_id', 'left')
-            ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left');
+            ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left')
+            ->join('users creator', 'creator.id = order_sessions.created_by', 'left');
 
         $this->_apply_list_filters($filters);
         $this->db->order_by('order_sessions.id', 'DESC');

@@ -101,12 +101,38 @@ body{
 .pos-product-card:hover{ box-shadow:0 2px 8px rgba(0,0,0,.12); }
 .pos-product-card:active{ transform:scale(.97); }
 .pos-product-img{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#f5f5f5; }
-.pos-product-img-empty{ display:flex; align-items:center; justify-content:center; color:#aaa; font-size:2rem; }
-.pos-product-name{ padding:.4rem .5rem 0; font-weight:600; font-size:.9rem; line-height:1.25; text-align: center; }
-.pos-product-price{ padding:.15rem .5rem .5rem; color: var(--brand); font-weight:600; font-size:.85rem; margin-top:auto; text-align: center; }
+.pos-product-img-empty{ display:flex; align-items:center; justify-content:center; color:#aaa; font-size:1.6rem; }
+.pos-product-media{ position:relative; }
+.pos-product-name{ padding:.3rem .35rem .4rem; font-weight:600; font-size:.8rem; line-height:1.2; text-align:center; }
+/* Giá: nhãn nổi giữa đáy ảnh. */
+.pos-product-price{
+  position:absolute; left:50%; bottom:6px; transform:translateX(-50%);
+  padding:.1rem .5rem; border-radius:999px; background:rgba(255,255,255,.92); box-shadow:0 1px 3px rgba(0,0,0,.2);
+  color: var(--brand); font-weight:700; font-size:.75rem; line-height:1.4; white-space:nowrap;
+}
 .pos-product-added{ animation: pos-product-pulse .35s ease; }
 @keyframes pos-product-pulse{ 0%{ box-shadow:0 0 0 0 rgba(13,110,253,.5); } 100%{ box-shadow:0 0 0 10px rgba(13,110,253,0); } }
 #orderedItemsList .qty-stepper button{ width:32px; height:32px; }
+.qty-stepper button:disabled{ opacity:.35; cursor:not-allowed; }
+/* Dãy chip đơn đang phục vụ (tab Thực đơn): 1 hàng, trượt ngang bằng Swiper + nút ‹ ›. */
+.pos-order-chips-bar{ display:flex; align-items:center; gap:.5rem; }
+.pos-order-chips{
+  flex:1 1 auto; min-width:0; padding-bottom:12px;
+  --swiper-scrollbar-bottom:0; --swiper-scrollbar-size:4px; --swiper-scrollbar-sides-offset:0;
+  --swiper-scrollbar-bg-color:rgba(0,0,0,.06); --swiper-scrollbar-drag-bg-color: var(--brand);
+}
+.pos-order-chips .swiper-slide{ width:auto; }
+.pos-order-chips .btn{ white-space:nowrap; }
+.pos-order-chips-bar:not(.is-ready) .swiper-wrapper{ overflow-x:auto; gap:8px; }
+.pos-chips-nav{
+  flex:0 0 auto; width:32px; height:32px; margin-bottom:12px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:#fff; border:1px solid #dee2e6; color:#333; box-shadow:0 1px 3px rgba(0,0,0,.1);
+  transition:opacity .15s ease, background-color .15s ease;
+}
+.pos-chips-nav:hover{ background: var(--brand); border-color: var(--brand); color:#fff; }
+.pos-chips-nav.swiper-button-disabled{ opacity:.3; pointer-events:none; }
+.pos-chips-nav.swiper-button-lock, .pos-order-chips-bar:not(.is-ready) .pos-chips-nav{ display:none; }
 .pos-item-amount{ min-width:76px; }
 /* Toàn màn hình POS: khung (iframe) phủ kín trang đang fullscreen; trang bên trong khung có class
    pos-focus (ẩn thanh menu, thu gọn lề). Xem views/orders/_pos_tabs.php. */

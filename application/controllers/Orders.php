@@ -162,22 +162,15 @@ class Orders extends MY_Controller
         redirect('me/orders/'.$id);
     }
 
-    /** Nút −/+ ở "Món đã gọi". Giảm về 0 = hủy món. */
+    /** Nút −/+ ở "Món đã gọi". Số lượng tối thiểu 1 — bỏ món phải bấm "Hủy món" (cancel_item). */
     public function update_item($order_id, $item_id)
     {
         $item = $this->_item_of_active_order($order_id, $item_id);
-        if ($item)
+        $qty = (int) $this->input->post('qty');
+        if ($item && $qty >= 1 && $qty !== (int) $item['qty'])
         {
-            $qty = (int) $this->input->post('qty');
-            if ($qty < 1)
-            {
-                $this->_remove_item($item);
-            }
-            else
-            {
-                $this->Order_item_model->update_qty($item_id, $qty);
-                $this->audit('order_item', 'UPDATE_QTY', NULL, array('item_id' => $item_id, 'qty' => $qty));
-            }
+            $this->Order_item_model->update_qty($item_id, $qty);
+            $this->audit('order_item', 'UPDATE_QTY', NULL, array('item_id' => $item_id, 'qty' => $qty));
             $this->Order_model->recalc_totals($order_id);
         }
         $this->_respond($order_id);

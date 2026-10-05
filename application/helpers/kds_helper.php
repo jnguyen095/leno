@@ -17,7 +17,7 @@ if ( ! function_exists('money_format_vnd'))
 {
     function money_format_vnd($amount)
     {
-        return number_format((float) $amount, 0, ',', '.').'đ';
+        return number_format((float) $amount, 0, ',', '.').'';
     }
 }
 

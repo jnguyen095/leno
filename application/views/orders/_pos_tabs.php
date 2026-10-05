@@ -26,6 +26,47 @@
   </li>
 </ul>
 
+<?php // Hộp xác nhận trong trang — thay confirm() của trình duyệt (hộp thoại gốc làm mất toàn màn hình). ?>
+<div class="modal fade" id="posConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body text-center pt-4">
+        <i class="bi bi-exclamation-circle text-danger fs-1"></i>
+        <div class="fs-6 fw-semibold mt-2" id="posConfirmMessage"></div>
+      </div>
+      <div class="modal-footer justify-content-center border-0 pt-0 pb-4">
+        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Không</button>
+        <button type="button" class="btn btn-danger px-4" id="posConfirmOk">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// posConfirm('Hủy món này?').then(function(ok){ if (ok) ... }) — xác nhận bằng modal Bootstrap.
+window.posConfirm = function(message, okLabel){
+  return new Promise(function(resolve){
+    var el = document.getElementById('posConfirmModal');
+    var okBtn = document.getElementById('posConfirmOk');
+    var modal = bootstrap.Modal.getOrCreateInstance(el);
+    var answered = false;
+    document.getElementById('posConfirmMessage').textContent = message;
+    okBtn.textContent = okLabel || 'Đồng ý';
+    okBtn.onclick = function(){ answered = true; modal.hide(); };
+    el.addEventListener('hidden.bs.modal', function onHidden(){
+      el.removeEventListener('hidden.bs.modal', onHidden);
+      okBtn.onclick = null;
+      resolve(answered);
+    });
+    modal.show();
+    el.addEventListener('shown.bs.modal', function onShown(){
+      el.removeEventListener('shown.bs.modal', onShown);
+      okBtn.focus();
+    });
+  });
+};
+</script>
+
 <script>
 // Toàn màn hình cho POS. Trình duyệt luôn thoát fullscreen khi chuyển trang, nên khi bật,
 // trang hiện tại KHÔNG chuyển đi nữa: nó vào fullscreen và mở một khung (iframe) phủ kín màn
@@ -98,15 +139,52 @@
 })();
 </script>
 
-<?php if ($pos_tab === 'menu' && count($pos_orders) > 1): ?>
-<div class="d-flex flex-wrap gap-2 mb-3 pos-order-chips">
-  <?php foreach ($pos_orders as $po): ?>
-    <a href="<?php echo site_url('me/orders/'.$po['id']); ?>"
-       class="btn btn-sm <?php echo (int) $po['id'] === (int) $pos_order_id ? 'btn-brand' : 'btn-outline-secondary'; ?>">
-      <?php if ( ! empty($po['is_takeaway']) || empty($po['table_id'])): ?><i class="bi bi-bag-check"></i><?php endif; ?>
-      <?php echo htmlspecialchars($po['table_name'] ?: 'Mang đi #'.$po['order_no']); ?>
-      <span class="opacity-75 small"><?php echo money_format_vnd($po['total_amount']); ?></span>
-    </a>
-  <?php endforeach; ?>
+<?php // Luôn hiện ở tab Thực đơn (kể cả chỉ 1 đơn) để thấy đang gọi món cho bàn nào. ?>
+<?php if ($pos_tab === 'menu' && $pos_orders): ?>
+<?php
+  // Một hàng duy nhất, trượt ngang bằng Swiper (vuốt / lăn chuột / kéo thanh cuộn / nút ‹ ›).
+  // Nút ‹ › tự ẩn khi đủ chỗ hiện hết; chip đơn đang xem được cuộn vào giữa tầm nhìn.
+  $active_chip_index = 0;
+  foreach ($pos_orders as $i => $po) { if ((int) $po['id'] === (int) $pos_order_id) $active_chip_index = $i; }
+?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css">
+<div class="pos-order-chips-bar mb-3">
+  <button type="button" class="pos-chips-nav pos-chips-prev" aria-label="Đơn trước"><i class="bi bi-chevron-left"></i></button>
+  <div class="swiper pos-order-chips">
+    <div class="swiper-wrapper">
+      <?php foreach ($pos_orders as $po): ?>
+      <div class="swiper-slide">
+        <a href="<?php echo site_url('me/orders/'.$po['id']); ?>"
+           class="btn btn-sm <?php echo (int) $po['id'] === (int) $pos_order_id ? 'btn-brand' : 'btn-outline-secondary'; ?>">
+          <?php if ( ! empty($po['is_takeaway']) || empty($po['table_id'])): ?><i class="bi bi-bag-check"></i><?php endif; ?>
+          <?php echo htmlspecialchars($po['table_name'] ?: 'Mang đi #'.$po['order_no']); ?>
+          <span class="opacity-75 small"><?php echo money_format_vnd($po['total_amount']); ?></span>
+        </a>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <div class="swiper-scrollbar pos-chips-scrollbar"></div>
+  </div>
+  <button type="button" class="pos-chips-nav pos-chips-next" aria-label="Đơn sau"><i class="bi bi-chevron-right"></i></button>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
+<script>
+(function(){
+  if (typeof Swiper === 'undefined') return; // CDN không tải được -> vẫn cuộn ngang được bằng CSS
+  var swiper = new Swiper('.pos-order-chips', {
+    slidesPerView: 'auto',
+    spaceBetween: 8,
+    freeMode: { enabled: true, momentumRatio: 0.6 },
+    mousewheel: { forceToAxis: true },
+    grabCursor: true,
+    watchOverflow: true,
+    navigation: { prevEl: '.pos-chips-prev', nextEl: '.pos-chips-next' },
+    scrollbar: { el: '.pos-chips-scrollbar', draggable: true, hide: false },
+    on: { init: function(s){ s.el.closest('.pos-order-chips-bar').classList.add('is-ready'); } }
+  });
+  // Đưa chip đang xem vào tầm nhìn (không hiệu ứng khi tải trang).
+  var active = <?php echo (int) $active_chip_index; ?>;
+  if (active > 0 && ! swiper.isLocked) swiper.slideTo(Math.max(0, active - 1), 0);
+})();
+</script>
 <?php endif; ?>

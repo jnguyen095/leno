@@ -27,7 +27,8 @@
     </div>
     <?php if ($editable): ?>
     <div class="qty-stepper">
-      <button type="button" onclick="changeItemQty(<?php echo $it['id']; ?>, <?php echo (int) $it['qty'] - 1; ?>)" title="Bớt 1"><i class="bi bi-dash-lg"></i></button>
+      <?php // Không cho giảm về 0 — muốn bỏ món thì bấm nút thùng rác (có hỏi xác nhận). ?>
+      <button type="button" onclick="changeItemQty(<?php echo $it['id']; ?>, <?php echo (int) $it['qty'] - 1; ?>)" title="Bớt 1" <?php echo (int) $it['qty'] <= 1 ? 'disabled' : ''; ?>><i class="bi bi-dash-lg"></i></button>
       <span><?php echo (int) $it['qty']; ?></span>
       <button type="button" onclick="changeItemQty(<?php echo $it['id']; ?>, <?php echo (int) $it['qty'] + 1; ?>)" title="Thêm 1"><i class="bi bi-plus-lg"></i></button>
     </div>

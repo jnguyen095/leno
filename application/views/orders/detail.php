@@ -10,9 +10,13 @@
       <h4 class="fw-bold mb-0">
         <?php if (empty($order['table_id'])): ?><i class="bi bi-bag-check text-brand"></i><?php endif; ?>
         <?php echo htmlspecialchars($table_label); ?>
+        <?php if ( ! $is_active): // Mã đơn + trạng thái chỉ hiện khi xem lại đơn đã đóng, tab Thực đơn gọn hơn. ?>
         <span class="text-muted fs-6">#<?php echo htmlspecialchars($order['order_no']); ?></span>
+        <?php endif; ?>
       </h4>
+      <?php if ( ! $is_active): ?>
       <span class="badge bg-<?php echo order_status_badge($order['status']); ?>"><?php echo $order['status']; ?></span>
+      <?php endif; ?>
     </div>
     <?php if ($is_active && $order['table_id']): ?>
     <div class="dropdown">
@@ -88,15 +92,18 @@
           <div class="row g-2" id="productGrid">
             <?php $cat_index = 0; foreach ($products_by_category as $cat_name => $products): $cat_key = $cat_index++; ?>
               <?php foreach ($products as $p): ?>
-              <div class="col-sx-1 col-sm-2 col-xl-2 menu-product" data-cat="<?php echo $cat_key; ?>">
+              <div class="col-4 col-sm-2 col-xl-2 menu-product" data-cat="<?php echo $cat_key; ?>">
                 <button type="button" class="pos-product-card w-100" onclick="addProduct(<?php echo $p['id']; ?>, this)">
-                  <?php if ($p['image']): ?>
-                    <img src="<?php echo base_url('assets/'.$p['image']); ?>" alt="" class="pos-product-img">
-                  <?php else: ?>
-                    <div class="pos-product-img pos-product-img-empty"><i class="bi bi-cup-straw"></i></div>
-                  <?php endif; ?>
+                  <?php // Giá nằm đè giữa đáy ảnh để thẻ gọn hơn; tên món bên dưới. ?>
+                  <div class="pos-product-media">
+                    <?php if ($p['image']): ?>
+                      <img src="<?php echo base_url('assets/'.$p['image']); ?>" alt="" class="pos-product-img">
+                    <?php else: ?>
+                      <div class="pos-product-img pos-product-img-empty"><i class="bi bi-cup-straw"></i></div>
+                    <?php endif; ?>
+                    <span class="pos-product-price"><?php echo money_format_vnd($p['price']); ?></span>
+                  </div>
                   <div class="pos-product-name"><?php echo htmlspecialchars($p['product_name']); ?></div>
-                  <div class="pos-product-price"><?php echo money_format_vnd($p['price']); ?></div>
                 </button>
               </div>
               <?php endforeach; ?>
@@ -237,8 +244,9 @@ function changeItemQty(itemId, qty){
 }
 
 function removeItem(itemId){
-  if ( ! confirm('Hủy món này?')) return;
-  postOrder('/cancel-item/' + itemId);
+  posConfirm('Hủy món này?', 'Hủy món').then(function(ok){
+    if (ok) postOrder('/cancel-item/' + itemId);
+  });
 }
 
 // Chờ các thao tác thêm/đổi món xong rồi mới chạy (Thông báo / In tạm tính / Thanh toán).

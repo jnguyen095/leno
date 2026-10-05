@@ -69,9 +69,6 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         <?php if ($can('pha_che')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/pha-che'); ?>"><i class="bi bi-cup-straw"></i> Pha chế</a></li>
         <?php endif; ?>
-        <?php if ($can('payments')): ?>
-        <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/payments'); ?>"><i class="bi bi-clock-history"></i> LS Thanh toán</a></li>
-        <?php endif; ?>
         <?php if ($show_inventory_menu):
           $CI->load->model('Inventory_item_model');
           $low_stock_count = $CI->Inventory_item_model->count_low_stock();

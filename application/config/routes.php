@@ -60,7 +60,6 @@ $route['me/orders/(:num)/delete'] = 'orders/delete/$1';
 
 
 
-$route['me/payments'] = 'payments/index';
 
 
 $route['me/users'] = 'users/index';

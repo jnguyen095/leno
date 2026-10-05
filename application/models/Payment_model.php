@@ -30,13 +30,4 @@ class Payment_model extends CI_Model
     {
         return $this->db->where('id', $id)->get($this->table)->row_array();
     }
-
-    public function summary_by_method($from, $to)
-    {
-        return $this->db->select('payment_method, COUNT(*) as total_count, SUM(amount) as total_amount')
-            ->where('paid_at >=', $from.' 00:00:00')
-            ->where('paid_at <=', $to.' 23:59:59')
-            ->group_by('payment_method')
-            ->get($this->table)->result_array();
-    }
 }

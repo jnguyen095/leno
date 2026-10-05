@@ -92,13 +92,6 @@ class Orders extends MY_Controller
         $this->load->view('layout/footer');
     }
 
-    /** JSON poll dùng để cập nhật trạng thái pha chế theo thời gian thực trên trang chi tiết đơn. */
-    public function ticket_status($id)
-    {
-        $tickets = $this->Kitchen_ticket_model->tickets_with_items_for_order($id);
-        json_response(array('success' => TRUE, 'tickets' => $tickets));
-    }
-
     /**
      * Thêm món vào đơn — CHƯA báo bếp (chờ bấm "Thông báo"). Bấm vào món ở thực đơn gửi
      * AJAX (product_id[]=X, qty[]=1); bấm lại cùng món thì cộng dồn số lượng.
@@ -232,25 +225,6 @@ class Orders extends MY_Controller
             if ($target !== (int) $it['notified_qty']) $pending_count++;
         }
 
-        // Trạng thái pha chế theo sản phẩm (NEW > PREPARING > COMPLETED) để tô viền ảnh món.
-        $tickets = $this->Kitchen_ticket_model->tickets_with_items_for_order($order['id']);
-        $kitchen_status_by_product = array();
-        if ($is_active)
-        {
-            $rank = array('NEW' => 3, 'PREPARING' => 2, 'COMPLETED' => 1);
-            foreach ($tickets as $t)
-            {
-                foreach ($t['items'] as $ti)
-                {
-                    $pid = $ti['product_id'];
-                    if ( ! isset($kitchen_status_by_product[$pid]) || $rank[$ti['status']] > $rank[$kitchen_status_by_product[$pid]])
-                    {
-                        $kitchen_status_by_product[$pid] = $ti['status'];
-                    }
-                }
-            }
-        }
-
         return array(
             'order'                     => $order,
             'is_active'                 => $is_active,
@@ -260,9 +234,6 @@ class Orders extends MY_Controller
             // Đơn đang phục vụ ẩn món đã hủy; đơn đã đóng hiện đủ để xem lại lịch sử.
             'visible_items'             => $is_active ? $active_items : $items,
             'pending_count'             => $pending_count,
-            'tickets'                   => $tickets,
-            'kitchen_status_by_product' => $kitchen_status_by_product,
-            'kitchen_poll_active'       => $tickets && $is_active,
         );
     }
 
@@ -365,7 +336,7 @@ class Orders extends MY_Controller
             show_404();
         }
         $this->load->model('Payment_model');
-        $this->load->view('cashier/invoice', array(
+        $this->load->view('orders/invoice', array(
             'order'   => $order,
             'items'   => $this->Order_item_model->get_active_by_order($id),
             'payment' => $this->Payment_model->get_by_order($id),

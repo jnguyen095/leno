@@ -181,41 +181,6 @@
 <?php endif; ?>
 
 <script>
-// ---- Viền ảnh món theo trạng thái pha chế mới nhất ----
-var KITCHEN_RANK = {NEW: 3, PREPARING: 2, COMPLETED: 1};
-var KITCHEN_BORDER_COLOR = {NEW: 'danger', PREPARING: 'warning', COMPLETED: 'success'};
-
-function applyKitchenBorder(el, status){
-  el.classList.remove('border-danger', 'border-warning', 'border-success', 'order-kitchen-flash');
-  if ( ! status) return;
-  el.classList.add('border-'+KITCHEN_BORDER_COLOR[status]);
-  if (status !== 'COMPLETED') el.classList.add('order-kitchen-flash');
-}
-
-function refreshKitchenBorders(){
-  fetch('<?php echo site_url("me/orders/".$order['id']."/ticket-status"); ?>')
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      if ( ! res.success) return;
-      var statusByProduct = {};
-      res.tickets.forEach(function(t){
-        t.items.forEach(function(it){
-          var cur = statusByProduct[it.product_id];
-          if ( ! cur || KITCHEN_RANK[it.status] > KITCHEN_RANK[cur]) statusByProduct[it.product_id] = it.status;
-        });
-      });
-      document.querySelectorAll('#orderedItemsList [data-product-id]').forEach(function(row){
-        if (row.classList.contains('opacity-50')) return; // món đã hủy — không tô viền
-        var img = row.querySelector('.item-kitchen-img');
-        if (img) applyKitchenBorder(img, statusByProduct[row.dataset.productId]);
-      });
-    });
-}
-
-<?php if ($kitchen_poll_active): ?>
-setInterval(refreshKitchenBorders, 5000);
-<?php endif; ?>
-
 <?php if ($is_active): ?>
 // ---- Thêm/đổi số lượng/hủy món qua AJAX — server render lại khối "Món đã gọi" ----
 var ORDER_URL = '<?php echo base_url('me/orders/'.$order['id']); ?>';

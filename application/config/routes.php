@@ -50,7 +50,6 @@ $route['me/tables/(:num)/merge'] = 'tables/merge/$1';
 $route['me/orders'] = 'orders/index';
 $route['me/orders/(:num)'] = 'orders/detail/$1';
 $route['me/orders/(:num)/add-item'] = 'orders/add_item/$1';
-$route['me/orders/(:num)/ticket-status'] = 'orders/ticket_status/$1';
 $route['me/orders/(:num)/update-item/(:num)'] = 'orders/update_item/$1/$2';
 $route['me/orders/(:num)/cancel-item/(:num)'] = 'orders/cancel_item/$1/$2';
 $route['me/orders/(:num)/notify'] = 'orders/notify/$1';
@@ -58,15 +57,7 @@ $route['me/orders/(:num)/pay'] = 'orders/pay/$1';
 $route['me/orders/(:num)/invoice'] = 'orders/invoice/$1';
 
 
-$route['me/kitchen'] = 'kitchen/index';
-$route['me/kitchen/ticket/(:num)'] = 'kitchen/ticket/$1';
-$route['me/kitchen/ticket/(:num)/status'] = 'kitchen/update_status/$1';
 
-$route['me/cashier'] = 'cashier/index';
-$route['me/cashier/(:num)'] = 'cashier/detail/$1';
-$route['me/cashier/(:num)/close-bill'] = 'cashier/close_bill/$1';
-$route['me/cashier/(:num)/pay'] = 'cashier/pay/$1';
-$route['me/cashier/(:num)/invoice'] = 'cashier/invoice/$1';
 
 $route['me/payments'] = 'payments/index';
 
@@ -144,9 +135,6 @@ $route['me/stock/history'] = 'stock/history';
 
 // JSON API — nội bộ, cần đăng nhập (MY_Api_Controller)
 $route['api/payment'] = 'api_payment/create';
-$route['api/kitchen/tickets'] = 'api_kitchen/tickets';
-$route['api/kitchen/ticket/(:num)/status'] = 'api_kitchen/update_status/$1';
-$route['api/kitchen/ticket-item/(:num)/status'] = 'api_kitchen/update_item_status/$1';
 $route['api/tables/status'] = 'api_tables/status';
 
 // Telegram bot webhook (public, secret-token based — see application/config/telegram.php)

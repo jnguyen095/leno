@@ -1,7 +1,7 @@
 <?php
   // Khối "Món đã gọi" + tổng tiền. Render lúc tải trang và render lại sau mỗi lần
   // thêm/đổi số lượng/hủy món qua AJAX (Orders::_panel_response()).
-  // Biến: $order, $visible_items, $is_active, $pending_count, $kitchen_status_by_product.
+  // Biến: $order, $visible_items, $is_active, $pending_count.
 ?>
 <div class="card border-0 shadow-sm rounded-4 mb-3">
   <div class="card-header bg-white fw-semibold d-flex justify-content-between">
@@ -10,7 +10,7 @@
   </div>
   <div class="list-group list-group-flush" id="orderedItemsList">
     <?php foreach ($visible_items as $it): ?>
-      <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active, 'kitchen_status' => isset($kitchen_status_by_product[$it['product_id']]) ? $kitchen_status_by_product[$it['product_id']] : NULL)); ?>
+      <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active)); ?>
     <?php endforeach; ?>
     <?php if (empty($visible_items)): ?>
       <div class="list-group-item text-muted text-center py-4">Chưa có món nào — bấm vào món ở thực đơn để thêm.</div>

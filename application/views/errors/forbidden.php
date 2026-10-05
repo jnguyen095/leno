@@ -16,8 +16,8 @@
   {
       switch ($current_user['role'])
       {
-          case 'BARISTA': $home = 'kitchen'; break;
-          case 'CASHIER': $home = 'cashier'; break;
+          case 'BARISTA': $home = 'pha-che'; break;
+          case 'CASHIER': $home = 'tables'; break;
           case 'STOCKTAKER': $home = 'stock/adjust'; break;
       }
   }

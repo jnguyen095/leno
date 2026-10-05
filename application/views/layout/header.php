@@ -9,6 +9,11 @@
 <link href="<?php echo base_url('assets/css/style_v1.3.css'); ?>" rel="stylesheet">
 </head>
 <body>
+<script>
+// Trang đang chạy bên trong khung toàn màn hình POS (xem views/orders/_pos_tabs.php) ->
+// ẩn thanh menu ngay đầu <body> để không nháy lên rồi mới ẩn.
+try { if (window.self !== window.top && window.parent.LenoPosShell) document.body.classList.add('pos-focus'); } catch (e) {}
+</script>
 <?php if ( ! empty($current_user)): ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-brand sticky-top">
   <div class="container-fluid">
@@ -63,12 +68,6 @@
         <?php endif; ?>
         <?php if ($can('pha_che')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/pha-che'); ?>"><i class="bi bi-cup-straw"></i> Pha chế</a></li>
-        <?php endif; ?>
-        <?php if ($can('kitchen')): ?>
-        <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/kitchen'); ?>"><i class="bi bi-fire"></i> Bếp (KDS)</a></li>
-        <?php endif; ?>
-        <?php if ($can('cashier')): ?>
-        <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/cashier'); ?>"><i class="bi bi-cash-coin"></i> Thu ngân</a></li>
         <?php endif; ?>
         <?php if ($can('payments')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/payments'); ?>"><i class="bi bi-clock-history"></i> LS Thanh toán</a></li>

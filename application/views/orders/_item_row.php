@@ -1,19 +1,8 @@
 <?php
-  // Viền ảnh món tô theo trạng thái pha chế (ưu tiên NEW > PREPARING > COMPLETED) —
-  // chớp khi còn NEW/PREPARING, viền đặc khi COMPLETED. Món hủy hoặc chưa lên bếp thì không tô.
-  $kitchen_status = isset($kitchen_status) ? $kitchen_status : NULL;
   $is_active = isset($is_active) ? $is_active : in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE);
   // Phần chưa báo bếp: dương = món mới/thêm số lượng, âm = đã bớt nhưng bếp chưa biết.
   $pending_delta = ($it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0) - (int) $it['notified_qty'];
-  $img_classes = 'rounded border flex-shrink-0 item-kitchen-img';
-  if ($kitchen_status && $it['status'] !== 'CANCELLED')
-  {
-      $img_classes .= ' border-'.kitchen_status_badge($kitchen_status);
-      if ($kitchen_status !== 'COMPLETED')
-      {
-          $img_classes .= ' order-kitchen-flash';
-      }
-  }
+  $img_classes = 'rounded border flex-shrink-0';
   $editable = $it['status'] === 'ACTIVE' && $is_active;
 ?>
 <div class="list-group-item <?php echo $it['status']==='CANCELLED' ? 'opacity-50 text-decoration-line-through' : ''; ?>" data-product-id="<?php echo $it['product_id']; ?>">

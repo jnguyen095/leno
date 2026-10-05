@@ -31,17 +31,6 @@ body{
 }
 .table-card:active{ transform: scale(.97); }
 
-/* Viền chớp cho khối tiêu đề đơn hàng khi bếp còn đang xử lý (NEW/PREPARING) — dừng chớp khi COMPLETED. */
-.order-kitchen-flash.border-danger{ animation: order-kitchen-flash-danger 1s ease-in-out infinite; }
-.order-kitchen-flash.border-warning{ animation: order-kitchen-flash-warning 1s ease-in-out infinite; }
-@keyframes order-kitchen-flash-danger{
-  0%, 100% { border-color: #dc3545; }
-  50%      { border-color: rgba(220,53,69,.15); }
-}
-@keyframes order-kitchen-flash-warning{
-  0%, 100% { border-color: #ffc107; }
-  50%      { border-color: rgba(255,193,7,.15); }
-}
 .table-card .card-body{ padding: 1rem; }
 
 /* ---------- Customer menu page ---------- */
@@ -93,34 +82,6 @@ body{
 
 .cart-offcanvas .list-group-item{ border-left:none; border-right:none; }
 
-/* ---------- Kitchen Display ---------- */
-.kds-column{ min-height: 70vh; }
-.kds-ticket{
-  border-radius:.75rem; border:none; box-shadow:0 1px 4px rgba(0,0,0,.12);
-}
-.kds-ticket .card-header{ font-weight:600; }
-.kds-ticket.status-new{ border-left:5px solid #dc3545; }
-.kds-ticket.status-preparing{ border-left:5px solid #fd7e14; }
-.kds-ticket.status-completed{ border-left:5px solid #198754; opacity:.75; }
-.kds-item{
-  display:flex; align-items:center; flex-wrap:nowrap; gap:.5rem;
-  padding:.35rem 0; border-bottom:1px solid #f0f0f0;
-}
-.kds-item:last-child{ border-bottom:none; }
-.kds-item-thumb, .kds-item-thumb-fallback{
-  width:38px; height:38px; flex:0 0 38px; border-radius:.5rem; object-fit:cover; background:#eee;
-}
-.kds-item-thumb-fallback{
-  display:flex; align-items:center; justify-content:center;
-  background: var(--brand-light); color: var(--brand); font-size:1rem;
-}
-.kds-item-name{
-  flex:1 1 auto; min-width:0; font-weight:600; font-size:.85rem;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.kds-item-note{ font-size:.8em; color:#888; font-weight:400; }
-.kds-item-qty{ flex:0 0 auto; font-weight:700; font-size:.85rem; color: var(--brand); min-width:1.8em; text-align:center; }
-
 /* ---------- Receipt / K80 print ---------- */
 @media print{
   body *{ visibility:hidden; }
@@ -147,6 +108,15 @@ body{
 @keyframes pos-product-pulse{ 0%{ box-shadow:0 0 0 0 rgba(13,110,253,.5); } 100%{ box-shadow:0 0 0 10px rgba(13,110,253,0); } }
 #orderedItemsList .qty-stepper button{ width:32px; height:32px; }
 .pos-item-amount{ min-width:76px; }
+/* Toàn màn hình POS: khung (iframe) phủ kín trang đang fullscreen; trang bên trong khung có class
+   pos-focus (ẩn thanh menu, thu gọn lề). Xem views/orders/_pos_tabs.php. */
+body.pos-shell-open{ overflow:hidden; }
+.pos-shell{ position:fixed; inset:0; z-index:2000; background:#fff; }
+.pos-shell-frame{ width:100%; height:100%; border:0; display:block; }
+.pos-shell-exit{ position:absolute; top:8px; right:8px; z-index:1; opacity:.85; }
+body.pos-focus > nav.navbar{ display:none !important; }
+body.pos-focus main > .container-fluid{ padding-top:.75rem !important; }
+body.pos-focus .card-body[style*="max-height"]{ max-height:calc(100vh - 230px) !important; }
 @media (max-width: 575.98px){
   #orderedItemsList .qty-stepper button{ width:28px; height:28px; }
   .pos-item-amount{ min-width:0; }

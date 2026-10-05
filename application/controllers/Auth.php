@@ -26,7 +26,7 @@ class Auth extends CI_Controller
         $remembered_user = attempt_remember_login();
         if ($remembered_user)
         {
-            redirect($this->_home_for_role($remembered_user['role']));
+            redirect($this->_home_for_user($remembered_user));
             return;
         }
 
@@ -56,7 +56,7 @@ class Auth extends CI_Controller
                     $this->load->model('Audit_log_model');
                     $this->Audit_log_model->log('auth', 'LOGIN', NULL, array('username' => $user['username']), $user['id']);
 
-                    redirect($this->_home_for_role($user['role']));
+                    redirect($this->_home_for_user($user));
                 }
                 $error = 'Sai tên đăng nhập hoặc mật khẩu.';
             }
@@ -86,14 +86,30 @@ class Auth extends CI_Controller
         redirect('login');
     }
 
-    private function _home_for_role($role)
+    /**
+     * Trang đầu tiên sau đăng nhập theo vai trò. Quyền menu gán động (Gán quyền menu) có thể
+     * không cho vai trò đó vào trang mặc định -> lùi về trang kế tiếp được phép, tránh 403 ngay
+     * sau khi đăng nhập.
+     */
+    private function _home_for_user($user)
     {
-        switch ($role)
+        // [route, menu_key] theo thứ tự ưu tiên.
+        $candidates = array(
+            'BARISTA'    => array(array('me/pha-che', 'pha_che')),
+            'CASHIER'    => array(array('me/tables', 'tables')),
+            'STOCKTAKER' => array(array('me/stock/adjust', 'inventory.stock_adjust')),
+        );
+        $list = isset($candidates[$user['role']]) ? $candidates[$user['role']] : array();
+        $list[] = array('me/dashboard', 'dashboard');
+
+        $this->load->helper('menu_permission');
+        foreach ($list as $c)
         {
-            case 'BARISTA': return 'me/kitchen';
-            case 'CASHIER': return 'me/cashier';
-            case 'STOCKTAKER': return 'me/stock/adjust';
-            default: return 'me/dashboard';
+            if (menu_permission_user_can_key($user, $c[1]))
+            {
+                return $c[0];
+            }
         }
+        return 'me/dashboard';
     }
 }

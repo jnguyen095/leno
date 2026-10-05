@@ -2,7 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * Base controller for internal JSON REST endpoints under /api/kitchen, /api/tables,
+ * Base controller for internal JSON REST endpoints under /api/tables,
  * /api/payment, which require an authenticated staff session.
  */
 class MY_Api_Controller extends CI_Controller

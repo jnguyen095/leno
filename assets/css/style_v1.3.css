@@ -114,6 +114,11 @@ body{
 @keyframes pos-product-pulse{ 0%{ box-shadow:0 0 0 0 rgba(13,110,253,.5); } 100%{ box-shadow:0 0 0 10px rgba(13,110,253,0); } }
 #orderedItemsList .qty-stepper button{ width:32px; height:32px; }
 .qty-stepper button:disabled{ opacity:.35; cursor:not-allowed; }
+/* Số thứ tự món trong "Món đã gọi" (thay cho ảnh món). */
+.pos-item-seq{
+  flex:0 0 auto; width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+  background:#eef1f4; color:#495057; font-size:.78rem; font-weight:700;
+}
 /* Ghi chú món / đơn ở "Món đã gọi": nút dạng chữ, bấm để mở hộp nhập ghi chú. */
 .pos-item-note, .pos-order-note{
   display:inline-flex; align-items:center; gap:.25rem; max-width:100%; padding:0; margin-top:.15rem;
@@ -124,7 +129,39 @@ body{
 .pos-order-note{ font-size:.85rem; }
 .pos-order-note.has-note{ color:#333; }
 /* Tên bàn + ghi chú bàn nằm cùng hàng với tab Bàn | Thực đơn; ghi chú dài thì cắt bớt (…). */
-.pos-tab-title{ min-width:0; flex:0 1 auto; padding-bottom:.25rem; }
+/* Thanh trên cùng POS: segmented control "Bàn | Thực đơn" (rãnh xám, tab đang chọn là viên trắng nổi),
+   tiêu đề bàn ở giữa, các nút (Khác / Quản lý bàn / Toàn màn hình) bên phải cùng một kiểu. */
+.pos-topbar{ display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+.pos-seg{
+  display:inline-flex; gap:4px; padding:4px; border-radius:12px; flex:0 0 auto;
+  background:#e9ecef; box-shadow:inset 0 1px 2px rgba(0,0,0,.06);
+}
+.pos-seg-item{
+  display:inline-flex; align-items:center; gap:.4rem; padding:.42rem 1rem; border-radius:9px;
+  color:#5c636a; font-weight:500; text-decoration:none; white-space:nowrap; line-height:1.3;
+  transition:background-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.pos-seg-item:hover{ color:#212529; background:rgba(255,255,255,.6); }
+.pos-seg-item.active{
+  background:#fff; color: var(--brand); font-weight:600;
+  box-shadow:0 1px 3px rgba(0,0,0,.12), 0 1px 1px rgba(0,0,0,.04);
+}
+.pos-seg-item.disabled{ opacity:.45; pointer-events:none; }
+.pos-seg-badge{
+  display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 6px;
+  border-radius:999px; background: var(--brand); color:#fff; font-size:.72rem; font-weight:700; line-height:1;
+}
+.pos-tab-title{ min-width:0; flex:0 1 auto; display:flex; align-items:center; }
+.pos-topbar-actions{ margin-left:auto; display:flex; align-items:center; gap:.5rem; }
+.pos-topbar-actions .btn{
+  background:#fff; border:1px solid #dee2e6; border-radius:10px; color:#495057;
+  padding:.4rem .75rem; box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+.pos-topbar-actions .btn:hover, .pos-topbar-actions .btn.show{ border-color: var(--brand); color: var(--brand); background:#fff; }
+@media (max-width: 575.98px){
+  .pos-seg-item{ padding:.4rem .7rem; }
+  .pos-topbar-actions #posFocusBtn span{ display:none; }   /* chỉ còn icon trên điện thoại */
+}
 .pos-tab-title #tableNoteWrap{ display:inline-block; max-width:280px; vertical-align:middle; }
 
 /* Dãy chip đơn đang phục vụ (tab Thực đơn): 1 hàng, trượt ngang bằng Swiper + nút ‹ ›. */

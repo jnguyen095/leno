@@ -8,31 +8,41 @@
   $pos_tab_title = isset($pos_tab_title) ? $pos_tab_title : '';
   $pos_tab_actions = isset($pos_tab_actions) ? $pos_tab_actions : '';
 ?>
-<ul class="nav nav-tabs pos-tabs mb-3">
-  <li class="nav-item">
-    <a class="nav-link <?php echo $pos_tab === 'tables' ? 'active fw-semibold' : ''; ?>" href="<?php echo site_url('me/tables'); ?>">
-      <i class="bi bi-grid-3x3-gap"></i> Bàn
+<?php
+  // Số khách đang phục vụ (đơn đã có món) — hiện thành badge trên tab "Thực đơn".
+  $serving_count = count(array_filter($pos_orders, function ($o) { return (int) $o['item_count'] > 0; }));
+?>
+<?php // Thanh trên cùng của POS: segmented control "Bàn | Thực đơn" + tiêu đề + các nút bên phải. ?>
+<div class="pos-topbar mb-3">
+  <nav class="pos-seg" aria-label="Chuyển màn hình POS">
+    <a class="pos-seg-item <?php echo $pos_tab === 'tables' ? 'active' : ''; ?>" href="<?php echo site_url('me/tables'); ?>"
+       <?php echo $pos_tab === 'tables' ? 'aria-current="page"' : ''; ?>>
+      <i class="bi bi-grid-3x3-gap"></i><span>Bàn</span>
     </a>
-  </li>
-  <li class="nav-item">
     <?php if ($menu_url): ?>
-      <a class="nav-link <?php echo $pos_tab === 'menu' ? 'active fw-semibold' : ''; ?>" href="<?php echo $menu_url; ?>">
-        <i class="bi bi-journal-text"></i> Thực đơn
+      <a class="pos-seg-item <?php echo $pos_tab === 'menu' ? 'active' : ''; ?>" href="<?php echo $menu_url; ?>"
+         <?php echo $pos_tab === 'menu' ? 'aria-current="page"' : ''; ?>>
+        <i class="bi bi-journal-text"></i><span>Thực đơn</span>
+        <?php if ($serving_count): ?><span class="pos-seg-badge" title="<?php echo $serving_count; ?> khách đang phục vụ"><?php echo $serving_count; ?></span><?php endif; ?>
       </a>
     <?php else: ?>
-      <span class="nav-link disabled" title="Chọn bàn trước"><i class="bi bi-journal-text"></i> Thực đơn</span>
+      <span class="pos-seg-item disabled" title="Chọn bàn trước" aria-disabled="true">
+        <i class="bi bi-journal-text"></i><span>Thực đơn</span>
+      </span>
     <?php endif; ?>
-  </li>
+  </nav>
+
   <?php if ($pos_tab_title !== ''): ?>
-  <li class="nav-item d-flex align-items-center ms-2 pos-tab-title"><?php echo $pos_tab_title; ?></li>
+  <div class="pos-tab-title"><?php echo $pos_tab_title; ?></div>
   <?php endif; ?>
-  <li class="nav-item ms-auto d-flex align-items-center gap-2 pb-1">
+
+  <div class="pos-topbar-actions">
     <?php echo $pos_tab_actions; ?>
-    <button type="button" class="btn btn-sm btn-outline-secondary" id="posFocusBtn" onclick="togglePosFocus()">
+    <button type="button" class="btn btn-sm" id="posFocusBtn" onclick="togglePosFocus()">
       <i class="bi bi-arrows-fullscreen"></i> <span>Toàn màn hình</span>
     </button>
-  </li>
-</ul>
+  </div>
+</div>
 
 <?php // Hộp xác nhận trong trang — thay confirm() của trình duyệt (hộp thoại gốc làm mất toàn màn hình). ?>
 <div class="modal fade" id="posConfirmModal" tabindex="-1" aria-hidden="true">

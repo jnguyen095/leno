@@ -2,17 +2,12 @@
   $is_active = isset($is_active) ? $is_active : in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE);
   // Phần chưa báo bếp: dương = món mới/thêm số lượng, âm = đã bớt nhưng bếp chưa biết.
   $pending_delta = ($it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0) - (int) $it['notified_qty'];
-  $img_classes = 'rounded border flex-shrink-0';
   $editable = $it['status'] === 'ACTIVE' && $is_active;
 ?>
 <div class="list-group-item <?php echo $it['status']==='CANCELLED' ? 'opacity-50 text-decoration-line-through' : ''; ?>" data-product-id="<?php echo $it['product_id']; ?>">
-  <?php // Một hàng: [ảnh] tên (xuống dòng nếu dài) | − SL + | thành tiền | hủy. Màn hình hẹp ẩn ảnh để tên đủ chỗ. ?>
+  <?php // Một hàng: STT | tên (xuống dòng nếu dài) | − SL + | thành tiền | hủy. ?>
   <div class="d-flex align-items-center gap-1 gap-sm-2">
-    <?php if ($it['image']): ?>
-      <img src="<?php echo base_url('assets/'.$it['image']); ?>" style="width:44px;height:44px;object-fit:cover;" class="d-none d-sm-block <?php echo $img_classes; ?>">
-    <?php else: ?>
-      <div class="d-none d-sm-flex align-items-center justify-content-center bg-light text-muted flex-shrink-0 <?php echo $img_classes; ?>" style="width:44px;height:44px;"><i class="bi bi-cup-straw"></i></div>
-    <?php endif; ?>
+    <?php if ( ! empty($seq)): ?><span class="pos-item-seq"><?php echo (int) $seq; ?></span><?php endif; ?>
     <div class="flex-grow-1" style="min-width:0; overflow-wrap:break-word;">
       <div class="fw-semibold lh-sm"><?php echo htmlspecialchars($it['product_name']); ?></div>
       <div class="small text-muted">

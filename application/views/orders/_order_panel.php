@@ -21,8 +21,8 @@
     <div class="px-3 py-2 border-bottom small"><i class="bi bi-journal-text"></i> <b>Ghi chú đơn:</b> <?php echo htmlspecialchars($order['note']); ?></div>
   <?php endif; ?>
   <div class="list-group list-group-flush" id="orderedItemsList">
-    <?php foreach ($visible_items as $it): ?>
-      <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active)); ?>
+    <?php foreach (array_values($visible_items) as $i => $it): ?>
+      <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active, 'seq' => $i + 1)); ?>
     <?php endforeach; ?>
     <?php if (empty($visible_items)): ?>
       <div class="list-group-item text-muted text-center py-4">Chưa có món nào — bấm vào món ở thực đơn để thêm.</div>

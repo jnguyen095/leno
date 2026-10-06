@@ -65,6 +65,43 @@ class Product_model extends CI_Model
         return $this->db->where('id', $id)->update($this->table, array('status' => 'INACTIVE'));
     }
 
+    /** Tiền tố SKU của một danh mục sản phẩm (vd "Cà phê Espresso" -> CPE). */
+    public function sku_prefix_for_category($category_id)
+    {
+        $this->load->model('Category_model');
+        $category = $this->Category_model->get_by_id($category_id);
+        return vn_initials_prefix($category ? $category['name'] : '');
+    }
+
+    /**
+     * SKU kế tiếp cho danh mục: <tiền tố>-<số 2 chữ số>, số = số lớn nhất đang dùng với
+     * tiền tố đó + 1 (CPE-01, CPE-02...; quá 99 thì thành CPE-100). Không dùng lại số của
+     * sản phẩm đã xoá ở giữa dãy.
+     */
+    public function generate_sku($category_id)
+    {
+        $prefix = $this->sku_prefix_for_category($category_id);
+
+        $max = 0;
+        $rows = $this->db->select('sku')->like('sku', $prefix.'-', 'after')->get($this->table)->result_array();
+        foreach ($rows as $r)
+        {
+            if (preg_match('/^'.preg_quote($prefix, '/').'-(\d+)$/', $r['sku'], $m))
+            {
+                $max = max($max, (int) $m[1]);
+            }
+        }
+
+        $seq = $max + 1;
+        do
+        {
+            $sku = $prefix.'-'.str_pad($seq++, 2, '0', STR_PAD_LEFT);
+        }
+        while ($this->sku_exists($sku));
+
+        return $sku;
+    }
+
     public function sku_exists($sku, $except_id = NULL)
     {
         $this->db->where('sku', $sku);

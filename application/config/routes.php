@@ -72,6 +72,7 @@ $route['me/products/create'] = 'products/create';
 $route['me/products/(:num)/edit'] = 'products/edit/$1';
 $route['me/products/(:num)/delete'] = 'products/delete/$1';
 $route['me/products/import'] = 'products/import';
+$route['me/products/next-sku'] = 'products/next_sku';
 $route['me/products/import-template'] = 'products/import_template';
 
 $route['me/categories'] = 'categories/index';

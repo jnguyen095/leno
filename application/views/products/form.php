@@ -15,11 +15,23 @@
       </div>
       <div class="col-6">
         <label class="form-label">Mã SKU</label>
-        <input type="text" name="sku" class="form-control" required value="<?php echo $product ? htmlspecialchars($product['sku']) : ''; ?>">
+        <?php if ($product): ?>
+          <input type="text" name="sku" class="form-control" required value="<?php echo htmlspecialchars($product['sku']); ?>">
+        <?php else: ?>
+          <?php // Thêm mới: SKU tự sinh theo danh mục (CPE-01, CPE-02...), vẫn cho sửa tay. ?>
+          <div class="input-group">
+            <input type="text" name="sku" id="skuInput" class="form-control" value="<?php echo htmlspecialchars($suggested_sku); ?>">
+            <button type="button" class="btn btn-outline-secondary d-none" id="skuAutoBtn" onclick="useAutoSku()" title="Dùng lại mã tự động">
+              <i class="bi bi-arrow-repeat"></i> Tự động
+            </button>
+          </div>
+          <input type="hidden" name="sku_auto" id="skuAuto" value="1">
+          <div class="form-text" id="skuHint">Tự tạo theo danh mục, số chính xác được cấp khi lưu.</div>
+        <?php endif; ?>
       </div>
       <div class="col-6">
         <label class="form-label">Danh mục</label>
-        <select name="category_id" class="form-select" required>
+        <select name="category_id" id="categorySelect" class="form-select" required>
           <?php foreach ($categories as $c): ?>
             <option value="<?php echo $c['id']; ?>" <?php echo ($product && $product['category_id']==$c['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($c['name']); ?></option>
           <?php endforeach; ?>
@@ -72,3 +84,34 @@
   <?php echo form_close(); ?>
 </div>
 <script src="<?php echo base_url('assets/js/image-compress.js'); ?>"></script>
+<?php if ( ! $product): ?>
+<script>
+// SKU tự động: đổi danh mục -> lấy SKU kế tiếp; gõ tay -> giữ mã tự nhập (bấm "Tự động" để quay lại).
+(function(){
+  var input = document.getElementById('skuInput');
+  var autoFlag = document.getElementById('skuAuto');
+  var autoBtn = document.getElementById('skuAutoBtn');
+  var hint = document.getElementById('skuHint');
+  var select = document.getElementById('categorySelect');
+
+  function setAuto(on){
+    autoFlag.value = on ? '1' : '0';
+    autoBtn.classList.toggle('d-none', on);
+    hint.textContent = on ? 'Tự tạo theo danh mục, số chính xác được cấp khi lưu.' : 'Đang dùng mã tự nhập.';
+  }
+
+  function refreshSku(){
+    if (autoFlag.value !== '1') return;
+    fetch('<?php echo base_url('me/products/next-sku'); ?>?category_id=' + encodeURIComponent(select.value))
+      .then(function(r){ return r.json(); })
+      .then(function(res){ if (autoFlag.value === '1' && res.sku) input.value = res.sku; })
+      .catch(function(){});
+  }
+
+  window.useAutoSku = function(){ setAuto(true); refreshSku(); };
+  input.addEventListener('input', function(){ setAuto(input.value.trim() === ''); });
+  select.addEventListener('change', refreshSku);
+  refreshSku();   // danh mục được chọn sẵn có thể khác danh mục đầu tiên (vd trình duyệt nhớ lựa chọn)
+})();
+</script>
+<?php endif; ?>

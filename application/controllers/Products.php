@@ -29,28 +29,54 @@ class Products extends MY_Controller
 
         if ($this->input->method() === 'post')
         {
-            $image = $this->_handle_image_upload($error);
+            // SKU tự sinh theo danh mục (CPE-01, CPE-02...): nếu người dùng giữ nguyên SKU gợi ý
+            // (sku_auto=1) hoặc để trống thì sinh lại ngay lúc lưu, để 2 người thêm cùng lúc không trùng.
+            $sku = trim((string) $this->input->post('sku', TRUE));
+            if ($this->input->post('sku_auto') === '1' || $sku === '')
+            {
+                $sku = $this->Product_model->generate_sku((int) $this->input->post('category_id'));
+            }
+            elseif ($this->Product_model->sku_exists($sku))
+            {
+                $error = 'Mã SKU "'.htmlspecialchars($sku).'" đã tồn tại.';
+            }
 
             if ( ! $error)
             {
-                $id = $this->Product_model->create($this->_form_data($image));
-                $this->audit('product', 'CREATE', NULL, array('id' => $id));
+                $image = $this->_handle_image_upload($error);
+            }
+
+            if ( ! $error)
+            {
+                $data = $this->_form_data($image);
+                $data['sku'] = $sku;
+                $id = $this->Product_model->create($data);
+                $this->audit('product', 'CREATE', NULL, array('id' => $id, 'sku' => $sku));
                 redirect('me/products');
                 return;
             }
         }
 
+        $categories = $this->Category_model->get_active();
         $data = array(
             'page_title'          => 'Thêm sản phẩm',
             'current_user'        => $this->current_user,
             'product'             => NULL,
-            'categories'          => $this->Category_model->get_active(),
+            'categories'          => $categories,
             'inventory_categories' => $this->Inventory_category_model->get_active(),
+            'suggested_sku'       => $categories ? $this->Product_model->generate_sku($categories[0]['id']) : '',
             'error'               => $error,
         );
         $this->load->view('layout/header', $data);
         $this->load->view('products/form', $data);
         $this->load->view('layout/footer');
+    }
+
+    /** JSON: SKU gợi ý kế tiếp cho danh mục đang chọn ở form Thêm sản phẩm. */
+    public function next_sku()
+    {
+        $category_id = (int) $this->input->get('category_id');
+        json_response(array('sku' => $category_id ? $this->Product_model->generate_sku($category_id) : ''));
     }
 
     public function edit($id)

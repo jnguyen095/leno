@@ -202,6 +202,29 @@ if ( ! function_exists('vn_to_ascii'))
     }
 }
 
+if ( ! function_exists('vn_initials_prefix'))
+{
+    /**
+     * Tiền tố SKU sản phẩm từ tên danh mục: chữ cái đầu mỗi từ, bỏ dấu, viết hoa
+     * ("Cà phê Espresso" -> CPE, "Đồ ăn vặt" -> DAV). Tên chỉ 1 từ lấy 3 chữ đầu
+     * ("Matcha" -> MAT). Tối đa 5 ký tự; không có chữ cái nào -> SP.
+     */
+    function vn_initials_prefix($name)
+    {
+        $words = preg_split('/[^a-z]+/', vn_to_ascii($name), -1, PREG_SPLIT_NO_EMPTY);
+        if (count($words) === 1)
+        {
+            $prefix = substr($words[0], 0, 3);
+        }
+        else
+        {
+            $prefix = implode('', array_map(function ($w) { return $w[0]; }, $words));
+        }
+        $prefix = strtoupper(substr($prefix, 0, 5));
+        return $prefix !== '' ? $prefix : 'SP';
+    }
+}
+
 if ( ! function_exists('vn_sku_prefix'))
 {
     /** "Pha Chế" -> "PH", "Nhà Bếp" -> "NH" — tiền tố SKU tự sinh từ tên danh mục. */

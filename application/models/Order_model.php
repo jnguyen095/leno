@@ -238,6 +238,33 @@ class Order_model extends CI_Model
         {
             $this->db->where('cafe_tables.id', $filters['table_id']);
         }
+        if ( ! empty($filters['created_by']))
+        {
+            $this->db->where('order_sessions.created_by', (int) $filters['created_by']);
+        }
+        // Phương thức thanh toán (CASH/TRANSFER/CARD/QR) hoặc NONE = đơn chưa có thanh toán.
+        if ( ! empty($filters['payment_method']))
+        {
+            if ($filters['payment_method'] === 'NONE')
+            {
+                $this->db->where('NOT EXISTS (SELECT 1 FROM payments p WHERE p.order_session_id = order_sessions.id)', NULL, FALSE);
+            }
+            else
+            {
+                $this->db->where('EXISTS (SELECT 1 FROM payments p WHERE p.order_session_id = order_sessions.id AND p.payment_method = '.$this->db->escape($filters['payment_method']).')', NULL, FALSE);
+            }
+        }
+    }
+
+    /** Nhân viên đã từng tạo đơn — cho bộ lọc "Người tạo" ở danh sách Đơn hàng. */
+    public function get_creators()
+    {
+        return $this->db->select('users.id, users.fullname')
+            ->distinct()
+            ->from($this->table)
+            ->join('users', 'users.id = order_sessions.created_by')
+            ->order_by('users.fullname', 'ASC')
+            ->get()->result_array();
     }
 
     public function daily_revenue($date)

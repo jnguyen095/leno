@@ -1,6 +1,10 @@
 <div class="container-fluid py-3 py-md-4">
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h4 class="fw-bold mb-0">Danh sách đơn hàng</h4>
+    <?php // Xuất đúng bộ lọc đang xem (giữ nguyên query string), không phân trang. ?>
+    <?php $export_qs = (string) $this->input->server('QUERY_STRING'); ?>
+    <a href="<?php echo site_url('me/orders/export').($export_qs !== '' ? '?'.htmlspecialchars($export_qs) : ''); ?>"
+       class="btn btn-sm btn-success"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a>
   </div>
 
   <?php if ($this->session->flashdata('success')): ?>
@@ -16,6 +20,9 @@
     // hiểu nhầm là chưa lọc gì và tự động quay về mặc định hôm nay.
     $date_qs = array('date_from' => $date_from, 'date_to' => $date_to);
     if ($table_id) $date_qs['table_id'] = $table_id;
+    if ($payment_method) $date_qs['payment_method'] = $payment_method;
+    if ($created_by) $date_qs['created_by'] = $created_by;
+    $payment_options = array('CASH' => 'Tiền mặt', 'TRANSFER' => 'Chuyển khoản', 'CARD' => 'Thẻ', 'QR' => 'QR Pay', 'NONE' => 'Chưa thanh toán');
   ?>
 
   <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
@@ -39,8 +46,20 @@
           </option>
         <?php endforeach; ?>
       </select>
+      <select name="payment_method" class="form-select form-select-sm" style="max-width:170px;">
+        <option value="">Mọi thanh toán</option>
+        <?php foreach ($payment_options as $pm => $pm_label): ?>
+          <option value="<?php echo $pm; ?>" <?php echo $payment_method === $pm ? 'selected' : ''; ?>><?php echo $pm_label; ?></option>
+        <?php endforeach; ?>
+      </select>
+      <select name="created_by" class="form-select form-select-sm" style="max-width:170px;">
+        <option value="">Mọi người tạo</option>
+        <?php foreach ($creators as $u): ?>
+          <option value="<?php echo $u['id']; ?>" <?php echo (int) $created_by === (int) $u['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($u['fullname']); ?></option>
+        <?php endforeach; ?>
+      </select>
       <button class="btn btn-sm btn-brand">Lọc</button>
-      <a href="<?php echo site_url('me/orders').'?'.http_build_query(array_merge($status ? array('status' => $status) : array(), $table_id ? array('table_id' => $table_id) : array(), array('date_from' => '', 'date_to' => ''))); ?>" class="btn btn-sm btn-outline-secondary">Xem tất cả ngày</a>
+      <a href="<?php echo site_url('me/orders').'?'.http_build_query(array_merge($status ? array('status' => $status) : array(), array_diff_key($date_qs, array('date_from' => 1, 'date_to' => 1)), array('date_from' => '', 'date_to' => ''))); ?>" class="btn btn-sm btn-outline-secondary">Xem tất cả ngày</a>
     <?php echo form_close(); ?>
   </div>
 
@@ -54,6 +73,10 @@
     <?php endif; ?>
     <?php if ($table_id):
       foreach ($tables as $t) { if ((string) $t['id'] === (string) $table_id) { echo '— bàn '.htmlspecialchars($t['table_name']); break; } }
+    endif; ?>
+    <?php if ($payment_method): ?>— <?php echo $payment_options[$payment_method]; ?><?php endif; ?>
+    <?php if ($created_by):
+      foreach ($creators as $u) { if ((int) $u['id'] === (int) $created_by) { echo '— tạo bởi '.htmlspecialchars($u['fullname']); break; } }
     endif; ?>
     — tổng <?php echo $total; ?> đơn
   </div>

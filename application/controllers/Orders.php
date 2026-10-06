@@ -12,11 +12,22 @@ class Orders extends MY_Controller
     }
 
     const PER_PAGE = 20;
+    const EXPORT_LIMIT = 20000;
 
-    public function index()
+    /**
+     * Đọc bộ lọc danh sách Đơn hàng từ query string — dùng chung cho trang danh sách và
+     * Xuất Excel để file xuất ra đúng những đơn đang thấy. Trả về [$filters, $values].
+     */
+    private function _list_filters()
     {
         $status = $this->input->get('status');
         $table_id = $this->input->get('table_id');
+        $created_by = (int) $this->input->get('created_by');
+        $payment_method = $this->input->get('payment_method');
+        if ( ! in_array($payment_method, array('CASH', 'TRANSFER', 'CARD', 'QR', 'NONE'), TRUE))
+        {
+            $payment_method = '';
+        }
 
         // Mặc định chỉ xem đơn hôm nay; nếu người dùng đã bấm lọc (kể cả bỏ trống
         // để xem tất cả ngày) thì tôn trọng giá trị họ chọn, không ép về hôm nay nữa.
@@ -32,6 +43,16 @@ class Orders extends MY_Controller
         if ($date_from) $filters['date_from'] = $date_from;
         if ($date_to) $filters['date_to'] = $date_to;
         if ($table_id) $filters['table_id'] = $table_id;
+        if ($created_by) $filters['created_by'] = $created_by;
+        if ($payment_method) $filters['payment_method'] = $payment_method;
+
+        return array($filters, compact('status', 'table_id', 'created_by', 'payment_method', 'date_from', 'date_to'));
+    }
+
+    public function index()
+    {
+        list($filters, $values) = $this->_list_filters();
+        extract($values);
 
         $total = $this->Order_model->count_list($filters);
         $total_pages = max(1, (int) ceil($total / self::PER_PAGE));
@@ -49,6 +70,9 @@ class Orders extends MY_Controller
             'date_to'      => $date_to,
             'table_id'     => $table_id,
             'tables'       => $this->Table_model->get_all(TRUE),
+            'created_by'   => $created_by,
+            'creators'     => $this->Order_model->get_creators(),
+            'payment_method' => $payment_method,
             'page'         => $page,
             'total_pages'  => $total_pages,
             'total'        => $total,
@@ -57,6 +81,59 @@ class Orders extends MY_Controller
         $this->load->view('layout/header', $data);
         $this->load->view('orders/index', $data);
         $this->load->view('layout/footer');
+    }
+
+    /** Xuất danh sách Đơn hàng (đúng bộ lọc đang xem, không phân trang) ra file Excel .xlsx. */
+    public function export()
+    {
+        list($filters, $values) = $this->_list_filters();
+        $orders = $this->Order_model->get_list($filters, self::EXPORT_LIMIT, 0);
+
+        $status_labels = array('OPEN' => 'Đang mở', 'WAIT_PAYMENT' => 'Chờ thanh toán', 'PAID' => 'Đã thanh toán', 'CANCELLED' => 'Đã hủy');
+
+        $this->load->library('xlsx_writer');
+        $x = $this->xlsx_writer;
+        $x->set_sheet_name('Đơn hàng');
+        $x->set_columns(array(
+            'Mã đơn' => 20, 'Bàn' => 12, 'Loại' => 10, 'Trạng thái' => 16, 'Người tạo' => 18, 'Thanh toán' => 15,
+            'Tạm tính' => 13, 'Giảm giá' => 11, 'VAT' => 10, 'Tổng tiền' => 14, 'Ghi chú' => 30,
+            'Thời gian tạo' => 17, 'Thời gian thanh toán' => 19,
+        ));
+        foreach ($orders as $o)
+        {
+            $x->add_row(array(
+                $o['order_no'],
+                $o['table_name'] ?: 'Mang đi',
+                $o['order_type'] === 'TAKEAWAY' ? 'Mang đi' : 'Tại bàn',
+                isset($status_labels[$o['status']]) ? $status_labels[$o['status']] : $o['status'],
+                $o['created_by_name'],
+                $o['payment_method'] ? payment_method_label($o['payment_method']) : '',
+                array('n' => $o['subtotal']),
+                array('n' => $o['discount_amount']),
+                array('n' => $o['vat_amount']),
+                array('n' => $o['total_amount']),
+                $o['note'],
+                array('d' => $o['created_at']),
+                array('d' => $o['paid_at']),
+            ));
+        }
+
+        // Dòng tổng cộng: SUBTOTAL(109) chỉ cộng các dòng đang hiện, nên lọc trong Excel vẫn ra tổng đúng.
+        // end_data() để bộ lọc không phủ dòng tổng này.
+        if ($orders)
+        {
+            $x->end_data();
+            $last = $x->row_count() + 1;
+            $sum = function ($col) use ($last) { return array('f' => 'SUBTOTAL(109,'.$col.'2:'.$col.$last.')', 'b' => TRUE); };
+            $x->add_row(array(array('t' => 'Tổng cộng ('.count($orders).' đơn)', 'b' => TRUE), '', '', '', '', '',
+                $sum('G'), $sum('H'), $sum('I'), $sum('J'), '', '', ''));
+        }
+
+        $range = $values['date_from'] || $values['date_to']
+            ? ($values['date_from'] ?: 'dau').'_'.($values['date_to'] ?: 'nay')
+            : 'tat_ca';
+        $this->audit('order', 'EXPORT_EXCEL', NULL, array('filters' => $filters, 'rows' => count($orders)));
+        $x->download('don_hang_'.str_replace('-', '', $range).'.xlsx');
     }
 
     /**

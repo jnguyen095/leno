@@ -49,6 +49,7 @@ $route['me/tables/(:num)/note'] = 'tables/note/$1';
 $route['me/tables/(:num)/merge'] = 'tables/merge/$1';
 
 $route['me/orders'] = 'orders/index';
+$route['me/orders/export'] = 'orders/export';
 $route['me/orders/(:num)'] = 'orders/detail/$1';
 $route['me/orders/(:num)/add-item'] = 'orders/add_item/$1';
 $route['me/orders/(:num)/update-item/(:num)'] = 'orders/update_item/$1/$2';

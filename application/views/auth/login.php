@@ -15,9 +15,9 @@
       <div class="card shadow-lg border-0 rounded-4">
         <div class="card-body p-4 p-sm-5 pt-sm-0">
           <div class="text-center mb-4">
-            <img src="<?=base_url('/assets/img/logo_sm-removebg.png')?>" width="200px" ?>
-            <h4 class="mt-2 mb-0 fw-bold">Leno</h4>
-            <small class="text-muted">Đăng nhập hệ thống</small>
+            <img src="<?=base_url('/assets/img/leno-text.png')?>" style="width:200px;margin-top:20px"?>
+            <h4 class="mt-2 mb-0 fw-bold"></h4>
+            <small class="text-muted"></small>
           </div>
 
           <?php if ( ! empty($error)): ?>

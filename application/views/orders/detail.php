@@ -84,14 +84,22 @@
     <?php if ($is_active): ?>
     <div class="col-lg-7 order-lg-1">
       <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white">
-          <?php // Lọc theo danh mục ngay trên trang (không tải lại) — mặc định "Tất cả". ?>
-          <div class="d-flex flex-wrap gap-2" id="categoryFilter">
-            <button type="button" class="btn btn-sm btn-brand" data-cat="all" onclick="filterCategory('all', this)">Tất cả</button>
-            <?php $cat_index = 0; foreach (array_keys($products_by_category) as $cat_name): ?>
-              <button type="button" class="btn btn-sm btn-outline-brand" data-cat="<?php echo $cat_index++; ?>" onclick="filterCategory(this.dataset.cat, this)"><?php echo htmlspecialchars($cat_name); ?></button>
-            <?php endforeach; ?>
+        <div class="card-header bg-white pb-0">
+          <?php // Lọc theo danh mục ngay trên trang (không tải lại) — mặc định "Tất cả". 1 hàng trượt ngang như dãy chip đơn. ?>
+          <div class="pos-order-chips-bar" id="categoryFilterBar">
+            <button type="button" class="pos-chips-nav pos-chips-prev" aria-label="Danh mục trước"><i class="bi bi-chevron-left"></i></button>
+            <div class="swiper pos-order-chips" id="categoryFilter">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide"><button type="button" class="btn btn-sm btn-brand" data-cat="all" onclick="filterCategory('all', this)">Tất cả</button></div>
+                <?php $cat_index = 0; foreach (array_keys($products_by_category) as $cat_name): ?>
+                  <div class="swiper-slide"><button type="button" class="btn btn-sm btn-outline-brand" data-cat="<?php echo $cat_index++; ?>" onclick="filterCategory(this.dataset.cat, this)"><?php echo htmlspecialchars($cat_name); ?></button></div>
+                <?php endforeach; ?>
+              </div>
+              <div class="swiper-scrollbar pos-chips-scrollbar"></div>
+            </div>
+            <button type="button" class="pos-chips-nav pos-chips-next" aria-label="Danh mục sau"><i class="bi bi-chevron-right"></i></button>
           </div>
+          <script>posChipSwiper(document.getElementById('categoryFilterBar'), 0);</script>
         </div>
         <div class="card-body" style="max-height:70vh; overflow-y:auto;">
           <?php if (empty($products_by_category)): ?>

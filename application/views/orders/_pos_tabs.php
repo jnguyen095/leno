@@ -237,16 +237,39 @@ window.posPrompt = function(title, value, suggestions){
 })();
 </script>
 
+<?php if ($pos_tab === 'menu'): ?>
+<?php // Swiper cho các dãy chip 1 hàng ở tab Thực đơn (chip đơn đang phục vụ, lọc danh mục món). ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css">
+<script src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
+<script>
+// posChipSwiper(bar, activeIndex): biến .pos-order-chips-bar thành 1 hàng trượt ngang (vuốt / lăn chuột /
+// kéo thanh cuộn / nút ‹ ›). Nút ‹ › tự ẩn khi đủ chỗ hiện hết; chip activeIndex được cuộn vào tầm nhìn.
+window.posChipSwiper = function(bar, activeIndex){
+  if ( ! bar || typeof Swiper === 'undefined') return null; // CDN lỗi -> vẫn cuộn ngang được bằng CSS
+  var swiper = new Swiper(bar.querySelector('.swiper'), {
+    slidesPerView: 'auto',
+    spaceBetween: 8,
+    freeMode: { enabled: true, momentumRatio: 0.6 },
+    mousewheel: { forceToAxis: true },
+    grabCursor: true,
+    watchOverflow: true,
+    navigation: { prevEl: bar.querySelector('.pos-chips-prev'), nextEl: bar.querySelector('.pos-chips-next') },
+    scrollbar: { el: bar.querySelector('.pos-chips-scrollbar'), draggable: true, hide: false },
+    on: { init: function(){ bar.classList.add('is-ready'); } }
+  });
+  if (activeIndex > 0 && ! swiper.isLocked) swiper.slideTo(Math.max(0, activeIndex - 1), 0);
+  return swiper;
+};
+</script>
+<?php endif; ?>
+
 <?php // Luôn hiện ở tab Thực đơn (kể cả chỉ 1 đơn) để thấy đang gọi món cho bàn nào. ?>
 <?php if ($pos_tab === 'menu' && $pos_orders): ?>
 <?php
-  // Một hàng duy nhất, trượt ngang bằng Swiper (vuốt / lăn chuột / kéo thanh cuộn / nút ‹ ›).
-  // Nút ‹ › tự ẩn khi đủ chỗ hiện hết; chip đơn đang xem được cuộn vào giữa tầm nhìn.
   $active_chip_index = 0;
   foreach ($pos_orders as $i => $po) { if ((int) $po['id'] === (int) $pos_order_id) $active_chip_index = $i; }
 ?>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css">
-<div class="pos-order-chips-bar mb-3">
+<div class="pos-order-chips-bar mb-3" id="posOrderChipsBar">
   <button type="button" class="pos-chips-nav pos-chips-prev" aria-label="Đơn trước"><i class="bi bi-chevron-left"></i></button>
   <div class="swiper pos-order-chips">
     <div class="swiper-wrapper">
@@ -265,24 +288,5 @@ window.posPrompt = function(title, value, suggestions){
   </div>
   <button type="button" class="pos-chips-nav pos-chips-next" aria-label="Đơn sau"><i class="bi bi-chevron-right"></i></button>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.js"></script>
-<script>
-(function(){
-  if (typeof Swiper === 'undefined') return; // CDN không tải được -> vẫn cuộn ngang được bằng CSS
-  var swiper = new Swiper('.pos-order-chips', {
-    slidesPerView: 'auto',
-    spaceBetween: 8,
-    freeMode: { enabled: true, momentumRatio: 0.6 },
-    mousewheel: { forceToAxis: true },
-    grabCursor: true,
-    watchOverflow: true,
-    navigation: { prevEl: '.pos-chips-prev', nextEl: '.pos-chips-next' },
-    scrollbar: { el: '.pos-chips-scrollbar', draggable: true, hide: false },
-    on: { init: function(s){ s.el.closest('.pos-order-chips-bar').classList.add('is-ready'); } }
-  });
-  // Đưa chip đang xem vào tầm nhìn (không hiệu ứng khi tải trang).
-  var active = <?php echo (int) $active_chip_index; ?>;
-  if (active > 0 && ! swiper.isLocked) swiper.slideTo(Math.max(0, active - 1), 0);
-})();
-</script>
+<script>posChipSwiper(document.getElementById('posOrderChipsBar'), <?php echo (int) $active_chip_index; ?>);</script>
 <?php endif; ?>

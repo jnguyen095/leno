@@ -13,10 +13,19 @@ class Products extends MY_Controller
 
     public function index()
     {
+        $status = $this->input->get('status');
+        $filters = array(
+            'category_id' => (int) $this->input->get('category_id'),
+            'q'           => trim((string) $this->input->get('q', TRUE)),
+            'status'      => in_array($status, array('ACTIVE', 'INACTIVE'), TRUE) ? $status : '',
+        );
+
         $data = array(
             'page_title'   => 'Sản phẩm',
             'current_user' => $this->current_user,
-            'products'     => $this->Product_model->get_all(),
+            'products'     => $this->Product_model->get_all($filters),
+            'categories'   => $this->Category_model->get_active(),
+            'filters'      => $filters,
         );
         $this->load->view('layout/header', $data);
         $this->load->view('products/index', $data);

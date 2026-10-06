@@ -5,14 +5,34 @@ class Product_model extends CI_Model
 {
     protected $table = 'products';
 
-    public function get_all()
+    /**
+     * Danh sách sản phẩm cho trang quản trị. $filters: category_id, q (tìm theo tên hoặc SKU),
+     * status ('ACTIVE' | 'INACTIVE'; rỗng = tất cả).
+     */
+    public function get_all($filters = array())
     {
-        return $this->db->select('products.*, categories.name as category_name, inventory_categories.name as inventory_category_name')
+        $this->db->select('products.*, categories.name as category_name, inventory_categories.name as inventory_category_name')
             ->from($this->table)
             ->join('categories', 'categories.id = products.category_id', 'left')
-            ->join('inventory_categories', 'inventory_categories.id = products.inventory_category_id', 'left')
-            ->order_by('products.product_name', 'ASC')
-            ->get()->result_array();
+            ->join('inventory_categories', 'inventory_categories.id = products.inventory_category_id', 'left');
+
+        if ( ! empty($filters['category_id']))
+        {
+            $this->db->where('products.category_id', (int) $filters['category_id']);
+        }
+        if (isset($filters['q']) && $filters['q'] !== '')
+        {
+            $this->db->group_start()
+                ->like('products.product_name', $filters['q'])
+                ->or_like('products.sku', $filters['q'])
+                ->group_end();
+        }
+        if ( ! empty($filters['status']))
+        {
+            $this->db->where('products.status', $filters['status']);
+        }
+
+        return $this->db->order_by('products.product_name', 'ASC')->get()->result_array();
     }
 
     public function get_active_grouped_by_category()

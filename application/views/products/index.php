@@ -6,6 +6,42 @@
       <a href="<?php echo site_url('me/products/create'); ?>" class="btn btn-brand"><i class="bi bi-plus-lg"></i> Thêm</a>
     </div>
   </div>
+  <?php // Bộ lọc: danh mục + trạng thái tự lọc khi đổi; ô tìm kiếm lọc khi bấm Enter / nút Lọc. ?>
+  <?php echo form_open('me/products', array('method' => 'get', 'class' => 'card border-0 shadow-sm rounded-4 mb-3', 'id' => 'productFilter')); ?>
+    <div class="card-body row g-2 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="search" name="q" class="form-control" placeholder="Tìm theo tên hoặc SKU…" value="<?php echo htmlspecialchars($filters['q']); ?>">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select name="category_id" class="form-select" onchange="this.form.submit()">
+          <option value="">Tất cả danh mục</option>
+          <?php foreach ($categories as $c): ?>
+            <option value="<?php echo $c['id']; ?>" <?php echo (int) $filters['category_id'] === (int) $c['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($c['name']); ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="col-md-auto">
+        <div class="btn-group" role="group" aria-label="Trạng thái">
+          <?php foreach (array('' => 'Tất cả', 'ACTIVE' => 'Đang bán', 'INACTIVE' => 'Đã ẩn') as $value => $label): $rid = 'status_'.($value ?: 'ALL'); ?>
+            <input type="radio" class="btn-check" name="status" id="<?php echo $rid; ?>" value="<?php echo $value; ?>"
+                   <?php echo $filters['status'] === $value ? 'checked' : ''; ?> onchange="this.form.submit()">
+            <label class="btn btn-outline-brand" for="<?php echo $rid; ?>"><?php echo $label; ?></label>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <div class="col-md-auto d-flex gap-2">
+        <button class="btn btn-brand"><i class="bi bi-funnel"></i> Lọc</button>
+        <?php if ($filters['q'] !== '' || $filters['category_id'] || $filters['status'] !== ''): ?>
+          <a href="<?php echo site_url('me/products'); ?>" class="btn btn-outline-secondary">Xoá lọc</a>
+        <?php endif; ?>
+      </div>
+    </div>
+  <?php echo form_close(); ?>
+  <div class="small text-muted mb-2"><?php echo count($products); ?> sản phẩm</div>
+
   <div class="table-responsive">
     <table class="table bg-white shadow-sm rounded align-middle">
       <thead class="table-light"><tr><th>Ảnh</th><th>SKU</th><th>Tên</th><th>Danh mục</th><th>Kho</th><th class="text-end">Giá</th><th>Trạng thái</th><th></th></tr></thead>
@@ -39,6 +75,9 @@
           </td>
         </tr>
       <?php endforeach; ?>
+      <?php if (empty($products)): ?>
+        <tr><td colspan="8" class="text-center text-muted py-4">Không có sản phẩm nào phù hợp.</td></tr>
+      <?php endif; ?>
       </tbody>
     </table>
   </div>

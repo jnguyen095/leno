@@ -235,9 +235,20 @@ window.posPrompt = function(title, value, suggestions){
     });
     exitBtn.addEventListener('click', function(){ window.LenoPosShell.exit(); });
 
+    // Khung đổi kích thước (vào fullscreen làm màn hình cao thêm SAU khi trang trong khung đã đo,
+    // xoay máy, đổi cửa sổ...) -> bảo trang đo lại chiều cao bố cục (fitPosLayout ở trang gọi món),
+    // tránh hở khoảng trống ở đáy. Không trông vào sự kiện resize của iframe vì không phải lúc nào cũng có.
+    function refitFrame(){
+      try { if (frame.contentWindow.fitPosLayout) frame.contentWindow.fitPosLayout(); } catch (e) {}
+    }
+    if (window.ResizeObserver) new ResizeObserver(refitFrame).observe(frame);
+
     // Thoát fullscreen bằng Esc / nút của trình duyệt = tắt luôn khung POS.
     ['fullscreenchange', 'webkitfullscreenchange'].forEach(function(evt){
-      document.addEventListener(evt, function(){ if ( ! isFullscreen()) window.LenoPosShell.exit(); });
+      document.addEventListener(evt, function(){
+        if ( ! isFullscreen()) { window.LenoPosShell.exit(); return; }
+        [0, 150, 400].forEach(function(ms){ setTimeout(refitFrame, ms); });
+      });
     });
 
     frame.src = location.href;

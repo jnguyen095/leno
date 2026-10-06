@@ -154,8 +154,23 @@ body.pos-shell-open{ overflow:hidden; }
 .pos-shell-frame{ width:100%; height:100%; border:0; display:block; }
 .pos-shell-exit{ position:absolute; top:8px; right:8px; z-index:1; opacity:.85; }
 body.pos-focus > nav.navbar{ display:none !important; }
-body.pos-focus main > .container-fluid{ padding-top:.75rem !important; }
-body.pos-focus .card-body[style*="max-height"]{ max-height:calc(100vh - 230px) !important; }
+body.pos-focus main > .container-fluid{ padding-top:.75rem !important; padding-bottom:.75rem !important; }
+/* Trang gọi món: màn hình lớn -> 2 cột vừa khít phần còn lại của màn hình (--pos-avail-h do JS đo),
+   thực đơn và danh sách món tự cuộn bên trong, tổng tiền + 3 nút luôn ở đáy cột phải.
+   Màn hình nhỏ -> xếp chồng, thực đơn cao 60vh, 3 nút dính đáy màn hình. */
+.pos-menu-body{ max-height:60vh; overflow-y:auto; }
+@media (min-width: 992px){
+  .pos-layout > .pos-order-side, .pos-layout > .pos-menu-side{ height: var(--pos-avail-h, calc(100vh - 220px)); display:flex; flex-direction:column; }
+  .pos-menu-side > .card{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+  .pos-menu-side .pos-menu-body{ flex:1 1 auto; min-height:0; max-height:none; }
+  .pos-order-side #orderPanel{ flex:1 1 auto; min-height:0; display:flex; }
+  .pos-order-side #orderPanel > .card{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; margin-bottom:.75rem !important; }
+  .pos-order-side #orderedItemsList{ flex:1 1 auto; min-height:0; overflow-y:auto; }
+  .pos-order-side .pos-actions-bar{ flex:0 0 auto; }
+}
+@media (max-width: 991.98px){
+  .pos-actions-bar{ position:sticky; bottom:0; z-index:5; background:#f5f6f8; padding:.5rem 0; margin:0 -.25rem; box-shadow:0 -4px 8px -6px rgba(0,0,0,.25); }
+}
 @media (max-width: 575.98px){
   #orderedItemsList .qty-stepper button{ width:28px; height:28px; }
   .pos-item-amount{ min-width:0; }

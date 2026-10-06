@@ -58,40 +58,41 @@
       <a href="#" onclick="printSlip('kitchen'); return false;">In lại</a></div>
   <?php endif; ?>
 
-  <div class="row g-3">
-    <div class="<?php echo $is_active ? 'col-lg-5 order-lg-2' : 'col-lg-7'; ?>">
+  <?php // Đơn đang phục vụ: trên màn hình lớn 2 cột vừa khít chiều cao màn hình (xem .pos-layout trong CSS),
+        // thực đơn và danh sách món tự cuộn bên trong; 3 nút luôn nằm cuối cột phải. ?>
+  <div class="row g-3 <?php echo $is_active ? 'pos-layout' : ''; ?>" id="posLayout">
+    <div class="<?php echo $is_active ? 'col-lg-5 order-lg-2 pos-order-side' : 'col-lg-7'; ?>">
       <div id="orderPanel">
         <?php $this->load->view('orders/_order_panel'); ?>
       </div>
 
       <?php if ($is_active): ?>
+      <div class="pos-actions-bar">
       <div class="row g-2 pos-actions">
         <div class="col-4">
           <?php echo form_open('me/orders/'.$order['id'].'/notify', array('id' => 'notifyForm')); ?>
-            <button type="submit" class="btn btn-warning btn-lg w-100 h-100" onclick="return waitIdle(this);">
+            <button type="submit" class="btn btn-warning btn-md w-100 h-100" onclick="return waitIdle(this);">
               <i class="bi bi-megaphone"></i><div class="small">Thông báo</div>
             </button>
           <?php echo form_close(); ?>
         </div>
         <div class="col-4">
-          <button type="button" class="btn btn-outline-dark btn-lg w-100 h-100" onclick="printProvisional();">
+          <button type="button" class="btn btn-outline-dark btn-md w-100 h-100" onclick="printProvisional();">
             <i class="bi bi-printer"></i><div class="small">In tạm tính</div>
           </button>
         </div>
         <div class="col-4">
-          <button type="button" class="btn btn-brand btn-lg w-100 h-100" onclick="openPayModal();">
+          <button type="button" class="btn btn-brand btn-md w-100 h-100" onclick="openPayModal();">
             <i class="bi bi-cash-coin"></i><div class="small">Thanh toán</div>
           </button>
         </div>
       </div>
-      <div class="form-text mt-2">
-        "Thông báo" gửi món mới/đổi cho bếp và in phiếu bếp; "In tạm tính" in phiếu cho khách xem — cả hai chưa kết thúc đơn.
       </div>
       <?php endif; ?>
     </div>
 
     <?php if ($is_active): ?>
-    <div class="col-lg-7 order-lg-1">
+    <div class="col-lg-7 order-lg-1 pos-menu-side">
       <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white pb-0">
           <?php // Lọc theo danh mục ngay trên trang (không tải lại) — mặc định "Tất cả". 1 hàng trượt ngang như dãy chip đơn. ?>
@@ -110,7 +111,7 @@
           </div>
           <script>posChipSwiper(document.getElementById('categoryFilterBar'), 0);</script>
         </div>
-        <div class="card-body" style="max-height:70vh; overflow-y:auto;">
+        <div class="card-body pos-menu-body">
           <?php if (empty($products_by_category)): ?>
             <div class="text-muted text-center py-4">Chưa có sản phẩm nào đang bán.</div>
           <?php endif; ?>
@@ -271,7 +272,32 @@ function showAjaxError(msg){
   var el = document.getElementById('ajaxError');
   el.textContent = msg || '';
   el.classList.toggle('d-none', ! msg);
+  fitPosLayout();
 }
+
+// Chiều cao còn lại từ đầu 2 cột tới đáy màn hình -> biến CSS --pos-avail-h (chỉ dùng ở màn hình lớn).
+function fitPosLayout(){
+  var row = document.getElementById('posLayout');
+  if ( ! row) return;
+  // Đo từ đỉnh CỘT (gutter của .row đẩy cột xuống thấp hơn đỉnh hàng), trừ phần nằm dưới hàng
+  // (lề dưới khung trang...) để cả trang vừa khít màn hình, không phải cuộn.
+  var col = row.querySelector('.pos-menu-side') || row.firstElementChild;
+  var top = col.getBoundingClientRect().top + window.scrollY;
+  // Phần dưới = từ đáy hàng tới đáy NỘI DUNG trang (body), không dùng scrollHeight vì scrollHeight
+  // không bao giờ nhỏ hơn màn hình -> khi nội dung ngắn hơn màn hình (vd trong toàn màn hình) sẽ hở đáy.
+  var below = document.body.getBoundingClientRect().bottom - row.getBoundingClientRect().bottom;
+  row.style.setProperty('--pos-avail-h', Math.max(380, Math.floor(window.innerHeight - top - below)) + 'px');
+}
+// Đo lại khi đổi kích thước (kể cả lúc vào/thoát toàn màn hình): ngay lập tức và thêm một lần
+// sau khi hiệu ứng chuyển kích thước của trình duyệt kết thúc.
+var fitPosTimer = null;
+window.addEventListener('resize', function(){
+  fitPosLayout();
+  clearTimeout(fitPosTimer);
+  fitPosTimer = setTimeout(fitPosLayout, 200);
+});
+window.addEventListener('load', fitPosLayout);
+fitPosLayout();
 
 function addProduct(pid, btn){
   btn.classList.remove('pos-product-added'); void btn.offsetWidth; btn.classList.add('pos-product-added');

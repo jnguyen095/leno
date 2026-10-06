@@ -1,44 +1,53 @@
 <div class="container-fluid py-3 py-md-4">
   <?php if ($is_active): ?>
-    <?php $this->load->view('orders/_pos_tabs'); ?>
-  <?php else: ?>
-    <a href="<?php echo site_url('me/orders'); ?>" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Đơn hàng</a>
-  <?php endif; ?>
-
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-    <div>
-      <h4 class="fw-bold mb-0">
+    <?php // Đơn đang phục vụ: tên bàn (+ ghi chú bàn) nằm ngay sau 2 tab Bàn | Thực đơn; nút "Khác" đứng trước "Toàn màn hình". ?>
+    <?php ob_start(); ?>
+      <span class="fw-bold fs-5 text-nowrap">
         <?php if (empty($order['table_id'])): ?><i class="bi bi-bag-check text-brand"></i><?php endif; ?>
         <?php echo htmlspecialchars($table_label); ?>
-        <?php if ( ! $is_active): // Mã đơn + trạng thái chỉ hiện khi xem lại đơn đã đóng, tab Thực đơn gọn hơn. ?>
-        <span class="text-muted fs-6">#<?php echo htmlspecialchars($order['order_no']); ?></span>
-        <?php endif; ?>
-      </h4>
-      <?php if ( ! $is_active): ?>
-      <span class="badge bg-<?php echo order_status_badge($order['status']); ?>"><?php echo $order['status']; ?></span>
-      <?php endif; ?>
-      <?php // Ghi chú cố định của bàn (giữ qua các lượt khách) — bấm để sửa. ?>
-      <?php if ($order['table_id']): ?>
-        <div id="tableNoteWrap" class="small text-muted mt-1 <?php echo empty($order['table_note']) ? 'd-none' : ''; ?>">
+      </span>
+      <?php if ($order['table_id']): // Ghi chú cố định của bàn (giữ qua các lượt khách) — bấm ✏️ để sửa. ?>
+        <span id="tableNoteWrap" class="small text-muted ms-2 text-truncate <?php echo empty($order['table_note']) ? 'd-none' : ''; ?>">
           <i class="bi bi-sticky"></i> <span id="tableNoteText"><?php echo htmlspecialchars((string) $order['table_note']); ?></span>
-          <?php if ($is_active): ?><a href="#" class="ms-1" onclick="editTableNote(); return false;"><i class="bi bi-pencil"></i></a><?php endif; ?>
-        </div>
+          <a href="#" class="ms-1" onclick="editTableNote(); return false;"><i class="bi bi-pencil"></i></a>
+        </span>
+      <?php endif; ?>
+    <?php $pos_tab_title = ob_get_clean(); ?>
+    <?php ob_start(); ?>
+      <?php if ($order['table_id']): ?>
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i> Khác</button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="<?php echo site_url('me/tables/'.$order['table_id'].'/transfer'); ?>"><i class="bi bi-arrow-left-right"></i> Chuyển bàn</a></li>
+          <li><a class="dropdown-item" href="<?php echo site_url('me/tables/'.$order['table_id'].'/merge'); ?>"><i class="bi bi-union"></i> Gộp bàn</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" onclick="editTableNote(); return false;"><i class="bi bi-sticky"></i> Ghi chú bàn</a></li>
+        </ul>
+      </div>
+      <?php endif; ?>
+    <?php $pos_tab_actions = ob_get_clean(); ?>
+    <?php $this->load->view('orders/_pos_tabs', array('pos_tab_title' => $pos_tab_title, 'pos_tab_actions' => $pos_tab_actions)); ?>
+  <?php else: ?>
+    <a href="<?php echo site_url('me/orders'); ?>" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Đơn hàng</a>
+
+    <?php // Xem lại đơn đã đóng: tiêu đề riêng có mã đơn + trạng thái. ?>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <div>
+        <h4 class="fw-bold mb-0">
+          <?php if (empty($order['table_id'])): ?><i class="bi bi-bag-check text-brand"></i><?php endif; ?>
+          <?php echo htmlspecialchars($table_label); ?>
+          <span class="text-muted fs-6">#<?php echo htmlspecialchars($order['order_no']); ?></span>
+        </h4>
+        <span class="badge bg-<?php echo order_status_badge($order['status']); ?>"><?php echo $order['status']; ?></span>
+        <?php if ( ! empty($order['table_note'])): ?>
+          <div class="small text-muted mt-1"><i class="bi bi-sticky"></i> <?php echo htmlspecialchars($order['table_note']); ?></div>
+        <?php endif; ?>
+      </div>
+      <?php if ($order['status'] === 'PAID'): ?>
+        <a href="<?php echo site_url('me/orders/'.$order['id'].'/invoice'); ?>" target="_blank" class="btn btn-sm btn-brand"><i class="bi bi-printer"></i> In hóa đơn</a>
       <?php endif; ?>
     </div>
-    <?php if ($is_active && $order['table_id']): ?>
-    <div class="dropdown">
-      <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i> Khác</button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="<?php echo site_url('me/tables/'.$order['table_id'].'/transfer'); ?>"><i class="bi bi-arrow-left-right"></i> Chuyển bàn</a></li>
-        <li><a class="dropdown-item" href="<?php echo site_url('me/tables/'.$order['table_id'].'/merge'); ?>"><i class="bi bi-union"></i> Gộp bàn</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="#" onclick="editTableNote(); return false;"><i class="bi bi-sticky"></i> Ghi chú bàn</a></li>
-      </ul>
-    </div>
-    <?php elseif ($order['status'] === 'PAID'): ?>
-      <a href="<?php echo site_url('me/orders/'.$order['id'].'/invoice'); ?>" target="_blank" class="btn btn-sm btn-brand"><i class="bi bi-printer"></i> In hóa đơn</a>
-    <?php endif; ?>
-  </div>
+  <?php endif; ?>
 
   <div id="ajaxError" class="alert alert-danger py-2 small d-none"></div>
   <?php if ($this->session->flashdata('error')): ?>

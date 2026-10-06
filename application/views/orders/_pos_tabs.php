@@ -2,7 +2,11 @@
   // Thanh tab POS: "Bàn" (sơ đồ bàn) | "Thực đơn" (đơn đang chọn). Ở tab Thực đơn có thêm
   // dãy chip các đơn đang phục vụ để chuyển nhanh giữa nhiều khách cùng lúc.
   // Biến: $pos_tab ('tables'|'menu'), $pos_order_id, $pos_orders (Order_model::get_active_orders()).
+  // Tuỳ chọn (trang đơn truyền vào): $pos_tab_title = HTML tên bàn đặt ngay sau 2 tab,
+  // $pos_tab_actions = HTML nút đặt trước nút "Toàn màn hình" (vd dropdown "Khác").
   $menu_url = $pos_order_id ? site_url('me/orders/'.$pos_order_id) : NULL;
+  $pos_tab_title = isset($pos_tab_title) ? $pos_tab_title : '';
+  $pos_tab_actions = isset($pos_tab_actions) ? $pos_tab_actions : '';
 ?>
 <ul class="nav nav-tabs pos-tabs mb-3">
   <li class="nav-item">
@@ -19,7 +23,11 @@
       <span class="nav-link disabled" title="Chọn bàn trước"><i class="bi bi-journal-text"></i> Thực đơn</span>
     <?php endif; ?>
   </li>
-  <li class="nav-item ms-auto d-flex align-items-center pb-1">
+  <?php if ($pos_tab_title !== ''): ?>
+  <li class="nav-item d-flex align-items-center ms-2 pos-tab-title"><?php echo $pos_tab_title; ?></li>
+  <?php endif; ?>
+  <li class="nav-item ms-auto d-flex align-items-center gap-2 pb-1">
+    <?php echo $pos_tab_actions; ?>
     <button type="button" class="btn btn-sm btn-outline-secondary" id="posFocusBtn" onclick="togglePosFocus()">
       <i class="bi bi-arrows-fullscreen"></i> <span>Toàn màn hình</span>
     </button>

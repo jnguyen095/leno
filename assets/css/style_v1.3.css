@@ -123,6 +123,10 @@ body{
 .pos-item-note.has-note{ color:#b26a00; font-weight:600; }
 .pos-order-note{ font-size:.85rem; }
 .pos-order-note.has-note{ color:#333; }
+/* Tên bàn + ghi chú bàn nằm cùng hàng với tab Bàn | Thực đơn; ghi chú dài thì cắt bớt (…). */
+.pos-tab-title{ min-width:0; flex:0 1 auto; padding-bottom:.25rem; }
+.pos-tab-title #tableNoteWrap{ display:inline-block; max-width:280px; vertical-align:middle; }
+
 /* Dãy chip đơn đang phục vụ (tab Thực đơn): 1 hàng, trượt ngang bằng Swiper + nút ‹ ›. */
 .pos-order-chips-bar{ display:flex; align-items:center; gap:.5rem; }
 .pos-order-chips{

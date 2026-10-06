@@ -9,6 +9,9 @@
   <div>Số HĐ: <?php echo htmlspecialchars($order['order_no']); ?></div>
   <div><?php echo $order['table_name'] ? 'Bàn: '.htmlspecialchars($order['table_name']) : 'Mang đi'; ?></div>
   <div>Thời gian: <?php echo date('d/m/Y H:i', strtotime($order['paid_at'])); ?></div>
+  <?php if ( ! empty($order['created_by_name'])): // Nhân viên tạo đơn (người mở bàn / gọi món). ?>
+  <div>Nhân viên: <?php echo htmlspecialchars($order['created_by_name']); ?></div>
+  <?php endif; ?>
   <hr>
   <table>
     <?php foreach ($items as $it): ?>
@@ -29,8 +32,6 @@
   <hr>
   <table>
     <tr><td>Hình thức TT</td><td class="right"><?php echo htmlspecialchars(payment_method_label($payment['payment_method'])); ?></td></tr>
-    <tr><td>Khách đưa</td><td class="right"><?php echo number_format($payment['received_amount'], 0, ',', '.'); ?></td></tr>
-    <tr><td>Tiền thối</td><td class="right"><?php echo number_format($payment['change_amount'], 0, ',', '.'); ?></td></tr>
   </table>
   <hr>
   <div class="center">Cảm ơn quý khách - Hẹn gặp lại!</div>

@@ -91,7 +91,7 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-gear"></i> Quản trị</a>
           <ul class="dropdown-menu">
-            <!-- <?php if ($can_admin_tables_manage): ?><li><a class="dropdown-item" href="<?php echo site_url('me/tables/manage'); ?>">Quản lý bàn</a></li><?php endif; ?> -->
+            <?php if ($can_admin_tables_manage): ?><li><a class="dropdown-item" href="<?php echo site_url('me/tables/manage'); ?>"><i class="bi bi-grid-3x3-gap"></i> Quản lý bàn</a></li><?php endif; ?>
             <?php if ($can_admin_recipes): ?><li><a class="dropdown-item" href="<?php echo site_url('me/recipes'); ?>"><i class="bi bi-egg-fried"></i> Công thức pha chế</a></li><?php endif; ?>
             <?php if ($can_admin_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/categories'); ?>">Danh mục</a></li><?php endif; ?>
             <?php if ($can_admin_products): ?><li><a class="dropdown-item" href="<?php echo site_url('me/products'); ?>">Sản phẩm</a></li><?php endif; ?>

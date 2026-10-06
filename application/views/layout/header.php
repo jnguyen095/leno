@@ -22,7 +22,7 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
       if ($current_user['role'] === 'STOCKTAKER') $brand_home = 'stock/adjust';
     ?>
     <a class="navbar-brand" href="<?php echo site_url('me/'.$brand_home); ?>">
-      <img src="<?=base_url("/assets/img/logo-white.png")?>" height="30px"/>
+      <img src="<?=base_url("/assets/img/leno-logo.png")?>" height="30px"/>
     </i>Leno</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
       <span class="navbar-toggler-icon"></span>
@@ -94,7 +94,7 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
             <?php if ($can_admin_tables_manage): ?><li><a class="dropdown-item" href="<?php echo site_url('me/tables/manage'); ?>"><i class="bi bi-grid-3x3-gap"></i> Quản lý bàn</a></li><?php endif; ?>
             <?php if ($can_admin_recipes): ?><li><a class="dropdown-item" href="<?php echo site_url('me/recipes'); ?>"><i class="bi bi-egg-fried"></i> Công thức pha chế</a></li><?php endif; ?>
             <?php if ($can_admin_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/categories'); ?>">Danh mục</a></li><?php endif; ?>
-            <?php if ($can_admin_products): ?><li><a class="dropdown-item" href="<?php echo site_url('me/products'); ?>">Sản phẩm</a></li><?php endif; ?>
+            <?php if ($can_admin_products): ?><li><a class="dropdown-item" href="<?php echo site_url('me/products'); ?>">Món</a></li><?php endif; ?>
             <?php if ($can_admin_inventory_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/categories'); ?>">Danh mục kho</a></li><?php endif; ?>
             <?php if ($can_admin_inventory_units): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/units'); ?>">Đơn vị tính</a></li><?php endif; ?>
             <?php if ($can_admin_dispense_points): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/dispense-points'); ?>">Điểm xuất kho</a></li><?php endif; ?>

@@ -1,6 +1,6 @@
 <div class="container-fluid py-3 py-md-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold mb-0">Sản phẩm</h4>
+    <h4 class="fw-bold mb-0">Món</h4>
     <div class="d-flex gap-2">
       <a href="<?php echo site_url('me/products/import'); ?>" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-arrow-up"></i> Import Excel</a>
       <a href="<?php echo site_url('me/products/create'); ?>" class="btn btn-brand"><i class="bi bi-plus-lg"></i> Thêm</a>
@@ -44,7 +44,7 @@
 
   <div class="table-responsive">
     <table class="table bg-white shadow-sm rounded align-middle">
-      <thead class="table-light"><tr><th>Ảnh</th><th>SKU</th><th>Tên</th><th>Danh mục</th><th>Kho</th><th class="text-end">Giá</th><th>Trạng thái</th><th></th></tr></thead>
+      <thead class="table-light"><tr><th>Ảnh</th><th>SKU</th><th>Tên món</th><th>Danh mục</th><th>Kho</th><th class="text-end">Giá</th><th>Trạng thái</th><th></th></tr></thead>
       <tbody>
       <?php foreach ($products as $p): ?>
         <tr>

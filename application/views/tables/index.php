@@ -1,5 +1,14 @@
 <div class="container-fluid py-3 py-md-4">
-  <?php $this->load->view('orders/_pos_tabs'); ?>
+  <?php // Tiêu đề "Sơ đồ bàn" nằm ngay sau 2 tab; nút "Quản lý bàn" (ADMIN) đứng trước "Toàn màn hình". ?>
+  <?php ob_start(); ?>
+    <span class="fw-bold fs-5 text-nowrap">Sơ đồ bàn</span>
+  <?php $pos_tab_title = ob_get_clean(); ?>
+  <?php ob_start(); ?>
+    <?php if ($current_user['role'] === 'ADMIN'): ?>
+      <a href="<?php echo site_url('me/tables/manage'); ?>" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-sliders"></i> Quản lý bàn</a>
+    <?php endif; ?>
+  <?php $pos_tab_actions = ob_get_clean(); ?>
+  <?php $this->load->view('orders/_pos_tabs', array('pos_tab_title' => $pos_tab_title, 'pos_tab_actions' => $pos_tab_actions)); ?>
 
   <?php if ($paid_order_id): ?>
     <div class="alert alert-success d-flex justify-content-between align-items-center py-2">
@@ -9,15 +18,6 @@
       <?php endif; ?>
     </div>
   <?php endif; ?>
-
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h4 class="fw-bold mb-0">Sơ đồ bàn</h4>
-    <div class="d-flex align-items-center gap-2">
-      <?php if ($current_user['role'] === 'ADMIN'): ?>
-      <a href="<?php echo site_url('me/tables/manage'); ?>" class="btn btn-sm btn-outline-dark"><i class="bi bi-sliders"></i> Quản lý bàn</a>
-      <?php endif; ?>
-    </div>
-  </div>
 
   <?php
     $render_table_card = function ($t) {

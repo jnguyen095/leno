@@ -90,6 +90,11 @@ class Order_model extends CI_Model
         $this->recalc_totals($order_id);
     }
 
+    public function set_note($id, $note)
+    {
+        return $this->db->where('id', $id)->update($this->table, array('note' => $note));
+    }
+
     public function mark_wait_payment($id)
     {
         return $this->db->where('id', $id)->update($this->table, array('status' => 'WAIT_PAYMENT'));
@@ -172,7 +177,7 @@ class Order_model extends CI_Model
 
     public function get_detail($id)
     {
-        return $this->db->select('order_sessions.*, table_sessions.table_id, cafe_tables.table_name, cafe_tables.table_code')
+        return $this->db->select('order_sessions.*, table_sessions.table_id, cafe_tables.table_name, cafe_tables.table_code, cafe_tables.note AS table_note')
             ->from($this->table)
             ->join('table_sessions', 'table_sessions.id = order_sessions.table_session_id', 'left')
             ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left')

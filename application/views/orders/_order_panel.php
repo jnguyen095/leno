@@ -8,6 +8,18 @@
     <span>Món đã gọi</span>
     <?php if ($is_active && $pending_count): ?><span class="badge bg-warning text-dark"><?php echo $pending_count; ?> món chưa báo bếp</span><?php endif; ?>
   </div>
+  <?php // Ghi chú cho cả đơn — in trên phiếu bếp và phiếu tạm tính. ?>
+  <?php if ($is_active): ?>
+    <div class="px-3 py-2 border-bottom">
+      <button type="button" class="pos-order-note <?php echo $order['note'] ? 'has-note' : ''; ?>"
+              data-note="<?php echo htmlspecialchars((string) $order['note']); ?>" onclick="editOrderNote(this)">
+        <i class="bi <?php echo $order['note'] ? 'bi-journal-text' : 'bi-plus-circle'; ?>"></i>
+        <?php echo $order['note'] ? '<b>Ghi chú đơn:</b> '.htmlspecialchars($order['note']) : 'Thêm ghi chú cho đơn'; ?>
+      </button>
+    </div>
+  <?php elseif ( ! empty($order['note'])): ?>
+    <div class="px-3 py-2 border-bottom small"><i class="bi bi-journal-text"></i> <b>Ghi chú đơn:</b> <?php echo htmlspecialchars($order['note']); ?></div>
+  <?php endif; ?>
   <div class="list-group list-group-flush" id="orderedItemsList">
     <?php foreach ($visible_items as $it): ?>
       <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active)); ?>

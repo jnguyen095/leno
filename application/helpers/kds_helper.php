@@ -49,6 +49,16 @@ if ( ! function_exists('table_status_badge'))
     }
 }
 
+if ( ! function_exists('clean_note'))
+{
+    /** Ghi chú bàn / đơn / món: bỏ khoảng trắng thừa, tối đa 255 ký tự; rỗng -> NULL. */
+    function clean_note($note)
+    {
+        $note = trim(preg_replace('/\s+/u', ' ', (string) $note));
+        return $note === '' ? NULL : mb_substr($note, 0, 255, 'UTF-8');
+    }
+}
+
 if ( ! function_exists('payment_method_label'))
 {
     function payment_method_label($method)

@@ -4,7 +4,9 @@
   <?php if ($paid_order_id): ?>
     <div class="alert alert-success d-flex justify-content-between align-items-center py-2">
       <span><i class="bi bi-check-circle"></i> Đã thanh toán — bàn đã về trống.</span>
-      <a href="<?php echo site_url('me/orders/'.$paid_order_id.'/invoice'); ?>" target="_blank" class="btn btn-sm btn-success"><i class="bi bi-printer"></i> In hóa đơn</a>
+      <?php if ($paid_invoice): ?>
+        <button type="button" class="btn btn-sm btn-success" onclick="posPrintSlip('invoice')"><i class="bi bi-printer"></i> In lại hóa đơn</button>
+      <?php endif; ?>
     </div>
   <?php endif; ?>
 
@@ -37,6 +39,9 @@
             <span class="badge bg-<?php echo table_status_badge($t['status']); ?> table-status-badge">
               <?php echo array('AVAILABLE'=>'Trống','OPEN'=>'Đang phục vụ','WAIT_PAYMENT'=>'Chờ TT','PAID'=>'Đã TT')[$t['status']]; ?>
             </span>
+            <?php if ( ! empty($t['note'])): ?>
+              <div class="small text-muted text-truncate mt-1" title="<?php echo htmlspecialchars($t['note']); ?>"><i class="bi bi-sticky"></i> <?php echo htmlspecialchars($t['note']); ?></div>
+            <?php endif; ?>
             <div class="mt-2 fw-semibold text-danger table-amount"><?php echo ! empty($t['order']) ? money_format_vnd($t['order']['total_amount']) : ''; ?></div>
           </div>
         </div>
@@ -75,3 +80,13 @@ function refreshTables(){
 }
 setInterval(refreshTables, 5000);
 </script>
+
+<?php if ($paid_invoice): ?>
+<!-- Hóa đơn của đơn vừa thanh toán — ẩn trên màn hình, tự mở hộp thoại in khi trang tải xong. -->
+<div class="print-slip receipt-k80" data-slip="invoice">
+  <?php $this->load->view('orders/_invoice_body', $paid_invoice); ?>
+</div>
+<script>
+window.addEventListener('load', function(){ posPrintSlip('invoice'); });
+</script>
+<?php endif; ?>

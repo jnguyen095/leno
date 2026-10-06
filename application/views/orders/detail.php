@@ -17,6 +17,13 @@
       <?php if ( ! $is_active): ?>
       <span class="badge bg-<?php echo order_status_badge($order['status']); ?>"><?php echo $order['status']; ?></span>
       <?php endif; ?>
+      <?php // Ghi chú cố định của bàn (giữ qua các lượt khách) — bấm để sửa. ?>
+      <?php if ($order['table_id']): ?>
+        <div id="tableNoteWrap" class="small text-muted mt-1 <?php echo empty($order['table_note']) ? 'd-none' : ''; ?>">
+          <i class="bi bi-sticky"></i> <span id="tableNoteText"><?php echo htmlspecialchars((string) $order['table_note']); ?></span>
+          <?php if ($is_active): ?><a href="#" class="ms-1" onclick="editTableNote(); return false;"><i class="bi bi-pencil"></i></a><?php endif; ?>
+        </div>
+      <?php endif; ?>
     </div>
     <?php if ($is_active && $order['table_id']): ?>
     <div class="dropdown">
@@ -24,6 +31,8 @@
       <ul class="dropdown-menu dropdown-menu-end">
         <li><a class="dropdown-item" href="<?php echo site_url('me/tables/'.$order['table_id'].'/transfer'); ?>"><i class="bi bi-arrow-left-right"></i> Chuyển bàn</a></li>
         <li><a class="dropdown-item" href="<?php echo site_url('me/tables/'.$order['table_id'].'/merge'); ?>"><i class="bi bi-union"></i> Gộp bàn</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="#" onclick="editTableNote(); return false;"><i class="bi bi-sticky"></i> Ghi chú bàn</a></li>
       </ul>
     </div>
     <?php elseif ($order['status'] === 'PAID'): ?>
@@ -167,6 +176,9 @@
   <div class="bold"><?php echo empty($order['table_id']) ? 'MANG ĐI' : 'Bàn: '.htmlspecialchars($table_label); ?></div>
   <div>Mã đơn: <?php echo htmlspecialchars($order['order_no']); ?></div>
   <div>Giờ: <?php echo date('d/m/Y H:i', strtotime($kitchen_slip['created_at'])); ?> — <?php echo htmlspecialchars($kitchen_slip['staff']); ?></div>
+  <?php if ( ! empty($kitchen_slip['order_note'])): ?>
+    <div class="bold">Ghi chú: <?php echo htmlspecialchars($kitchen_slip['order_note']); ?></div>
+  <?php endif; ?>
   <hr>
   <table>
     <?php foreach ($kitchen_slip['send'] as $line): ?>
@@ -174,6 +186,16 @@
     <?php if ($line['note']): ?><tr><td>&nbsp;&nbsp;↳ <?php echo htmlspecialchars($line['note']); ?></td></tr><?php endif; ?>
     <?php endforeach; ?>
   </table>
+  <?php if ( ! empty($kitchen_slip['changed'])): ?>
+    <hr>
+    <div class="bold">ĐỔI GHI CHÚ</div>
+    <table>
+      <?php foreach ($kitchen_slip['changed'] as $line): ?>
+      <tr><td><span class="bold"><?php echo (int) $line['qty']; ?> x</span> <?php echo htmlspecialchars($line['product_name']); ?></td></tr>
+      <tr><td>&nbsp;&nbsp;↳ <?php echo $line['note'] !== NULL && $line['note'] !== '' ? htmlspecialchars($line['note']) : '(bỏ ghi chú)'; ?></td></tr>
+      <?php endforeach; ?>
+    </table>
+  <?php endif; ?>
   <?php if ($kitchen_slip['cancel']): ?>
     <hr>
     <div class="bold">HỦY MÓN</div>
@@ -249,6 +271,42 @@ function removeItem(itemId){
   });
 }
 
+// ---- Ghi chú (hộp nhập trong trang, không mất toàn màn hình) ----
+var ITEM_NOTE_SUGGESTIONS = ['Ít đá', 'Không đá', 'Ít đường', 'Không đường', 'Nhiều sữa', 'Ít sữa', 'Nóng', 'Mang về'];
+
+function editItemNote(btn){
+  posPrompt('Ghi chú món', btn.dataset.note, ITEM_NOTE_SUGGESTIONS).then(function(note){
+    if (note !== null && note !== btn.dataset.note) postOrder('/item-note/' + btn.dataset.id, {note: note});
+  });
+}
+
+function editOrderNote(btn){
+  posPrompt('Ghi chú cho cả đơn', btn.dataset.note, []).then(function(note){
+    if (note !== null && note !== btn.dataset.note) postOrder('/note', {note: note});
+  });
+}
+
+<?php if ($order['table_id']): ?>
+var TABLE_NOTE_URL = '<?php echo base_url('me/tables/'.$order['table_id'].'/note.html'); ?>';
+function editTableNote(){
+  var current = document.getElementById('tableNoteText').textContent;
+  posPrompt('Ghi chú bàn <?php echo htmlspecialchars($table_label, ENT_QUOTES); ?> (giữ qua các lượt khách)', current, []).then(function(note){
+    if (note === null || note === current) return;
+    var body = new URLSearchParams({note: note});
+    body.append(CSRF_NAME, CSRF_HASH);
+    fetch(TABLE_NOTE_URL, {method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'}, body: body})
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if ( ! res.success){ showAjaxError(res.message || 'Không lưu được ghi chú bàn.'); return; }
+        document.getElementById('tableNoteText').textContent = res.note || '';
+        document.getElementById('tableNoteWrap').classList.toggle('d-none', ! res.note);
+        showAjaxError(null);
+      })
+      .catch(function(){ showAjaxError('Mất kết nối, vui lòng thử lại.'); });
+  });
+}
+<?php endif; ?>
+
 // Chờ các thao tác thêm/đổi món xong rồi mới chạy (Thông báo / In tạm tính / Thanh toán).
 function whenIdle(fn){ pending.then(fn); }
 
@@ -270,17 +328,7 @@ function filterCategory(cat, btn){
 }
 
 // ---- In phiếu ngay trên trang (khổ K80) ----
-function printSlip(name){
-  var target = document.querySelector('.print-slip[data-slip="'+name+'"]');
-  if ( ! target) return;
-  document.querySelectorAll('.print-slip').forEach(function(el){ el.removeAttribute('id'); });
-  target.id = 'printArea';
-  var now = new Date(), pad = function(n){ return n < 10 ? '0'+n : n; };
-  target.querySelectorAll('.js-print-time').forEach(function(el){
-    el.textContent = pad(now.getDate())+'/'+pad(now.getMonth()+1)+'/'+now.getFullYear()+' '+pad(now.getHours())+':'+pad(now.getMinutes());
-  });
-  window.print();
-}
+function printSlip(name){ posPrintSlip(name); }
 
 function printProvisional(){
   whenIdle(function(){ printSlip('provisional'); });

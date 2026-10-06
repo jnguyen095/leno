@@ -45,6 +45,7 @@ $route['me/tables/manage/(:num)/reset-status'] = 'tables/manage_reset_status/$1'
 $route['me/tables/(:num)'] = 'tables/detail/$1';
 $route['me/tables/(:num)/open'] = 'tables/open/$1';
 $route['me/tables/(:num)/transfer'] = 'tables/transfer/$1';
+$route['me/tables/(:num)/note'] = 'tables/note/$1';
 $route['me/tables/(:num)/merge'] = 'tables/merge/$1';
 
 $route['me/orders'] = 'orders/index';
@@ -56,6 +57,8 @@ $route['me/orders/(:num)/notify'] = 'orders/notify/$1';
 $route['me/orders/(:num)/pay'] = 'orders/pay/$1';
 $route['me/orders/(:num)/invoice'] = 'orders/invoice/$1';
 $route['me/orders/(:num)/delete'] = 'orders/delete/$1';
+$route['me/orders/(:num)/note'] = 'orders/note/$1';
+$route['me/orders/(:num)/item-note/(:num)'] = 'orders/item_note/$1/$2';
 
 
 

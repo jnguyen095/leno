@@ -44,6 +44,11 @@ class Table_model extends CI_Model
         return $this->db->where('id', $id)->update($this->table, $data);
     }
 
+    public function set_note($id, $note)
+    {
+        return $this->update($id, array('note' => $note));
+    }
+
     public function set_status($id, $status)
     {
         return $this->update($id, array('status' => $status));

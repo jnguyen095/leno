@@ -1,6 +1,6 @@
 <?php
   // Phiếu tạm tính K80 (in ngay trên trang). Render lại sau mỗi thay đổi món qua AJAX để luôn khớp đơn.
-  // Biến: $order, $table_label, $active_items.
+  // Biến: $order, $table_label, $active_items. Có ghi chú đơn / ghi chú món thì in kèm.
 ?>
 <div class="print-slip receipt-k80" data-slip="provisional">
   <div class="center bold big">Leno</div>
@@ -9,10 +9,11 @@
   <div><?php echo empty($order['table_id']) ? 'Mang đi' : 'Bàn: '.htmlspecialchars($table_label); ?></div>
   <div>Mã đơn: <?php echo htmlspecialchars($order['order_no']); ?></div>
   <div>Thời gian: <span class="js-print-time"></span></div>
+  <?php if ( ! empty($order['note'])): ?><div>Ghi chú: <?php echo htmlspecialchars($order['note']); ?></div><?php endif; ?>
   <hr>
   <table>
     <?php foreach ($active_items as $it): ?>
-    <tr><td colspan="2"><?php echo htmlspecialchars($it['product_name']); ?></td></tr>
+    <tr><td colspan="2"><?php echo htmlspecialchars($it['product_name']); ?><?php if ($it['note']): ?> (<?php echo htmlspecialchars($it['note']); ?>)<?php endif; ?></td></tr>
     <tr>
       <td><?php echo $it['qty']; ?> x <?php echo number_format($it['price'], 0, ',', '.'); ?></td>
       <td class="right"><?php echo number_format($it['amount'], 0, ',', '.'); ?></td>

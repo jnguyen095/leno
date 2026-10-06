@@ -18,7 +18,10 @@
         <tr>
           <td class="text-end text-muted"><?php echo (int) $t['sort_order']; ?></td>
           <td><?php echo htmlspecialchars($t['table_code']); ?></td>
-          <td><?php echo htmlspecialchars($t['table_name']); ?></td>
+          <td>
+            <?php echo htmlspecialchars($t['table_name']); ?>
+            <?php if ( ! empty($t['note'])): ?><div class="small text-muted"><i class="bi bi-sticky"></i> <?php echo htmlspecialchars($t['note']); ?></div><?php endif; ?>
+          </td>
           <td class="text-end"><?php echo $t['capacity']; ?></td>
           <td><span class="badge bg-<?php echo table_status_badge($t['status']); ?>"><?php echo $t['status']; ?></span></td>
           <td class="text-nowrap">

@@ -13,6 +13,12 @@
              value="<?php echo $table ? htmlspecialchars($table['table_name']) : ''; ?>" placeholder="VD: Bàn 13">
     </div>
     <div class="mb-3">
+      <label class="form-label">Ghi chú bàn</label>
+      <input type="text" name="note" class="form-control" maxlength="255"
+             value="<?php echo $table ? htmlspecialchars((string) $table['note']) : ''; ?>" placeholder="VD: Gần cửa sổ, ghế hỏng 1 cái">
+      <div class="form-text">Hiện trên sơ đồ bàn và trang gọi món, giữ nguyên qua các lượt khách.</div>
+    </div>
+    <div class="mb-3">
       <label class="form-label">Sức chứa (số chỗ ngồi)</label>
       <input type="number" name="capacity" class="form-control" required min="1" max="50"
              value="<?php echo $table ? (int) $table['capacity'] : 4; ?>">

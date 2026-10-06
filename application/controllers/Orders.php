@@ -129,18 +129,26 @@ class Orders extends MY_Controller
 
         $send = array();
         $cancel = array();
+        $changed = array();   // món bếp đã có nhưng ghi chú vừa sửa
         foreach ($this->Order_item_model->get_by_order($id) as $it)
         {
             $target = $it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0;
             $delta = $target - (int) $it['notified_qty'];
-            if ($delta === 0) continue;
+            $note_changed = Order_item_model::note_changed($it);
+            if ($delta === 0 && ! $note_changed) continue;
 
-            $line = array('product_id' => $it['product_id'], 'product_name' => $it['product_name'], 'qty' => abs($delta), 'note' => $it['note']);
-            if ($delta > 0) $send[] = $line; else $cancel[] = $line;
-            $this->Order_item_model->set_notified_qty($it['id'], $target);
+            $line = array('product_id' => $it['product_id'], 'product_name' => $it['product_name'], 'note' => $it['note']);
+            if ($note_changed)
+            {
+                $changed[] = $line + array('qty' => min($target, (int) $it['notified_qty']), 'old_note' => $it['notified_note']);
+            }
+            if ($delta > 0) $send[] = $line + array('qty' => $delta);
+            elseif ($delta < 0) $cancel[] = $line + array('qty' => -$delta);
+
+            $this->Order_item_model->set_notified($it['id'], $target, $target > 0 ? $it['note'] : $it['notified_note']);
         }
 
-        if ( ! $send && ! $cancel)
+        if ( ! $send && ! $cancel && ! $changed)
         {
             $this->session->set_flashdata('error', 'Không có món mới cần báo bếp.');
             redirect('me/orders/'.$id);
@@ -151,11 +159,13 @@ class Orders extends MY_Controller
         {
             $this->Kitchen_ticket_model->create_ticket($id, $order['table_id'], $send);
         }
-        $this->audit('order', 'NOTIFY_KITCHEN', NULL, array('order_id' => $id, 'send' => $send, 'cancel' => $cancel));
+        $this->audit('order', 'NOTIFY_KITCHEN', NULL, array('order_id' => $id, 'send' => $send, 'cancel' => $cancel, 'changed' => $changed));
 
         $this->session->set_flashdata('kitchen_slip', array(
             'send'       => $send,
             'cancel'     => $cancel,
+            'changed'    => $changed,
+            'order_note' => $order['note'],
             'created_at' => date('Y-m-d H:i:s'),
             'staff'      => $this->current_user['fullname'],
         ));
@@ -183,6 +193,33 @@ class Orders extends MY_Controller
         {
             $this->_remove_item($item);
             $this->Order_model->recalc_totals($order_id);
+        }
+        $this->_respond($order_id);
+    }
+
+    /** Ghi chú cho cả đơn (AJAX từ tab Thực đơn). */
+    public function note($id)
+    {
+        if ( ! $this->_active_order_or_respond($id)) return;
+
+        $note = clean_note($this->input->post('note', TRUE));
+        $this->Order_model->set_note($id, $note);
+        $this->audit('order', 'UPDATE_NOTE', NULL, array('order_id' => $id, 'note' => $note));
+        $this->_respond($id);
+    }
+
+    /**
+     * Ghi chú cho một dòng món (vd "Ít đá"). Món đã báo bếp mà đổi ghi chú thì hiện "Chưa báo"
+     * và lần "Thông báo" sau in mục ĐỔI GHI CHÚ cho bếp.
+     */
+    public function item_note($order_id, $item_id)
+    {
+        $item = $this->_item_of_active_order($order_id, $item_id);
+        if ($item)
+        {
+            $note = clean_note($this->input->post('note', TRUE));
+            $this->Order_item_model->set_note($item_id, $note);
+            $this->audit('order_item', 'UPDATE_NOTE', NULL, array('item_id' => $item_id, 'note' => $note));
         }
         $this->_respond($order_id);
     }
@@ -216,7 +253,7 @@ class Orders extends MY_Controller
         foreach ($items as $it)
         {
             $target = $it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0;
-            if ($target !== (int) $it['notified_qty']) $pending_count++;
+            if ($target !== (int) $it['notified_qty'] || Order_item_model::note_changed($it)) $pending_count++;
         }
 
         return array(

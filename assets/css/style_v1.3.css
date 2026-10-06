@@ -114,6 +114,15 @@ body{
 @keyframes pos-product-pulse{ 0%{ box-shadow:0 0 0 0 rgba(13,110,253,.5); } 100%{ box-shadow:0 0 0 10px rgba(13,110,253,0); } }
 #orderedItemsList .qty-stepper button{ width:32px; height:32px; }
 .qty-stepper button:disabled{ opacity:.35; cursor:not-allowed; }
+/* Ghi chú món / đơn ở "Món đã gọi": nút dạng chữ, bấm để mở hộp nhập ghi chú. */
+.pos-item-note, .pos-order-note{
+  display:inline-flex; align-items:center; gap:.25rem; max-width:100%; padding:0; margin-top:.15rem;
+  border:0; background:none; text-align:left; font-size:.8rem; color:#8a8a8a; line-height:1.3;
+}
+.pos-item-note:hover, .pos-order-note:hover{ color: var(--brand); }
+.pos-item-note.has-note{ color:#b26a00; font-weight:600; }
+.pos-order-note{ font-size:.85rem; }
+.pos-order-note.has-note{ color:#333; }
 /* Dãy chip đơn đang phục vụ (tab Thực đơn): 1 hàng, trượt ngang bằng Swiper + nút ‹ ›. */
 .pos-order-chips-bar{ display:flex; align-items:center; gap:.5rem; }
 .pos-order-chips{

@@ -45,9 +45,22 @@ class Order_item_model extends CI_Model
         return $this->add($order_session_id, $product_id, $qty, $price, $note ?: NULL);
     }
 
-    public function set_notified_qty($id, $qty)
+    /** Ghi lại phần bếp đã nhận ở lần "Thông báo": số lượng + ghi chú tại thời điểm đó. */
+    public function set_notified($id, $qty, $note)
     {
-        return $this->db->where('id', $id)->update($this->table, array('notified_qty' => $qty));
+        return $this->db->where('id', $id)->update($this->table, array('notified_qty' => $qty, 'notified_note' => $note));
+    }
+
+    public function set_note($id, $note)
+    {
+        return $this->db->where('id', $id)->update($this->table, array('note' => $note));
+    }
+
+    /** Món đã báo bếp nhưng ghi chú đã sửa sau đó -> cần báo lại cho bếp. */
+    public static function note_changed($it)
+    {
+        return $it['status'] === 'ACTIVE' && (int) $it['notified_qty'] > 0
+            && (string) $it['note'] !== (string) $it['notified_note'];
     }
 
     public function update_qty($id, $qty)

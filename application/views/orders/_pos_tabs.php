@@ -43,6 +43,22 @@
 </div>
 
 <script>
+// In một phiếu K80 đang ẩn trong trang (.print-slip[data-slip=name]): phiếu bếp, tạm tính, hóa đơn.
+// In ngay trong trang để không mở tab mới / không mất toàn màn hình.
+window.posPrintSlip = function(name){
+  var target = document.querySelector('.print-slip[data-slip="' + name + '"]');
+  if ( ! target) return;
+  document.querySelectorAll('.print-slip').forEach(function(el){ el.removeAttribute('id'); });
+  target.id = 'printArea';
+  var now = new Date(), pad = function(n){ return n < 10 ? '0' + n : n; };
+  target.querySelectorAll('.js-print-time').forEach(function(el){
+    el.textContent = pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+  });
+  window.print();
+};
+</script>
+
+<script>
 // posConfirm('Hủy món này?').then(function(ok){ if (ok) ... }) — xác nhận bằng modal Bootstrap.
 window.posConfirm = function(message, okLabel){
   return new Promise(function(resolve){
@@ -63,6 +79,88 @@ window.posConfirm = function(message, okLabel){
       el.removeEventListener('shown.bs.modal', onShown);
       okBtn.focus();
     });
+  });
+};
+</script>
+
+<?php // Hộp nhập ghi chú trong trang (bàn / đơn / món) — thay prompt() của trình duyệt. ?>
+<div class="modal fade" id="posPromptModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title fw-semibold" id="posPromptTitle"></h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex flex-wrap gap-2 mb-2" id="posPromptChips"></div>
+        <textarea class="form-control" id="posPromptInput" rows="3" maxlength="255" placeholder="Nhập ghi chú…"></textarea>
+        <div class="form-text">Để trống rồi Lưu để xoá ghi chú.</div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-brand px-4" id="posPromptOk"><i class="bi bi-check2"></i> Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// posPrompt('Ghi chú món', 'Ít đá', ['Ít đá', 'Không đường']).then(function(text){ if (text !== null) ... })
+// Trả về chuỗi đã nhập (có thể rỗng = xoá) hoặc null nếu bấm Hủy. Chip gợi ý bấm để thêm/bỏ.
+window.posPrompt = function(title, value, suggestions){
+  return new Promise(function(resolve){
+    var el = document.getElementById('posPromptModal');
+    var input = document.getElementById('posPromptInput');
+    var chips = document.getElementById('posPromptChips');
+    var okBtn = document.getElementById('posPromptOk');
+    var modal = bootstrap.Modal.getOrCreateInstance(el);
+    var saved = false;
+
+    document.getElementById('posPromptTitle').textContent = title;
+    input.value = value || '';
+
+    function parts(){ return input.value.split(',').map(function(s){ return s.trim(); }).filter(Boolean); }
+    function paintChips(){
+      var cur = parts().map(function(s){ return s.toLowerCase(); });
+      chips.querySelectorAll('button').forEach(function(b){
+        var on = cur.indexOf(b.dataset.value.toLowerCase()) !== -1;
+        b.classList.toggle('btn-brand', on);
+        b.classList.toggle('btn-outline-secondary', ! on);
+      });
+    }
+    chips.innerHTML = '';
+    (suggestions || []).forEach(function(s){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+      b.textContent = s;
+      b.dataset.value = s;
+      b.onclick = function(){
+        var list = parts(), i = list.map(function(x){ return x.toLowerCase(); }).indexOf(s.toLowerCase());
+        if (i === -1) list.push(s); else list.splice(i, 1);
+        input.value = list.join(', ');
+        paintChips();
+        input.focus();
+      };
+      chips.appendChild(b);
+    });
+    chips.classList.toggle('d-none', ! (suggestions && suggestions.length));
+    input.oninput = paintChips;
+    paintChips();
+
+    okBtn.onclick = function(){ saved = true; modal.hide(); };
+    input.onkeydown = function(e){ if (e.key === 'Enter' && ! e.shiftKey){ e.preventDefault(); okBtn.click(); } };
+    el.addEventListener('hidden.bs.modal', function onHidden(){
+      el.removeEventListener('hidden.bs.modal', onHidden);
+      okBtn.onclick = null;
+      resolve(saved ? input.value.trim() : null);
+    });
+    el.addEventListener('shown.bs.modal', function onShown(){
+      el.removeEventListener('shown.bs.modal', onShown);
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+    modal.show();
   });
 };
 </script>

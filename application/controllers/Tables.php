@@ -36,11 +36,30 @@ class Tables extends MY_Controller
             }
         }
 
+        // Vừa bấm "Xác nhận thanh toán" -> in hóa đơn ngay trên trang này (không mở tab mới,
+        // không mất toàn màn hình).
+        $paid_order_id = $this->session->flashdata('paid_order_id');
+        $paid_invoice = NULL;
+        if ($paid_order_id)
+        {
+            $paid_order = $this->Order_model->get_detail($paid_order_id);
+            if ($paid_order && $paid_order['status'] === 'PAID')
+            {
+                $this->load->model('Payment_model');
+                $paid_invoice = array(
+                    'order'   => $paid_order,
+                    'items'   => $this->Order_item_model->get_active_by_order($paid_order_id),
+                    'payment' => $this->Payment_model->get_by_order($paid_order_id),
+                );
+            }
+        }
+
         $data = array(
             'page_title'   => 'Sơ đồ bàn',
             'current_user' => $this->current_user,
             'tables'       => $tables,
-            'paid_order_id' => $this->session->flashdata('paid_order_id'),
+            'paid_order_id' => $paid_order_id,
+            'paid_invoice' => $paid_invoice,
         );
         $data = array_merge($data, $this->pos_tabs_data('tables'));
         $this->load->view('layout/header', $data);
@@ -90,6 +109,21 @@ class Tables extends MY_Controller
         }
         $order = $this->Order_model->get_active_by_table_session($session['id']);
         redirect('me/orders/'.$order['id']);
+    }
+
+    /** Ghi chú cố định của bàn (AJAX từ trang gọi món). */
+    public function note($id)
+    {
+        $table = $this->Table_model->get_by_id($id);
+        if ( ! $table || $this->input->method() !== 'post')
+        {
+            json_response(array('success' => FALSE, 'message' => 'Không tìm thấy bàn.'), 404);
+            return;
+        }
+        $note = clean_note($this->input->post('note', TRUE));
+        $this->Table_model->set_note($id, $note);
+        $this->audit('table', 'UPDATE_NOTE', array('note' => $table['note']), array('table_id' => (int) $id, 'note' => $note));
+        json_response(array('success' => TRUE, 'note' => $note));
     }
 
     public function transfer($id)
@@ -222,6 +256,7 @@ class Tables extends MY_Controller
                 $id = $this->Table_model->create(array(
                     'table_code'     => $code,
                     'table_name'     => $this->input->post('table_name', TRUE),
+                    'note'           => clean_note($this->input->post('note', TRUE)),
                     'capacity'       => (int) $this->input->post('capacity'),
                     'sort_order'     => (int) $this->input->post('sort_order'),
                     'status'         => 'AVAILABLE',
@@ -258,6 +293,7 @@ class Tables extends MY_Controller
                 $this->Table_model->update($id, array(
                     'table_code'     => $code,
                     'table_name'     => $this->input->post('table_name', TRUE),
+                    'note'           => clean_note($this->input->post('note', TRUE)),
                     'capacity'       => (int) $this->input->post('capacity'),
                     'sort_order'     => (int) $this->input->post('sort_order'),
                 ));

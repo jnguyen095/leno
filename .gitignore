@@ -146,3 +146,6 @@ application/config/telegram.php
 application/config/database.php
 application/config/database.php
 application/controllers/Migrate_runner.php
+
+# Bản dump DB để deploy (chứa mật khẩu đã băm, lương...) — không commit
+/deploy/

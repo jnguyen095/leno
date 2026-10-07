@@ -158,6 +158,7 @@ $route['api/v1/orders/(:num)/items']['POST'] = 'api_pos/add_items/$1';
 $route['api/v1/orders/(:num)/items/(:num)']['PATCH'] = 'api_pos/update_item/$1/$2';
 $route['api/v1/orders/(:num)/items/(:num)']['DELETE'] = 'api_pos/delete_item/$1/$2';
 $route['api/v1/orders/(:num)/notify']['POST'] = 'api_pos/notify/$1';
+$route['api/v1/orders/(:num)/kitchen-history']['GET'] = 'api_pos/kitchen_history/$1';
 $route['api/v1/orders/(:num)/pay']['POST'] = 'api_pos/pay/$1';
 
 // Telegram bot webhook (public, secret-token based — see application/config/telegram.php)

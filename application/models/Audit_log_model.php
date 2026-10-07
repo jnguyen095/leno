@@ -18,6 +18,27 @@ class Audit_log_model extends CI_Model
         return $this->db->insert_id();
     }
 
+    /**
+     * Các lần "Thông báo" (báo bếp) của một đơn, mới nhất trước — từ web lẫn ứng dụng.
+     * new_data bắt đầu bằng {"order_id":"<id>", (id lưu dạng chuỗi; dạng số để phòng dữ liệu cũ).
+     */
+    public function get_kitchen_notifications($order_id, $limit = 50)
+    {
+        $id = (int) $order_id;
+        return $this->db->select('audit_logs.id, audit_logs.new_data, audit_logs.created_at, users.fullname AS staff')
+            ->from($this->table)
+            ->join('users', 'users.id = audit_logs.user_id', 'left')
+            ->where('audit_logs.module', 'order')
+            ->where('audit_logs.action', 'NOTIFY_KITCHEN')
+            ->group_start()
+                ->like('audit_logs.new_data', '{"order_id":"'.$id.'",', 'after')
+                ->or_like('audit_logs.new_data', '{"order_id":'.$id.',', 'after')
+            ->group_end()
+            ->order_by('audit_logs.id', 'DESC')
+            ->limit($limit)
+            ->get()->result_array();
+    }
+
     public function get_recent($limit = 100)
     {
         return $this->db->order_by('id', 'DESC')->limit($limit)->get($this->table)->result_array();

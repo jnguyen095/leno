@@ -257,6 +257,28 @@ class Order_model extends CI_Model
         }
     }
 
+    /**
+     * Đơn do một nhân viên tạo trong một ngày (mới nhất trước), kèm tên bàn, số món đang gọi và
+     * phương thức thanh toán. Bỏ qua đơn không còn món nào (mở bàn rồi bỏ, hoặc đã gộp sang bàn khác).
+     */
+    public function get_history_for_user($user_id, $date)
+    {
+        return $this->db->select('order_sessions.id, order_sessions.order_no, order_sessions.order_type, order_sessions.status,
+                order_sessions.total_amount, order_sessions.note, order_sessions.created_at, order_sessions.paid_at,
+                table_sessions.table_id, cafe_tables.table_name,
+                (SELECT COALESCE(SUM(oi.qty), 0) FROM order_items oi WHERE oi.order_session_id = order_sessions.id AND oi.status = \'ACTIVE\') AS item_count,
+                (SELECT p.payment_method FROM payments p WHERE p.order_session_id = order_sessions.id ORDER BY p.id DESC LIMIT 1) AS payment_method', FALSE)
+            ->from($this->table)
+            ->join('table_sessions', 'table_sessions.id = order_sessions.table_session_id', 'left')
+            ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left')
+            ->where('order_sessions.created_by', (int) $user_id)
+            ->where('order_sessions.created_at >=', $date.' 00:00:00')
+            ->where('order_sessions.created_at <=', $date.' 23:59:59')
+            ->having('item_count >', 0)
+            ->order_by('order_sessions.id', 'DESC')
+            ->get()->result_array();
+    }
+
     /** Nhân viên đã từng tạo đơn — cho bộ lọc "Người tạo" ở danh sách Đơn hàng. */
     public function get_creators()
     {

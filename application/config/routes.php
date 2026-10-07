@@ -152,6 +152,7 @@ $route['api/v1/tables/(:num)/transfer']['POST'] = 'api_pos/transfer/$1';
 $route['api/v1/tables/(:num)/merge']['POST'] = 'api_pos/merge/$1';
 $route['api/v1/menu']['GET'] = 'api_pos/menu';
 $route['api/v1/orders/active']['GET'] = 'api_pos/active_orders';
+$route['api/v1/orders/history']['GET'] = 'api_pos/order_history';
 $route['api/v1/orders/(:num)']['GET'] = 'api_pos/order/$1';
 $route['api/v1/orders/(:num)']['PATCH'] = 'api_pos/update_order/$1';
 $route['api/v1/orders/(:num)/items']['POST'] = 'api_pos/add_items/$1';

@@ -151,6 +151,67 @@ class Api_pos extends MY_Api_Controller
         json_response(array('success' => TRUE, 'orders' => $orders));
     }
 
+    /**
+     * GET /api/v1/orders/history?date=YYYY-MM-DD — đơn do người đang đăng nhập tạo trong ngày
+     * (mặc định hôm nay), mới nhất trước, kèm tổng kết.
+     */
+    public function order_history()
+    {
+        $this->_method('get');
+        $this->require_menu('orders', self::POS_ROLES);
+
+        $date = (string) $this->input->get('date');
+        if ( ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || ! strtotime($date))
+        {
+            $date = date('Y-m-d');
+        }
+
+        $orders = array();
+        $summary = array('count' => 0, 'paid_count' => 0, 'paid_total' => 0.0, 'open_count' => 0, 'open_total' => 0.0, 'cancelled_count' => 0);
+        // Tiền đã thu theo hình thức thanh toán (chỉ tính đơn đã thanh toán).
+        $by_method = array();
+        foreach (Pos_service::PAYMENT_METHODS as $m)
+        {
+            $by_method[$m] = array('method' => $m, 'label' => payment_method_label($m), 'count' => 0, 'total' => 0.0);
+        }
+        foreach ($this->Order_model->get_history_for_user($this->current_user['id'], $date) as $o)
+        {
+            $total = api_money($o['total_amount']);
+            $summary['count']++;
+            if ($o['status'] === 'PAID')
+            {
+                $summary['paid_count']++;
+                $summary['paid_total'] += $total;
+                if (isset($by_method[$o['payment_method']]))
+                {
+                    $by_method[$o['payment_method']]['count']++;
+                    $by_method[$o['payment_method']]['total'] += $total;
+                }
+            }
+            elseif ($o['status'] === 'CANCELLED') { $summary['cancelled_count']++; }
+            else { $summary['open_count']++; $summary['open_total'] += $total; }
+
+            $orders[] = array(
+                'id'             => (int) $o['id'],
+                'order_no'       => $o['order_no'],
+                'order_type'     => $o['order_type'],
+                'status'         => $o['status'],
+                'table_id'       => $o['table_id'] !== NULL ? (int) $o['table_id'] : NULL,
+                'table_name'     => $o['table_name'] ?: 'Mang đi',
+                'total_amount'   => $total,
+                'item_count'     => (int) $o['item_count'],
+                'note'           => $o['note'],
+                'payment_method' => $o['payment_method'],
+                'method_label'   => $o['payment_method'] ? payment_method_label($o['payment_method']) : NULL,
+                'created_at'     => $o['created_at'],
+                'paid_at'        => $o['paid_at'],
+            );
+        }
+
+        $summary['by_method'] = array_values($by_method);
+        json_response(array('success' => TRUE, 'date' => $date, 'summary' => $summary, 'orders' => $orders));
+    }
+
     /** GET /api/v1/orders/{id} */
     public function order($order_id)
     {

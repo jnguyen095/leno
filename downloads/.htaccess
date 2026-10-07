@@ -1,0 +1,19 @@
+# Thư mục tải file cài đặt (APK) cho máy POS — xem index.php.
+# Không cho liệt kê thư mục thô; trang index.php hiển thị danh sách đẹp hơn.
+Options -Indexes
+DirectoryIndex index.php
+
+# Đúng kiểu file để Android nhận ra là gói cài đặt, và luôn tải về (không mở trong trình duyệt).
+AddType application/vnd.android.package-archive .apk
+<IfModule mod_headers.c>
+  <FilesMatch "\.apk$">
+    Header set Content-Disposition "attachment"
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# Chỉ cho tải file .apk và trang danh sách: chặn mọi file có đuôi khác .apk lỡ bị chép vào đây
+# (trừ index.php). Không chặn theo kiểu "không phải .apk" vì sẽ chặn luôn yêu cầu mở thư mục.
+<FilesMatch "^(?!index\.php$).*\.(?!apk$)[^.]+$">
+  Require all denied
+</FilesMatch>

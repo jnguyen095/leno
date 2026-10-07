@@ -149,3 +149,6 @@ application/controllers/Migrate_runner.php
 
 # Bản dump DB để deploy (chứa mật khẩu đã băm, lương...) — không commit
 /deploy/
+
+# File cài đặt APK cho máy POS — tải lên máy chủ trực tiếp, không commit
+/downloads/*.apk

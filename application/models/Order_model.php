@@ -258,7 +258,7 @@ class Order_model extends CI_Model
     }
 
     /**
-     * Đơn do một nhân viên tạo trong một ngày (mới nhất trước), kèm tên bàn, số món đang gọi và
+     * Đơn do một nhân viên tạo trong một ngày (giờ tạo mới nhất trước), kèm tên bàn, số món đang gọi và
      * phương thức thanh toán. Bỏ qua đơn không còn món nào (mở bàn rồi bỏ, hoặc đã gộp sang bàn khác).
      */
     public function get_history_for_user($user_id, $date)
@@ -275,6 +275,7 @@ class Order_model extends CI_Model
             ->where('order_sessions.created_at >=', $date.' 00:00:00')
             ->where('order_sessions.created_at <=', $date.' 23:59:59')
             ->having('item_count >', 0)
+            ->order_by('order_sessions.created_at', 'DESC')
             ->order_by('order_sessions.id', 'DESC')
             ->get()->result_array();
     }

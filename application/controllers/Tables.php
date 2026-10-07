@@ -9,32 +9,12 @@ class Tables extends MY_Controller
     {
         parent::__construct();
         $this->load->model(array('Table_model', 'Table_session_model', 'Order_model', 'Order_item_model', 'Kitchen_ticket_model', 'Setting_model'));
+        $this->load->library('pos_service');
     }
 
     public function index()
     {
-        $tables = $this->Table_model->get_all();
-
-        // Bàn "Mang đi" đứng đầu sơ đồ khi bật bán mang đi; nếu đã tắt nhưng còn đơn dở thì vẫn hiện để xử lý cho xong.
-        $takeaway = $this->Table_model->get_takeaway();
-        if ($takeaway && ($this->Setting_model->is_takeaway_enabled() || $takeaway['status'] !== 'AVAILABLE'))
-        {
-            array_unshift($tables, $takeaway);
-        }
-
-        foreach ($tables as &$t)
-        {
-            $t['order'] = NULL;
-            if ($t['status'] !== 'AVAILABLE')
-            {
-                $session = $this->Table_session_model->get_open_by_table($t['id']);
-                if ($session)
-                {
-                    $t['order'] = $this->Order_model->get_active_by_table_session($session['id']);
-                    $t['session_id'] = $session['id'];
-                }
-            }
-        }
+        $tables = $this->pos_service->table_map();
 
         // Vừa bấm "Xác nhận thanh toán" -> in hóa đơn ngay trên trang này (không mở tab mới,
         // không mất toàn màn hình).
@@ -69,29 +49,8 @@ class Tables extends MY_Controller
 
     public function open($id)
     {
-        $table = $this->Table_model->get_by_id($id);
-        if ( ! $table || $table['status'] !== 'AVAILABLE'
-            || ($table['is_takeaway'] && ! $this->Setting_model->is_takeaway_enabled()))
-        {
-            redirect('me/tables');
-            return;
-        }
-
-        // Bàn "Trống" nhưng còn đơn rỗng đang mở (đã chọn bàn mà chưa thêm món) -> mở lại đơn đó.
-        $session = $this->Table_session_model->get_open_by_table($id);
-        $existing = $session ? $this->Order_model->get_active_by_table_session($session['id']) : NULL;
-        if ($existing)
-        {
-            redirect('me/orders/'.$existing['id']);
-            return;
-        }
-
-        $result = $this->Order_model->open_table_with_order($id, $this->current_user['id']);
-        $order_id = $result['order_id'];
-
-        $this->audit('table', 'OPEN_TABLE', NULL, array('table_id' => $id, 'session_id' => $result['session_id'], 'order_id' => $order_id));
-
-        redirect('me/orders/'.$order_id);
+        $order_id = $this->pos_service->open_table($id, $this->current_user['id']);
+        redirect($order_id ? 'me/orders/'.$order_id : 'me/tables');
     }
 
     public function detail($id)
@@ -133,32 +92,7 @@ class Tables extends MY_Controller
 
         if ($this->input->method() === 'post')
         {
-            $target_id = (int) $this->input->post('target_table_id');
-            $target = $this->Table_model->get_by_id($target_id);
-
-            if ($target && $target['status'] === 'AVAILABLE' && $session)
-            {
-                // Bàn đích "Trống" có thể còn phiên + đơn rỗng (đã chọn bàn mà chưa thêm món) -> bỏ đi
-                // trước khi chuyển, để mỗi bàn chỉ có một phiên đang mở.
-                $target_session = $this->Table_session_model->get_open_by_table($target_id);
-                if ($target_session)
-                {
-                    $target_order = $this->Order_model->get_active_by_table_session($target_session['id']);
-                    if ($target_order) $this->Order_model->cancel($target_order['id']);
-                    $this->Table_session_model->close($target_session['id']);
-                }
-
-                $this->db->where('id', $session['id'])->update('table_sessions', array('table_id' => $target_id));
-                $order = $this->Order_model->get_active_by_table_session($session['id']);
-                if ($order)
-                {
-                    $this->db->where('order_session_id', $order['id'])->update('kitchen_tickets', array('table_id' => $target_id));
-                }
-                $this->Table_model->set_status($id, 'AVAILABLE');
-                if ($order) $this->Order_model->sync_table_status($order['id']);
-
-                $this->audit('table', 'TRANSFER', array('from' => $id), array('to' => $target_id));
-            }
+            $this->pos_service->transfer_table($id, (int) $this->input->post('target_table_id'), $this->current_user['id']);
             redirect('me/tables');
             return;
         }
@@ -182,31 +116,8 @@ class Tables extends MY_Controller
 
         if ($this->input->method() === 'post')
         {
-            $target_table_id = (int) $this->input->post('target_table_id');
-            $target_session = $this->Table_session_model->get_open_by_table($target_table_id);
-
-            if ($session && $target_session)
-            {
-                $source_order = $this->Order_model->get_active_by_table_session($session['id']);
-                $target_order = $this->Order_model->get_active_by_table_session($target_session['id']);
-
-                if ($source_order && $target_order)
-                {
-                    $this->db->where('order_session_id', $source_order['id'])->update('order_items', array('order_session_id' => $target_order['id']));
-                    $this->db->where('order_session_id', $source_order['id'])->update('kitchen_tickets', array('order_session_id' => $target_order['id'], 'table_id' => $target_table_id));
-                    $this->Order_model->cancel($source_order['id']);
-                    $this->Order_model->recalc_totals($target_order['id']);
-                    $this->Table_session_model->close($session['id']);
-                    $this->Table_model->set_status($id, 'AVAILABLE');
-                    $this->Order_model->sync_table_status($target_order['id']);
-
-                    $this->audit('table', 'MERGE', array('from' => $id), array('into' => $target_table_id));
-
-                    redirect('me/orders/'.$target_order['id']);
-                    return;
-                }
-            }
-            redirect('me/tables');
+            $target_order_id = $this->pos_service->merge_table($id, (int) $this->input->post('target_table_id'), $this->current_user['id']);
+            redirect($target_order_id ? 'me/orders/'.$target_order_id : 'me/tables');
             return;
         }
 

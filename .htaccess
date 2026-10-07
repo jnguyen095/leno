@@ -1,4 +1,6 @@
 RewriteEngine On
+# Giữ header "Authorization: Bearer ..." cho API ứng dụng di động (PHP-CGI/FPM bỏ mất nếu không có dòng này)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L,QSA]

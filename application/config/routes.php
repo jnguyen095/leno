@@ -142,6 +142,24 @@ $route['me/stock/history'] = 'stock/history';
 $route['api/payment'] = 'api_payment/create';
 $route['api/tables/status'] = 'api_tables/status';
 
+// API ứng dụng di động/tablet (Flutter) — bearer token, xem Api_auth / Api_pos
+$route['api/v1/auth/login']['POST'] = 'api_auth/login';
+$route['api/v1/auth/logout']['POST'] = 'api_pos/logout';
+$route['api/v1/me']['GET'] = 'api_pos/me';
+$route['api/v1/tables']['GET'] = 'api_pos/tables';
+$route['api/v1/tables/(:num)/open']['POST'] = 'api_pos/open_table/$1';
+$route['api/v1/tables/(:num)/transfer']['POST'] = 'api_pos/transfer/$1';
+$route['api/v1/tables/(:num)/merge']['POST'] = 'api_pos/merge/$1';
+$route['api/v1/menu']['GET'] = 'api_pos/menu';
+$route['api/v1/orders/active']['GET'] = 'api_pos/active_orders';
+$route['api/v1/orders/(:num)']['GET'] = 'api_pos/order/$1';
+$route['api/v1/orders/(:num)']['PATCH'] = 'api_pos/update_order/$1';
+$route['api/v1/orders/(:num)/items']['POST'] = 'api_pos/add_items/$1';
+$route['api/v1/orders/(:num)/items/(:num)']['PATCH'] = 'api_pos/update_item/$1/$2';
+$route['api/v1/orders/(:num)/items/(:num)']['DELETE'] = 'api_pos/delete_item/$1/$2';
+$route['api/v1/orders/(:num)/notify']['POST'] = 'api_pos/notify/$1';
+$route['api/v1/orders/(:num)/pay']['POST'] = 'api_pos/pay/$1';
+
 // Telegram bot webhook (public, secret-token based — see application/config/telegram.php)
 $route['telegram/webhook'] = 'telegram_webhook/handle';
 

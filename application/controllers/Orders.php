@@ -9,6 +9,7 @@ class Orders extends MY_Controller
     {
         parent::__construct();
         $this->load->model(array('Order_model', 'Order_item_model', 'Product_model', 'Category_model', 'Kitchen_ticket_model', 'Table_model'));
+        $this->load->library('pos_service');
     }
 
     const PER_PAGE = 20;
@@ -177,12 +178,7 @@ class Orders extends MY_Controller
     {
         if ( ! $this->_active_order_or_respond($id)) return;
 
-        $added = $this->_add_posted_items($id);
-        if ($added)
-        {
-            $this->Order_model->recalc_totals($id);
-            $this->audit('order', 'ADD_ITEM', NULL, array('order_id' => $id, 'items' => $added));
-        }
+        $this->pos_service->add_items($id, $this->_posted_items(), $this->current_user['id']);
         $this->_respond($id);
     }
 
@@ -196,80 +192,40 @@ class Orders extends MY_Controller
         $order = $this->_active_order_or_redirect($id);
         if ( ! $order) return;
 
-        $added = $this->_add_posted_items($id);
-        if ($added)
+        if ($this->pos_service->add_items($id, $this->_posted_items(), $this->current_user['id']))
         {
-            $this->Order_model->recalc_totals($id);
             $this->Order_model->sync_table_status($id);
-            $this->audit('order', 'ADD_ITEM', NULL, array('order_id' => $id, 'items' => $added));
         }
 
-        $send = array();
-        $cancel = array();
-        $changed = array();   // món bếp đã có nhưng ghi chú vừa sửa
-        foreach ($this->Order_item_model->get_by_order($id) as $it)
-        {
-            $target = $it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0;
-            $delta = $target - (int) $it['notified_qty'];
-            $note_changed = Order_item_model::note_changed($it);
-            if ($delta === 0 && ! $note_changed) continue;
-
-            $line = array('product_id' => $it['product_id'], 'product_name' => $it['product_name'], 'note' => $it['note']);
-            if ($note_changed)
-            {
-                $changed[] = $line + array('qty' => min($target, (int) $it['notified_qty']), 'old_note' => $it['notified_note']);
-            }
-            if ($delta > 0) $send[] = $line + array('qty' => $delta);
-            elseif ($delta < 0) $cancel[] = $line + array('qty' => -$delta);
-
-            $this->Order_item_model->set_notified($it['id'], $target, $target > 0 ? $it['note'] : $it['notified_note']);
-        }
-
-        if ( ! $send && ! $cancel && ! $changed)
+        $slip = $this->pos_service->notify_kitchen($order, $this->current_user);
+        if ( ! $slip)
         {
             $this->session->set_flashdata('error', 'Không có món mới cần báo bếp.');
             redirect('me/orders/'.$id);
             return;
         }
 
-        if ($send)
-        {
-            $this->Kitchen_ticket_model->create_ticket($id, $order['table_id'], $send);
-        }
-        $this->audit('order', 'NOTIFY_KITCHEN', NULL, array('order_id' => $id, 'send' => $send, 'cancel' => $cancel, 'changed' => $changed));
-
-        $this->session->set_flashdata('kitchen_slip', array(
-            'send'       => $send,
-            'cancel'     => $cancel,
-            'changed'    => $changed,
-            'order_note' => $order['note'],
-            'created_at' => date('Y-m-d H:i:s'),
-            'staff'      => $this->current_user['fullname'],
-        ));
+        $this->session->set_flashdata('kitchen_slip', $slip);
         redirect('me/orders/'.$id);
     }
 
     /** Nút −/+ ở "Món đã gọi". Số lượng tối thiểu 1 — bỏ món phải bấm "Hủy món" (cancel_item). */
     public function update_item($order_id, $item_id)
     {
-        $item = $this->_item_of_active_order($order_id, $item_id);
-        $qty = (int) $this->input->post('qty');
-        if ($item && $qty >= 1 && $qty !== (int) $item['qty'])
+        $item = $this->pos_service->get_active_item($order_id, $item_id);
+        if ($item)
         {
-            $this->Order_item_model->update_qty($item_id, $qty);
-            $this->audit('order_item', 'UPDATE_QTY', NULL, array('item_id' => $item_id, 'qty' => $qty));
-            $this->Order_model->recalc_totals($order_id);
+            $this->pos_service->update_item_qty($item, $this->input->post('qty'), $this->current_user['id']);
         }
         $this->_respond($order_id);
     }
 
     public function cancel_item($order_id, $item_id)
     {
-        $item = $this->_item_of_active_order($order_id, $item_id);
+        $item = $this->pos_service->get_active_item($order_id, $item_id);
         if ($item)
         {
-            $this->_remove_item($item);
-            $this->Order_model->recalc_totals($order_id);
+            $this->pos_service->remove_item($item, $this->current_user['id']);
         }
         $this->_respond($order_id);
     }
@@ -279,9 +235,7 @@ class Orders extends MY_Controller
     {
         if ( ! $this->_active_order_or_respond($id)) return;
 
-        $note = clean_note($this->input->post('note', TRUE));
-        $this->Order_model->set_note($id, $note);
-        $this->audit('order', 'UPDATE_NOTE', NULL, array('order_id' => $id, 'note' => $note));
+        $this->pos_service->set_order_note($id, $this->input->post('note', TRUE), $this->current_user['id']);
         $this->_respond($id);
     }
 
@@ -291,58 +245,18 @@ class Orders extends MY_Controller
      */
     public function item_note($order_id, $item_id)
     {
-        $item = $this->_item_of_active_order($order_id, $item_id);
+        $item = $this->pos_service->get_active_item($order_id, $item_id);
         if ($item)
         {
-            $note = clean_note($this->input->post('note', TRUE));
-            $this->Order_item_model->set_note($item_id, $note);
-            $this->audit('order_item', 'UPDATE_NOTE', NULL, array('item_id' => $item_id, 'note' => $note));
+            $this->pos_service->set_item_note($item, $this->input->post('note', TRUE), $this->current_user['id']);
         }
         $this->_respond($order_id);
-    }
-
-    /**
-     * Bếp chưa biết món này -> xoá hẳn khỏi đơn. Đã báo bếp -> giữ dòng ở trạng thái
-     * CANCELLED (ẩn khỏi danh sách) để lần "Thông báo" sau in mục HỦY cho bếp.
-     */
-    private function _remove_item($item)
-    {
-        if ((int) $item['notified_qty'] === 0)
-        {
-            $this->Order_item_model->delete($item['id']);
-            $this->audit('order_item', 'DELETE_ITEM', $item, NULL);
-        }
-        else
-        {
-            $this->Order_item_model->cancel($item['id']);
-            $this->audit('order_item', 'CANCEL_ITEM', NULL, array('item_id' => $item['id']));
-        }
     }
 
     /** Dữ liệu dùng chung cho trang đơn và các phản hồi AJAX (khối "Món đã gọi" + phiếu tạm tính). */
     private function _panel_data($order)
     {
-        $is_active = in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE);
-        $items = $this->Order_item_model->get_by_order($order['id']);
-        $active_items = array_values(array_filter($items, function ($it) { return $it['status'] === 'ACTIVE'; }));
-
-        $pending_count = 0;
-        foreach ($items as $it)
-        {
-            $target = $it['status'] === 'ACTIVE' ? (int) $it['qty'] : 0;
-            if ($target !== (int) $it['notified_qty'] || Order_item_model::note_changed($it)) $pending_count++;
-        }
-
-        return array(
-            'order'                     => $order,
-            'is_active'                 => $is_active,
-            'table_label'               => $order['table_name'] ?: 'Mang đi',
-            'items'                     => $items,
-            'active_items'              => $active_items,
-            // Đơn đang phục vụ ẩn món đã hủy; đơn đã đóng hiện đủ để xem lại lịch sử.
-            'visible_items'             => $is_active ? $active_items : $items,
-            'pending_count'             => $pending_count,
-        );
+        return $this->pos_service->panel_data($order);
     }
 
     /**
@@ -397,38 +311,12 @@ class Orders extends MY_Controller
         $order = $this->_active_order_or_redirect($id);
         if ( ! $order) return;
 
-        $this->Order_model->recalc_totals($id);
-        $order = $this->Order_model->get_detail($id);
-
-        if ( ! $this->Order_item_model->get_active_by_order($id))
+        $result = $this->pos_service->pay($id, $this->input->post('payment_method'), $this->input->post('received_amount'), $this->current_user['id']);
+        if (isset($result['error']))
         {
-            $this->session->set_flashdata('error', 'Đơn chưa có món nào để thanh toán.');
+            $this->session->set_flashdata('error', $result['error']);
             redirect('me/orders/'.$id);
             return;
-        }
-
-        $method = $this->input->post('payment_method');
-        if ( ! in_array($method, array('CASH', 'CARD', 'TRANSFER', 'QR'), TRUE))
-        {
-            $method = 'CASH';
-        }
-        $total = (float) $order['total_amount'];
-        $received = $method === 'CASH' ? (float) $this->input->post('received_amount') : $total;
-        if ($received < $total)
-        {
-            $this->session->set_flashdata('error', 'Số tiền khách đưa chưa đủ.');
-            redirect('me/orders/'.$id);
-            return;
-        }
-
-        $this->load->model(array('Payment_model', 'Table_session_model'));
-        $payment_id = $this->Payment_model->create($id, $method, $total, $received, $this->current_user['id']);
-        $this->Order_model->mark_paid($id);
-
-        if ($order['table_session_id'])
-        {
-            $this->Table_session_model->close($order['table_session_id']);
-            $this->Table_model->set_status($order['table_id'], 'AVAILABLE');
         }
 
         if ((int) $this->session->userdata('pos_order_id') === (int) $id)
@@ -436,7 +324,6 @@ class Orders extends MY_Controller
             $this->session->unset_userdata('pos_order_id');
         }
 
-        $this->audit('payment', 'PAY', NULL, array('order_id' => $id, 'payment_id' => $payment_id, 'method' => $method));
         $this->session->set_flashdata('paid_order_id', (int) $id);
         redirect('me/tables');
     }
@@ -510,36 +397,22 @@ class Orders extends MY_Controller
         return $order;
     }
 
-    private function _item_of_active_order($order_id, $item_id)
-    {
-        $order = $this->Order_model->get_by_id($order_id);
-        $item = $this->Order_item_model->get_by_id($item_id);
-        if ( ! $order || ! $item || (int) $item['order_session_id'] !== (int) $order_id
-            || $item['status'] !== 'ACTIVE' || ! in_array($order['status'], array('OPEN', 'WAIT_PAYMENT'), TRUE))
-        {
-            return NULL;
-        }
-        return $item;
-    }
-
-    /** Thêm các món product_id[]/qty[]/note[] trong POST vào đơn; trả về danh sách đã thêm. */
-    private function _add_posted_items($order_id)
+    /** Các món product_id[]/qty[]/note[] trong POST -> [['product_id'=>, 'qty'=>, 'note'=>], ...]. */
+    private function _posted_items()
     {
         $product_ids = (array) $this->input->post('product_id');
         $qtys = (array) $this->input->post('qty');
         $notes = (array) $this->input->post('note');
 
-        $added = array();
+        $items = array();
         foreach ($product_ids as $i => $pid)
         {
-            $product = $this->Product_model->get_by_id($pid);
-            if ( ! $product || $product['status'] !== 'ACTIVE') continue;
-
-            $qty = max(1, (int) (isset($qtys[$i]) ? $qtys[$i] : 1));
-            $note = isset($notes[$i]) && $notes[$i] !== '' ? $notes[$i] : NULL;
-            $this->Order_item_model->add_or_merge($order_id, $product['id'], $qty, $product['price'], $note);
-            $added[] = array('product_id' => $product['id'], 'qty' => $qty, 'note' => $note);
+            $items[] = array(
+                'product_id' => $pid,
+                'qty'        => isset($qtys[$i]) ? $qtys[$i] : 1,
+                'note'       => isset($notes[$i]) ? $notes[$i] : NULL,
+            );
         }
-        return $added;
+        return $items;
     }
 }

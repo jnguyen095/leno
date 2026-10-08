@@ -36,6 +36,17 @@
   <div class="pos-tab-title"><?php echo $pos_tab_title; ?></div>
   <?php endif; ?>
 
+  <?php // Ô tìm món (giống ứng dụng POS): không cần gõ dấu, tìm theo tên hoặc SKU. Ở tab Bàn gõ vào thì chuyển sang tab Thực đơn của đơn đang chọn. ?>
+  <div class="pos-search">
+    <i class="bi bi-search"></i>
+    <input type="search" id="posSearch" class="form-control" autocomplete="off" enterkeyhint="search"
+           placeholder="<?php echo $menu_url ? 'Tìm món (vd: ca phe sua)' : 'Chọn bàn để tìm món'; ?>"
+           value="<?php echo $pos_tab === 'menu' ? htmlspecialchars((string) $this->input->get('q')) : ''; ?>"
+           data-menu-url="<?php echo $menu_url ? htmlspecialchars($menu_url) : ''; ?>"
+           <?php echo $menu_url ? '' : 'disabled'; ?>>
+    <button type="button" class="pos-search-clear" aria-label="Xoá" title="Xoá"><i class="bi bi-x-circle-fill"></i></button>
+  </div>
+
   <div class="pos-topbar-actions">
     <?php echo $pos_tab_actions; ?>
     <button type="button" class="btn btn-sm" id="posFocusBtn" onclick="togglePosFocus()">
@@ -80,6 +91,33 @@ window.posPrintSlip = function(name){
   });
   window.print();
 };
+</script>
+
+<script>
+// Ô tìm món: bỏ dấu tiếng Việt để "ca phe sua" khớp "Cà phê sữa" (giống foldVietnamese của ứng dụng).
+window.posFold = function(s){
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().trim();
+};
+(function(){
+  var input = document.getElementById('posSearch');
+  if ( ! input) return;
+  var box = input.parentNode, timer = null;
+  function sync(){ box.classList.toggle('has-text', input.value !== ''); }
+  function apply(){
+    sync();
+    if (typeof window.posMenuSearch === 'function') { window.posMenuSearch(input.value); return; }
+    // Tab Bàn: gõ xong (dừng ~0,35s) thì mở tab Thực đơn với từ khóa đang gõ.
+    clearTimeout(timer);
+    if (input.value.trim() === '' || ! input.dataset.menuUrl) return;
+    timer = setTimeout(function(){ window.location.href = input.dataset.menuUrl + '?q=' + encodeURIComponent(input.value); }, 350);
+  }
+  input.addEventListener('input', apply);
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') { input.value = ''; apply(); }
+  });
+  box.querySelector('.pos-search-clear').addEventListener('click', function(){ input.value = ''; apply(); input.focus(); });
+  sync();
+})();
 </script>
 
 <script>

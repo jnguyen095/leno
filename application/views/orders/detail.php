@@ -119,7 +119,7 @@
           <div class="row g-2" id="productGrid">
             <?php $cat_index = 0; foreach ($products_by_category as $cat_name => $products): $cat_key = $cat_index++; ?>
               <?php foreach ($products as $p): ?>
-              <div class="col-4 col-sm-2 col-xl-2 menu-product" data-cat="<?php echo $cat_key; ?>">
+              <div class="col-4 col-sm-2 col-xl-2 menu-product" data-cat="<?php echo $cat_key; ?>" data-name="<?php echo htmlspecialchars($p['product_name']); ?>" data-sku="<?php echo htmlspecialchars((string) $p['sku']); ?>">
                 <button type="button" class="pos-product-card w-100" onclick="addProduct(<?php echo $p['id']; ?>, this)">
                   <?php // Giá nằm đè giữa đáy ảnh để thẻ gọn hơn; tên món bên dưới. ?>
                   <div class="pos-product-media">
@@ -136,6 +136,7 @@
               <?php endforeach; ?>
             <?php endforeach; ?>
           </div>
+          <div id="menuSearchEmpty" class="text-muted text-center py-4 d-none">Không tìm thấy món nào.</div>
         </div>
       </div>
     </div>
@@ -359,7 +360,10 @@ function waitIdle(btn){
 }
 
 // ---- Lọc thực đơn theo danh mục ----
+var currentCat = 'all';
 function filterCategory(cat, btn){
+  currentCat = cat;
+  if (document.getElementById('posSearch') && document.getElementById('posSearch').value.trim() !== '') return;
   document.querySelectorAll('.menu-product').forEach(function(el){
     el.classList.toggle('d-none', cat !== 'all' && el.dataset.cat !== cat);
   });
@@ -368,6 +372,30 @@ function filterCategory(cat, btn){
     b.classList.toggle('btn-outline-brand', b !== btn);
   });
 }
+
+// ---- Tìm món (ô tìm trên thanh tab, giống ứng dụng POS): bỏ dấu, theo tên hoặc SKU, tìm trên mọi danh mục ----
+window.posMenuSearch = function(text){
+  var q = posFold(text), shown = 0;
+  var words = q.split(/\s+/); // mọi từ đều phải có (không cần liền nhau): "ca phe sua" -> "Cà phê phin sữa đá"
+  document.getElementById('categoryFilterBar').classList.toggle('d-none', q !== '');
+  document.querySelectorAll('.menu-product').forEach(function(el){
+    if ( ! el.dataset.fold) el.dataset.fold = posFold(el.dataset.name);
+    var ok = q === ''
+      ? (currentCat === 'all' || el.dataset.cat === currentCat)
+      : words.every(function(w){ return el.dataset.fold.indexOf(w) !== -1 || el.dataset.sku.toLowerCase().indexOf(w) !== -1; });
+    el.classList.toggle('d-none', ! ok);
+    if (ok) shown++;
+  });
+  document.getElementById('menuSearchEmpty').classList.toggle('d-none', q === '' || shown > 0);
+};
+(function(){
+  // Mở từ tab Bàn với ?q=...: lọc ngay và để con trỏ cuối ô tìm để gõ tiếp.
+  var input = document.getElementById('posSearch');
+  if ( ! input || input.value === '') return;
+  posMenuSearch(input.value);
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+})();
 
 // ---- In phiếu ngay trên trang (khổ K80) ----
 function printSlip(name){ posPrintSlip(name); }

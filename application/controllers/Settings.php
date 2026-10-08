@@ -25,7 +25,40 @@ class Settings extends MY_Controller
             return;
         }
 
-        if ($this->input->method() === 'post')
+        if ($this->input->method() === 'post' && $this->input->post('form') === 'bank_qr')
+        {
+            $bin = (string) $this->input->post('bank_qr_bin');
+            $account_no = preg_replace('/\s+/', '', (string) $this->input->post('bank_qr_account_no'));
+            // Tên chủ tài khoản: in hoa, bỏ khoảng trắng thừa (giống tên hiện trên ứng dụng ngân hàng).
+            $account_name = mb_strtoupper(trim(preg_replace('/\s+/u', ' ', (string) $this->input->post('bank_qr_account_name', TRUE))), 'UTF-8');
+            $enabled = (bool) $this->input->post('bank_qr_enabled');
+
+            if ($bin !== '' && ! isset(Setting_model::VIETQR_BANKS[$bin]))
+            {
+                $error = 'Ngân hàng không hợp lệ.';
+            }
+            elseif ($account_no !== '' && ! preg_match('/^[0-9]{6,19}$/', $account_no))
+            {
+                $error = 'Số tài khoản chỉ gồm chữ số (6–19 số).';
+            }
+            elseif ($enabled && ($bin === '' || $account_no === ''))
+            {
+                $error = 'Chọn ngân hàng và nhập số tài khoản trước khi bật in mã QR.';
+            }
+            else
+            {
+                $old = $this->Setting_model->get_bank_qr();
+                $this->Setting_model->set('bank_qr_bin', $bin);
+                $this->Setting_model->set('bank_qr_account_no', $account_no);
+                $this->Setting_model->set('bank_qr_account_name', mb_substr($account_name, 0, 100, 'UTF-8'));
+                $this->Setting_model->set('bank_qr_enabled', $enabled ? '1' : '0');
+                $this->audit('settings', 'UPDATE_BANK_QR', $old, $this->Setting_model->get_bank_qr());
+                redirect('me/settings');
+                return;
+            }
+        }
+
+        if ($this->input->method() === 'post' && $this->input->post('form') !== 'bank_qr')
         {
             $vat_percent = $this->input->post('vat_percent');
 
@@ -48,6 +81,9 @@ class Settings extends MY_Controller
             'current_user'        => $this->current_user,
             'vat_percent'         => $this->Setting_model->get_vat_percent(),
             'takeaway_enabled'    => $this->Setting_model->is_takeaway_enabled(),
+            'bank_qr'             => $this->Setting_model->get_bank_qr(),
+            'bank_qr_on'          => $this->Setting_model->get('bank_qr_enabled', '0') === '1',
+            'vietqr_banks'        => Setting_model::VIETQR_BANKS,
             'error'               => $error,
         );
         $this->load->view('layout/header', $data);

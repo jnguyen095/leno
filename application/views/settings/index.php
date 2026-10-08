@@ -24,6 +24,42 @@
   </div>
 
   <div class="card border-0 shadow-sm rounded-4 mt-3">
+    <div class="card-header bg-white fw-semibold">Chuyển khoản (mã VietQR)</div>
+    <div class="card-body">
+      <?php echo form_open(current_url()); ?>
+        <input type="hidden" name="form" value="bank_qr">
+        <div class="mb-3">
+          <label class="form-label">Ngân hàng</label>
+          <select name="bank_qr_bin" class="form-select form-select-lg">
+            <option value="">— Chọn ngân hàng —</option>
+            <?php foreach ($vietqr_banks as $bin => $name): ?>
+              <option value="<?php echo $bin; ?>" <?php echo $bank_qr['bin'] === (string) $bin ? 'selected' : ''; ?>><?php echo htmlspecialchars($name); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Số tài khoản</label>
+          <input type="text" name="bank_qr_account_no" class="form-control form-control-lg" inputmode="numeric" maxlength="19"
+                 value="<?php echo htmlspecialchars($bank_qr['account_no']); ?>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Tên chủ tài khoản <span class="text-muted small">(không bắt buộc)</span></label>
+          <input type="text" name="bank_qr_account_name" class="form-control form-control-lg" maxlength="100"
+                 value="<?php echo htmlspecialchars($bank_qr['account_name']); ?>" placeholder="VD: NGUYEN VAN A">
+          <div class="form-text">In dưới mã QR để khách đối chiếu trước khi chuyển.</div>
+        </div>
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" role="switch" name="bank_qr_enabled" value="1" id="bankQrEnabled"
+                 <?php echo $bank_qr_on ? 'checked' : ''; ?>>
+          <label class="form-check-label" for="bankQrEnabled">In mã QR chuyển khoản trên phiếu tạm tính</label>
+        </div>
+        <div class="form-text mb-3">Ứng dụng POS tạo mã VietQR cho từng phiếu: đúng số tiền, nội dung chuyển khoản là số hóa đơn.</div>
+        <button class="btn btn-brand btn-lg w-100">Lưu thay đổi</button>
+      <?php echo form_close(); ?>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 mt-3">
     <div class="card-header bg-white fw-semibold">Bán mang đi</div>
     <div class="card-body">
       <?php echo form_open(current_url()); ?>

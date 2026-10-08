@@ -119,6 +119,40 @@ class Setting_model extends CI_Model
         );
     }
 
+    // ---- Màn hình khách (màn hình phụ máy POS) ----
+
+    /** Giá trị mặc định của các tuỳ chọn màn hình khách (khóa settings = 'display_' + tên). */
+    const DISPLAY_DEFAULTS = array(
+        'slide_seconds'     => '8',
+        'show_logo'         => '1',
+        'welcome_text'      => 'Chào mừng quý khách đến với Leno',
+        'thanks_text'       => 'Cảm ơn quý khách - Hẹn gặp lại!',
+        'thanks_seconds'    => '6',
+        'show_item_notes'   => '0',
+        'show_qr'           => '1',
+        'text_scale'        => '1',
+    );
+
+    /** Tuỳ chọn màn hình khách, đã ép kiểu, dùng cho trang quản trị và API ứng dụng POS. */
+    public function get_display_config()
+    {
+        $v = array();
+        foreach (self::DISPLAY_DEFAULTS as $key => $default)
+        {
+            $v[$key] = (string) $this->get('display_'.$key, $default);
+        }
+        return array(
+            'slide_seconds'   => max(3, min(120, (int) $v['slide_seconds'])),
+            'show_logo'       => $v['show_logo'] === '1',
+            'welcome_text'    => $v['welcome_text'],
+            'thanks_text'     => $v['thanks_text'],
+            'thanks_seconds'  => max(2, min(60, (int) $v['thanks_seconds'])),
+            'show_item_notes' => $v['show_item_notes'] === '1',
+            'show_qr'         => $v['show_qr'] === '1',
+            'text_scale'      => max(0.8, min(1.6, (float) $v['text_scale'])),
+        );
+    }
+
     /** Link nhúng Google Maps tùy chỉnh — rỗng thì site public tự build link tìm theo địa chỉ. */
     public function get_site_google_maps()
     {

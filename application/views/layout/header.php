@@ -53,8 +53,10 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         $can_admin_payroll = $can('admin.payroll');
         $can_admin_audit_logs = $can('admin.audit_logs');
         $can_admin_settings = $can('admin.settings');
+        $can_admin_customer_display = $can('admin.customer_display');
         $show_admin_menu = $can_admin_tables_manage || $can_admin_recipes || $can_admin_categories || $can_admin_products || $can_admin_inventory_categories
-          || $can_admin_inventory_units || $can_admin_dispense_points || $can_admin_users || $can_admin_payroll || $can_admin_reports || $can_admin_audit_logs || $can_admin_settings;
+          || $can_admin_inventory_units || $can_admin_dispense_points || $can_admin_users || $can_admin_payroll || $can_admin_reports || $can_admin_audit_logs || $can_admin_settings
+          || $can_admin_customer_display;
       ?>
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <?php if ($can('dashboard')): ?>
@@ -102,6 +104,7 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
             <?php if ($current_user['role'] === 'ADMIN'): ?><li><a class="dropdown-item" href="<?php echo site_url('me/menu-permissions'); ?>">Gán quyền menu</a></li><?php endif; ?>
             <?php if ($can_admin_payroll): ?><li><a class="dropdown-item" href="<?php echo site_url('me/payroll/admin'); ?>">Quản lý lương</a></li><?php endif; ?>
             <?php if ($can_admin_audit_logs): ?><li><a class="dropdown-item" href="<?php echo site_url('me/audit-logs'); ?>"><i class="bi bi-journal-text"></i> Nhật ký hệ thống</a></li><?php endif; ?>
+            <?php if ($can_admin_customer_display): ?><li><a class="dropdown-item" href="<?php echo site_url('me/customer-display'); ?>"><i class="bi bi-display"></i> Màn hình khách</a></li><?php endif; ?>
             <?php if ($can_admin_settings): ?>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="<?php echo site_url('me/settings'); ?>"><i class="bi bi-gear"></i> Cài đặt</a></li>

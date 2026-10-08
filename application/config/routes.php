@@ -97,6 +97,12 @@ $route['me/recipes/(:num)/ingredients/(:num)/delete'] = 'recipes/delete_ingredie
 
 $route['me/settings'] = 'settings/index';
 $route['me/audit-logs'] = 'audit_logs/index';
+$route['me/customer-display'] = 'customer_display/index';
+$route['me/customer-display/upload'] = 'customer_display/upload';
+$route['me/customer-display/(:num)/update'] = 'customer_display/update/$1';
+$route['me/customer-display/(:num)/toggle'] = 'customer_display/toggle/$1';
+$route['me/customer-display/(:num)/move/(up|down)'] = 'customer_display/move/$1/$2';
+$route['me/customer-display/(:num)/delete'] = 'customer_display/delete/$1';
 
 // RBAC động — gán menu theo vai trò / cấp thêm cho riêng 1 nhân viên
 $route['me/menu-permissions'] = 'menu_permissions/index';
@@ -146,6 +152,7 @@ $route['api/tables/status'] = 'api_tables/status';
 $route['api/v1/auth/login']['POST'] = 'api_auth/login';
 $route['api/v1/auth/logout']['POST'] = 'api_pos/logout';
 $route['api/v1/me']['GET'] = 'api_pos/me';
+$route['api/v1/display/config']['GET'] = 'api_pos/display_config';
 $route['api/v1/tables']['GET'] = 'api_pos/tables';
 $route['api/v1/tables/(:num)/open']['POST'] = 'api_pos/open_table/$1';
 $route['api/v1/tables/(:num)/transfer']['POST'] = 'api_pos/transfer/$1';

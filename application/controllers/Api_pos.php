@@ -40,6 +40,36 @@ class Api_pos extends MY_Api_Controller
         ));
     }
 
+    /**
+     * GET /api/v1/display/config — tuỳ chọn + ảnh trình chiếu cho màn hình khách (quản trị ở
+     * Quản trị → Màn hình khách). 'version' đổi khi có bất kỳ thay đổi nào, để ứng dụng biết lúc cần tải lại ảnh.
+     */
+    public function display_config()
+    {
+        $this->_method('get');
+        $this->load->model('Display_slide_model');
+
+        $slides = array();
+        foreach ($this->Display_slide_model->get_showing() as $s)
+        {
+            $slides[] = array(
+                'id'               => (int) $s['id'],
+                'image'            => api_image($s['image']),
+                'title'            => $s['title'],
+                'duration_seconds' => $s['duration_seconds'] !== NULL ? (int) $s['duration_seconds'] : NULL,
+                'updated_at'       => $s['updated_at'],
+            );
+        }
+        $config = $this->Setting_model->get_display_config();
+
+        json_response(array(
+            'success' => TRUE,
+            'version' => substr(md5(json_encode(array($config, $slides))), 0, 12),
+            'config'  => $config,
+            'slides'  => $slides,
+        ));
+    }
+
     /** POST /api/v1/auth/logout — huỷ token của thiết bị này. */
     public function logout()
     {

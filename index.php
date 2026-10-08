@@ -56,6 +56,12 @@
 	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
 
 /*
+ * Giờ Việt Nam cho mọi date()/strtotime(): số đơn (ORDyymmdd), giờ tạo/thanh toán, "hôm nay".
+ * Không phụ thuộc date.timezone trong php.ini của từng máy chủ (XAMPP đang để Europe/Berlin).
+ */
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
+/*
  *---------------------------------------------------------------
  * ERROR REPORTING
  *---------------------------------------------------------------

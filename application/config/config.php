@@ -23,8 +23,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-//$config['base_url'] = 'https://leno.pickangelpark.com/';
-$config['base_url'] = 'http://localhost/leno/';
+// Tự nhận theo host đang chạy: localhost -> http://localhost/leno/, production -> https://leno.pickangelpark.com/
+// (một file config dùng chung, khỏi sửa tay mỗi lần deploy).
+if (isset($_SERVER['HTTP_HOST']) && preg_match('/^(localhost|127\.0\.0\.1)(:\d+)?$/', $_SERVER['HTTP_HOST']))
+{
+	$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/leno/';
+}
+else
+{
+	$config['base_url'] = 'https://leno.pickangelpark.com/';
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -387,8 +395,12 @@ $config['encryption_key'] = '187f917ccbf4fad27ef0904b6fedd11c0c065b0f09643b2d54f
 $config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_samesite'] = 'Lax';
-$config['sess_expiration'] = 7200;
-$config['sess_save_path'] = NULL;
+// 8 tiếng ~ một ca làm; quá hạn thì cookie "ghi nhớ đăng nhập" tự đăng nhập lại.
+$config['sess_expiration'] = 28800;
+// File phiên lưu trong thư mục riêng của app: thư mục tạm dùng chung trên shared hosting thường bị
+// dọn sau ~24 phút không hoạt động (session.gc_maxlifetime mặc định) => bị đăng xuất sớm.
+// Không ghi được vào thư mục này thì quay về mặc định của PHP để site không lỗi.
+$config['sess_save_path'] = is_dir(APPPATH.'sessions') && is_writable(APPPATH.'sessions') ? APPPATH.'sessions' : NULL;
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;
@@ -412,7 +424,9 @@ $config['sess_regenerate_destroy'] = FALSE;
 $config['cookie_prefix']	= '';
 $config['cookie_domain']	= '';
 $config['cookie_path']		= '/';
-$config['cookie_secure']	= FALSE;
+// Chạy HTTPS (production) thì cookie phiên + "ghi nhớ đăng nhập" chỉ gửi qua HTTPS; localhost HTTP vẫn chạy.
+$config['cookie_secure']	= ( ! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+	|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https');
 $config['cookie_httponly'] 	= FALSE;
 $config['cookie_samesite'] 	= 'Lax';
 

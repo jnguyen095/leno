@@ -49,6 +49,8 @@ class Auth extends CI_Controller
                     if ($this->input->post('remember'))
                     {
                         $this->load->model('User_remember_model');
+                        // Thiết bị này đăng nhập lại -> bỏ token cũ của chính nó, tránh dồn rác.
+                        $this->User_remember_model->delete_by_cookie($this->input->cookie(REMEMBER_COOKIE_NAME));
                         $cookie_value = $this->User_remember_model->create($user['id']);
                         set_remember_cookie($cookie_value, User_remember_model::TTL_DAYS * 86400);
                     }
@@ -77,8 +79,9 @@ class Auth extends CI_Controller
             $this->load->model('Audit_log_model');
             $this->Audit_log_model->log('auth', 'LOGOUT', NULL, NULL, $user['id']);
 
+            // Chỉ huỷ ghi nhớ của THIẾT BỊ này; máy POS / điện thoại khác vẫn giữ đăng nhập.
             $this->load->model('User_remember_model');
-            $this->User_remember_model->delete_for_user($user['id']);
+            $this->User_remember_model->delete_by_cookie($this->input->cookie(REMEMBER_COOKIE_NAME));
         }
         $this->session->unset_userdata('user');
         $this->session->sess_destroy();

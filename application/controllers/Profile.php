@@ -38,10 +38,19 @@ class Profile extends MY_Controller
             {
                 $this->User_model->update($this->current_user['id'], array('password' => $new_password));
 
-                // Đổi mật khẩu xong thì huỷ mọi phiên "ghi nhớ đăng nhập" cũ — phòng trường hợp
-                // mật khẩu bị lộ, cookie ghi nhớ cũ không còn dùng để đăng nhập lại được nữa.
+                // Đổi mật khẩu xong thì huỷ mọi phiên "ghi nhớ đăng nhập" cũ (các thiết bị khác phải
+                // đăng nhập lại) — phòng trường hợp mật khẩu bị lộ. Thiết bị đang đổi mật khẩu nếu đang
+                // được ghi nhớ thì cấp token mới, khỏi bắt chính người này đăng nhập lại.
+                $was_remembered = (bool) $this->input->cookie(REMEMBER_COOKIE_NAME);
                 $this->User_remember_model->delete_for_user($this->current_user['id']);
-                clear_remember_cookie();
+                if ($was_remembered)
+                {
+                    set_remember_cookie($this->User_remember_model->create($this->current_user['id']), User_remember_model::TTL_DAYS * 86400);
+                }
+                else
+                {
+                    clear_remember_cookie();
+                }
 
                 $this->audit('user', 'CHANGE_PASSWORD', NULL, array('id' => $this->current_user['id']));
                 $success = TRUE;

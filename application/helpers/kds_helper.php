@@ -328,7 +328,11 @@ if ( ! function_exists('attempt_remember_login'))
 
         unset($user['password']);
         $ci->session->set_userdata('user', $user);
-        set_remember_cookie($result['cookie'], strtotime($result['expires_at']) - time());
+        // Chỉ ghi lại cookie khi validator vừa được xoay (không phải request nào cũng đổi).
+        if ($result['cookie'] !== NULL)
+        {
+            set_remember_cookie($result['cookie'], strtotime($result['expires_at']) - time());
+        }
 
         return $user;
     }

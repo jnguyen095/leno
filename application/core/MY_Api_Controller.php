@@ -25,6 +25,12 @@ class MY_Api_Controller extends CI_Controller
             $this->current_user = $this->_user_from_token($token);
             $this->api_token = $token;
         }
+        elseif ( ! $this->current_user)
+        {
+            // Trình duyệt (poll sơ đồ bàn...): phiên hết hạn thì thử cookie "ghi nhớ đăng nhập"
+            // như các trang thường (MY_Controller), thay vì trả 401.
+            $this->current_user = attempt_remember_login();
+        }
 
         if ( ! $this->current_user)
         {

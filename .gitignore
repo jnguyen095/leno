@@ -152,3 +152,8 @@ application/controllers/Migrate_runner.php
 
 # File cài đặt APK cho máy POS — tải lên máy chủ trực tiếp, không commit
 /downloads/*.apk
+
+# File phiên đăng nhập (sess_save_path) — giữ thư mục, không commit nội dung
+/application/sessions/*
+!/application/sessions/.htaccess
+!/application/sessions/index.html

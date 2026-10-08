@@ -34,7 +34,7 @@
               <input type="password" name="password" class="form-control form-control-lg" required>
             </div>
             <div class="mb-3 form-check">
-              <input type="checkbox" name="remember" value="1" class="form-check-input" id="rememberMe">
+              <input type="checkbox" name="remember" value="1" class="form-check-input" id="rememberMe" checked>
               <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
             </div>
             <button type="submit" class="btn btn-brand btn-lg w-100">Đăng nhập</button>

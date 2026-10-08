@@ -15,7 +15,7 @@
       <div class="card shadow-lg border-0 rounded-4">
         <div class="card-body p-4 p-sm-5 pt-sm-0">
           <div class="text-center mb-4">
-            <img src="<?=base_url('/assets/img/leno-text.png')?>" style="width:200px;margin-top:20px"?>
+            <img src="<?=base_url('/assets/img/leno-logo.jpg')?>" style="width:150px;margin-top:20px"?>
             <h4 class="mt-2 mb-0 fw-bold"></h4>
             <small class="text-muted"></small>
           </div>

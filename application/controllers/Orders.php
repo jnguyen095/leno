@@ -386,6 +386,25 @@ class Orders extends MY_Controller
         ));
     }
 
+    /** GET (AJAX) — Lịch sử "Thông báo" của đơn: HTML danh sách các lần báo bếp + phiếu bếp ẩn để "In lại". */
+    public function kitchen_history($id)
+    {
+        $order = $this->Order_model->get_detail($id);
+        if ( ! $order)
+        {
+            json_response(array('success' => FALSE, 'message' => 'Không tìm thấy đơn.'), 404);
+            return;
+        }
+        json_response(array(
+            'success' => TRUE,
+            'html'    => $this->load->view('orders/_kitchen_history', array(
+                'history'     => $this->pos_service->kitchen_history($id),
+                'order'       => $order,
+                'table_label' => $order['table_name'] ?: 'Mang đi',
+            ), TRUE),
+        ));
+    }
+
     private function _active_order_or_redirect($id)
     {
         $order = $this->Order_model->get_detail($id);

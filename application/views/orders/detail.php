@@ -53,11 +53,7 @@
   <?php if ($this->session->flashdata('error')): ?>
     <div class="alert alert-danger py-2 small"><?php echo $this->session->flashdata('error'); ?></div>
   <?php endif; ?>
-  <?php if ($kitchen_slip): ?>
-    <div class="alert alert-success py-2 small no-print"><i class="bi bi-check-circle"></i> Đã báo bếp. Đang mở hộp thoại in phiếu bếp…
-      <a href="#" onclick="printSlip('kitchen'); return false;">In lại</a></div>
-  <?php endif; ?>
-
+  
   <?php // Đơn đang phục vụ: trên màn hình lớn 2 cột vừa khít chiều cao màn hình (xem .pos-layout trong CSS),
         // thực đơn và danh sách món tự cuộn bên trong; 3 nút luôn nằm cuối cột phải. ?>
   <div class="row g-3 <?php echo $is_active ? 'pos-layout' : ''; ?>" id="posLayout">
@@ -189,43 +185,52 @@
 <div id="provisionalSlipWrap"><?php $this->load->view('orders/_provisional_slip'); ?></div>
 
 <?php if ($kitchen_slip): ?>
-<?php // Phiếu bếp — cùng bố cục với ứng dụng POS Flutter (Tickets.kitchen): khung tên bàn | Số HĐ + Thời gian, bảng Tên món | SL. ?>
-<div class="print-slip receipt-k80" data-slip="kitchen">
-  <div class="center bold rk-title">PHIẾU BẾP</div>
-  <hr>
-  <div class="rk-split">
-    <div class="rk-box"><span><?php echo empty($order['table_id']) ? 'Mang đi' : htmlspecialchars($table_label); ?></span></div>
-    <div class="rk-lines">
-      <div>Số HĐ: <?php echo htmlspecialchars($order['order_no']); ?></div>
-      <div>Thời gian: <?php echo date('d/m/Y H:i', strtotime($kitchen_slip['created_at'])); ?></div>
-      <?php if ( ! empty($kitchen_slip['order_note'])): ?><div class="italic">Ghi chú: <?php echo htmlspecialchars($kitchen_slip['order_note']); ?></div><?php endif; ?>
+<?php $this->load->view('orders/_kitchen_slip', array('slip' => $kitchen_slip, 'slip_name' => 'kitchen')); ?>
+<?php endif; ?>
+<?php endif; ?>
+
+<!-- Lịch sử báo bếp (các lần "Thông báo") -->
+<div class="modal fade" id="kitchenHistoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Lịch sử báo bếp — <?php echo htmlspecialchars($table_label); ?></h5>
+        <button type="button" class="btn btn-sm btn-link text-secondary ms-auto" onclick="openKitchenHistory()" title="Tải lại"><i class="bi bi-arrow-clockwise fs-5"></i></button>
+        <button type="button" class="btn-close ms-1" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="kitchenHistoryBody"></div>
     </div>
   </div>
-  <hr>
-  <?php
-    $sections = array();
-    if ( ! empty($kitchen_slip['send']))    $sections[] = array(NULL, $kitchen_slip['send'], 'send');
-    if ( ! empty($kitchen_slip['changed'])) $sections[] = array('ĐỔI GHI CHÚ', $kitchen_slip['changed'], 'changed');
-    if ( ! empty($kitchen_slip['cancel']))  $sections[] = array('HỦY MÓN', $kitchen_slip['cancel'], 'cancel');
-  ?>
-  <?php foreach ($sections as $i => $sec): ?>
-    <?php if ($i > 0): ?><hr><?php endif; ?>
-    <?php if ($sec[0]): ?><div class="bold"><?php echo $sec[0]; ?></div><?php endif; ?>
-    <table class="rk-items">
-      <colgroup><col style="width:80%"><col style="width:20%"></colgroup>
-      <tr class="bold"><td>Tên món</td><td class="center">SL</td></tr>
-      <?php foreach ($sec[1] as $line):
-        $note = $sec[2] === 'cancel' ? NULL : ($sec[2] === 'changed' && ($line['note'] === NULL || $line['note'] === '') ? 'bỏ ghi chú' : $line['note']); ?>
-      <tr>
-        <td><?php echo htmlspecialchars($line['product_name']); ?><?php if ($note !== NULL && $note !== ''): ?> <i>(<?php echo htmlspecialchars($note); ?>)</i><?php endif; ?></td>
-        <td class="center"><?php echo (int) $line['qty']; ?></td>
-      </tr>
-      <?php endforeach; ?>
-    </table>
-  <?php endforeach; ?>
 </div>
-<?php endif; ?>
-<?php endif; ?>
+<?php // Phiếu bếp ẩn của các lần báo — để ngoài modal để khi in phiếu nằm đúng đầu trang. ?>
+<div id="kitchenHistorySlipHost"></div>
+
+<script>
+// ---- Lịch sử báo bếp: tải danh sách qua AJAX mỗi lần mở (luôn mới nhất) ----
+function openKitchenHistory(){
+  var body = document.getElementById('kitchenHistoryBody');
+  body.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-secondary"></div></div>';
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('kitchenHistoryModal')).show();
+  fetch('<?php echo base_url('me/orders/'.$order['id'].'/kitchen-history'); ?>', { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if ( ! res.success) throw new Error(res.message || 'Lỗi');
+      body.innerHTML = res.html;
+      var host = document.getElementById('kitchenHistorySlipHost'), slips = document.getElementById('kitchenHistorySlips');
+      host.innerHTML = '';
+      if (slips) host.appendChild(slips);
+    })
+    .catch(function(){ body.innerHTML = '<div class="text-danger text-center py-5">Không tải được lịch sử báo bếp.</div>'; });
+}
+// Đơn đã đóng không có thanh tab POS (posPrintSlip) -> in phiếu bằng cách tương tự.
+if ( ! window.posPrintSlip) window.posPrintSlip = function(name){
+  var target = document.querySelector('.print-slip[data-slip="' + name + '"]');
+  if ( ! target) return;
+  document.querySelectorAll('.print-slip').forEach(function(el){ el.removeAttribute('id'); });
+  target.id = 'printArea';
+  window.print();
+};
+</script>
 
 <script>
 <?php if ($is_active): ?>
@@ -389,7 +394,7 @@ window.posMenuSearch = function(text){
   document.getElementById('menuSearchEmpty').classList.toggle('d-none', q === '' || shown > 0);
 };
 (function(){
-  // Mở từ tab Bàn với ?q=...: lọc ngay và để con trỏ cuối ô tìm để gõ tiếp.
+  // Mở trang với ?q=...: lọc ngay và để con trỏ cuối ô tìm để gõ tiếp.
   var input = document.getElementById('posSearch');
   if ( ! input || input.value === '') return;
   posMenuSearch(input.value);

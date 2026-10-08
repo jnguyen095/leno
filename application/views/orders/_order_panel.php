@@ -9,17 +9,23 @@
     <?php if ($is_active && $pending_count): ?><span class="badge bg-warning text-dark"><?php echo $pending_count; ?> món chưa báo bếp</span><?php endif; ?>
   </div>
   <?php // Ghi chú cho cả đơn — in trên phiếu bếp và phiếu tạm tính. ?>
-  <?php if ($is_active): ?>
-    <div class="px-3 py-2 border-bottom">
-      <button type="button" class="pos-order-note <?php echo $order['note'] ? 'has-note' : ''; ?>"
-              data-note="<?php echo htmlspecialchars((string) $order['note']); ?>" onclick="editOrderNote(this)">
-        <i class="bi <?php echo $order['note'] ? 'bi-journal-text' : 'bi-plus-circle'; ?>"></i>
-        <?php echo $order['note'] ? '<b>Ghi chú đơn:</b> '.htmlspecialchars($order['note']) : 'Thêm ghi chú cho đơn'; ?>
-      </button>
+  <?php // Bên phải hàng ghi chú: "Lịch sử báo bếp" — các lần bấm "Thông báo" (giống ứng dụng POS), in lại được. ?>
+  <div class="px-3 py-2 border-bottom d-flex align-items-start gap-2">
+    <div class="flex-grow-1" style="min-width:0">
+      <?php if ($is_active): ?>
+        <button type="button" class="pos-order-note <?php echo $order['note'] ? 'has-note' : ''; ?>"
+                data-note="<?php echo htmlspecialchars((string) $order['note']); ?>" onclick="editOrderNote(this)">
+          <i class="bi <?php echo $order['note'] ? 'bi-journal-text' : 'bi-plus-circle'; ?>"></i>
+          <?php echo $order['note'] ? '<b>Ghi chú đơn:</b> '.htmlspecialchars($order['note']) : 'Thêm ghi chú cho đơn'; ?>
+        </button>
+      <?php elseif ( ! empty($order['note'])): ?>
+        <div class="small"><i class="bi bi-journal-text"></i> <b>Ghi chú đơn:</b> <?php echo htmlspecialchars($order['note']); ?></div>
+      <?php endif; ?>
     </div>
-  <?php elseif ( ! empty($order['note'])): ?>
-    <div class="px-3 py-2 border-bottom small"><i class="bi bi-journal-text"></i> <b>Ghi chú đơn:</b> <?php echo htmlspecialchars($order['note']); ?></div>
-  <?php endif; ?>
+    <button type="button" class="pos-kitchen-history-btn" onclick="openKitchenHistory()" title="Lịch sử báo bếp">
+      <i class="bi bi-clock-history"></i> <span>Lịch sử báo bếp</span>
+    </button>
+  </div>
   <div class="list-group list-group-flush" id="orderedItemsList">
     <?php foreach (array_values($visible_items) as $i => $it): ?>
       <?php $this->load->view('orders/_item_row', array('it' => $it, 'order' => $order, 'is_active' => $is_active, 'seq' => $i + 1)); ?>

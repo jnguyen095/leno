@@ -13,12 +13,12 @@
       <div class="small text-muted">
         <span class="text-nowrap"><?php echo money_format_vnd($it['price']); ?><?php if ( ! $editable): ?> x <?php echo $it['qty']; ?><?php endif; ?></span>
         <?php if ($is_active && $pending_delta > 0): ?>
-          <span class="badge bg-warning text-dark">Chưa báo<?php echo (int) $it['notified_qty'] > 0 ? ' +'.$pending_delta : ''; ?></span>
+          <span class="badge text-warning">Chưa báo<?php echo (int) $it['notified_qty'] > 0 ? ' +'.$pending_delta : ''; ?></span>
         <?php elseif ($is_active && $pending_delta < 0): ?>
           <span class="badge bg-danger">Chờ báo bớt <?php echo abs($pending_delta); ?></span>
         <?php endif; ?>
         <?php if ($is_active && Order_item_model::note_changed($it)): ?>
-          <span class="badge bg-warning text-dark">Đổi ghi chú – chưa báo</span>
+          <span class="badge text-warning">Đổi ghi chú – chưa báo</span>
         <?php endif; ?>
       </div>
       <?php // Ghi chú món (vd "Ít đá"): bấm để sửa; món chưa có ghi chú hiện link "+ Ghi chú". ?>

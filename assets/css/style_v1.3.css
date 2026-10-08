@@ -244,3 +244,16 @@ span#orderItemCountBadge {
   top: -7px;
   font-size: 16px;
 }
+
+/* Nút "Lịch sử báo bếp" bên phải hàng ghi chú đơn + nội dung hộp lịch sử (giống ứng dụng POS). */
+.pos-kitchen-history-btn{
+  flex:0 0 auto; display:inline-flex; align-items:center; gap:.3rem; border:0; background:none; padding:0; margin-top:.15rem;
+  font-size:.85rem; color:#6c757d; white-space:nowrap;
+}
+.pos-kitchen-history-btn:hover{ color: var(--brand); }
+.kh-card{ background:#f6f4f2; border-radius:.75rem; padding:.65rem .9rem .75rem; }
+.kh-card + .kh-card{ margin-top:.65rem; }
+.kh-section{ margin-top:.35rem; }
+.kh-title{ font-size:.8rem; font-weight:700; letter-spacing:.02em; }
+.kh-line{ padding:1px 0; }
+.kh-sub{ padding-left:1.4rem; font-size:.9em; color:#555; }

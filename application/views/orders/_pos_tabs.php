@@ -36,16 +36,14 @@
   <div class="pos-tab-title"><?php echo $pos_tab_title; ?></div>
   <?php endif; ?>
 
-  <?php // Ô tìm món (giống ứng dụng POS): không cần gõ dấu, tìm theo tên hoặc SKU. Ở tab Bàn gõ vào thì chuyển sang tab Thực đơn của đơn đang chọn. ?>
+  <?php if ($pos_tab === 'menu'): // Ô tìm món (giống ứng dụng POS) — chỉ ở tab Thực đơn: không cần gõ dấu, tìm theo tên hoặc SKU. ?>
   <div class="pos-search">
     <i class="bi bi-search"></i>
     <input type="search" id="posSearch" class="form-control" autocomplete="off" enterkeyhint="search"
-           placeholder="<?php echo $menu_url ? 'Tìm món (vd: ca phe sua)' : 'Chọn bàn để tìm món'; ?>"
-           value="<?php echo $pos_tab === 'menu' ? htmlspecialchars((string) $this->input->get('q')) : ''; ?>"
-           data-menu-url="<?php echo $menu_url ? htmlspecialchars($menu_url) : ''; ?>"
-           <?php echo $menu_url ? '' : 'disabled'; ?>>
+           placeholder="Tìm món (vd: ca phe sua)" value="<?php echo htmlspecialchars((string) $this->input->get('q')); ?>">
     <button type="button" class="pos-search-clear" aria-label="Xoá" title="Xoá"><i class="bi bi-x-circle-fill"></i></button>
   </div>
+  <?php endif; ?>
 
   <div class="pos-topbar-actions">
     <?php echo $pos_tab_actions; ?>
@@ -101,15 +99,11 @@ window.posFold = function(s){
 (function(){
   var input = document.getElementById('posSearch');
   if ( ! input) return;
-  var box = input.parentNode, timer = null;
+  var box = input.parentNode;
   function sync(){ box.classList.toggle('has-text', input.value !== ''); }
   function apply(){
     sync();
-    if (typeof window.posMenuSearch === 'function') { window.posMenuSearch(input.value); return; }
-    // Tab Bàn: gõ xong (dừng ~0,35s) thì mở tab Thực đơn với từ khóa đang gõ.
-    clearTimeout(timer);
-    if (input.value.trim() === '' || ! input.dataset.menuUrl) return;
-    timer = setTimeout(function(){ window.location.href = input.dataset.menuUrl + '?q=' + encodeURIComponent(input.value); }, 350);
+    if (typeof window.posMenuSearch === 'function') window.posMenuSearch(input.value);
   }
   input.addEventListener('input', apply);
   input.addEventListener('keydown', function(e){

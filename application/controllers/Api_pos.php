@@ -358,36 +358,7 @@ class Api_pos extends MY_Api_Controller
             $this->fail(404, 'Không tìm thấy đơn.');
         }
 
-        $this->load->model('Audit_log_model');
-        $lines = function ($rows) {
-            return array_map(function ($r) {
-                return array(
-                    'product_id'   => (int) $r['product_id'],
-                    'product_name' => $r['product_name'],
-                    'qty'          => (int) $r['qty'],
-                    'note'         => isset($r['note']) ? $r['note'] : NULL,
-                    'old_note'     => isset($r['old_note']) ? $r['old_note'] : NULL,
-                );
-            }, is_array($rows) ? $rows : array());
-        };
-
-        $history = array();
-        foreach ($this->Audit_log_model->get_kitchen_notifications($order_id) as $row)
-        {
-            $data = json_decode($row['new_data'], TRUE);
-            if ( ! is_array($data) || (int) $data['order_id'] !== (int) $order_id) continue;
-            $history[] = array(
-                'id'         => (int) $row['id'],
-                'send'       => $lines(isset($data['send']) ? $data['send'] : NULL),
-                'cancel'     => $lines(isset($data['cancel']) ? $data['cancel'] : NULL),
-                'changed'    => $lines(isset($data['changed']) ? $data['changed'] : NULL),
-                'order_note' => NULL,
-                'created_at' => $row['created_at'],
-                'staff'      => $row['staff'],
-            );
-        }
-
-        json_response(array('success' => TRUE, 'history' => $history));
+        json_response(array('success' => TRUE, 'history' => $this->pos_service->kitchen_history($order_id)));
     }
 
     /**

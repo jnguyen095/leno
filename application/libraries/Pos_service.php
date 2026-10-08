@@ -350,6 +350,7 @@ class Pos_service
     /** Món đã gọi + số dòng chưa báo bếp — dùng chung cho trang đơn và API. */
     public function panel_data($order)
     {
+        $this->CI->load->model('Setting_model');
         $is_active = $this->is_active($order);
         $items = $this->CI->Order_item_model->get_by_order($order['id']);
         $active_items = array_values(array_filter($items, function ($it) { return $it['status'] === 'ACTIVE'; }));
@@ -370,6 +371,8 @@ class Pos_service
             // Đơn đang phục vụ ẩn món đã hủy; đơn đã đóng hiện đủ để xem lại lịch sử.
             'visible_items' => $is_active ? $active_items : $items,
             'pending_count' => $pending_count,
+            // Tài khoản nhận chuyển khoản: phiếu tạm tính in mã VietQR (giống ứng dụng POS).
+            'bank_qr'       => $this->CI->Setting_model->get_bank_qr(),
         );
     }
 }

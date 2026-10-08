@@ -188,41 +188,40 @@
 <div id="provisionalSlipWrap"><?php $this->load->view('orders/_provisional_slip'); ?></div>
 
 <?php if ($kitchen_slip): ?>
+<?php // Phiếu bếp — cùng bố cục với ứng dụng POS Flutter (Tickets.kitchen): khung tên bàn | Số HĐ + Thời gian, bảng Tên món | SL. ?>
 <div class="print-slip receipt-k80" data-slip="kitchen">
-  <div class="center bold big">PHIẾU BẾP</div>
+  <div class="center bold rk-title">PHIẾU BẾP</div>
   <hr>
-  <div class="bold"><?php echo empty($order['table_id']) ? 'MANG ĐI' : 'Bàn: '.htmlspecialchars($table_label); ?></div>
-  <div>Mã đơn: <?php echo htmlspecialchars($order['order_no']); ?></div>
-  <div>Giờ: <?php echo date('d/m/Y H:i', strtotime($kitchen_slip['created_at'])); ?> — <?php echo htmlspecialchars($kitchen_slip['staff']); ?></div>
-  <?php if ( ! empty($kitchen_slip['order_note'])): ?>
-    <div class="bold">Ghi chú: <?php echo htmlspecialchars($kitchen_slip['order_note']); ?></div>
-  <?php endif; ?>
+  <div class="rk-split">
+    <div class="rk-box"><span><?php echo empty($order['table_id']) ? 'Mang đi' : htmlspecialchars($table_label); ?></span></div>
+    <div class="rk-lines">
+      <div>Số HĐ: <?php echo htmlspecialchars($order['order_no']); ?></div>
+      <div>Thời gian: <?php echo date('d/m/Y H:i', strtotime($kitchen_slip['created_at'])); ?></div>
+      <?php if ( ! empty($kitchen_slip['order_note'])): ?><div class="italic">Ghi chú: <?php echo htmlspecialchars($kitchen_slip['order_note']); ?></div><?php endif; ?>
+    </div>
+  </div>
   <hr>
-  <table>
-    <?php foreach ($kitchen_slip['send'] as $line): ?>
-    <tr><td><span class="bold"><?php echo (int) $line['qty']; ?> x</span> <?php echo htmlspecialchars($line['product_name']); ?></td></tr>
-    <?php if ($line['note']): ?><tr><td>&nbsp;&nbsp;↳ <?php echo htmlspecialchars($line['note']); ?></td></tr><?php endif; ?>
-    <?php endforeach; ?>
-  </table>
-  <?php if ( ! empty($kitchen_slip['changed'])): ?>
-    <hr>
-    <div class="bold">ĐỔI GHI CHÚ</div>
-    <table>
-      <?php foreach ($kitchen_slip['changed'] as $line): ?>
-      <tr><td><span class="bold"><?php echo (int) $line['qty']; ?> x</span> <?php echo htmlspecialchars($line['product_name']); ?></td></tr>
-      <tr><td>&nbsp;&nbsp;↳ <?php echo $line['note'] !== NULL && $line['note'] !== '' ? htmlspecialchars($line['note']) : '(bỏ ghi chú)'; ?></td></tr>
+  <?php
+    $sections = array();
+    if ( ! empty($kitchen_slip['send']))    $sections[] = array(NULL, $kitchen_slip['send'], 'send');
+    if ( ! empty($kitchen_slip['changed'])) $sections[] = array('ĐỔI GHI CHÚ', $kitchen_slip['changed'], 'changed');
+    if ( ! empty($kitchen_slip['cancel']))  $sections[] = array('HỦY MÓN', $kitchen_slip['cancel'], 'cancel');
+  ?>
+  <?php foreach ($sections as $i => $sec): ?>
+    <?php if ($i > 0): ?><hr><?php endif; ?>
+    <?php if ($sec[0]): ?><div class="bold"><?php echo $sec[0]; ?></div><?php endif; ?>
+    <table class="rk-items">
+      <colgroup><col style="width:80%"><col style="width:20%"></colgroup>
+      <tr class="bold"><td>Tên món</td><td class="center">SL</td></tr>
+      <?php foreach ($sec[1] as $line):
+        $note = $sec[2] === 'cancel' ? NULL : ($sec[2] === 'changed' && ($line['note'] === NULL || $line['note'] === '') ? 'bỏ ghi chú' : $line['note']); ?>
+      <tr>
+        <td><?php echo htmlspecialchars($line['product_name']); ?><?php if ($note !== NULL && $note !== ''): ?> <i>(<?php echo htmlspecialchars($note); ?>)</i><?php endif; ?></td>
+        <td class="center"><?php echo (int) $line['qty']; ?></td>
+      </tr>
       <?php endforeach; ?>
     </table>
-  <?php endif; ?>
-  <?php if ($kitchen_slip['cancel']): ?>
-    <hr>
-    <div class="bold">HỦY MÓN</div>
-    <table>
-      <?php foreach ($kitchen_slip['cancel'] as $line): ?>
-      <tr><td class="strike"><span class="bold"><?php echo (int) $line['qty']; ?> x</span> <?php echo htmlspecialchars($line['product_name']); ?></td></tr>
-      <?php endforeach; ?>
-    </table>
-  <?php endif; ?>
+  <?php endforeach; ?>
 </div>
 <?php endif; ?>
 <?php endif; ?>

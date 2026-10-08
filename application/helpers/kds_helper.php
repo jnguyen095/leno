@@ -337,3 +337,43 @@ if ( ! function_exists('attempt_remember_login'))
         return $user;
     }
 }
+
+if ( ! function_exists('vietqr_payload'))
+{
+    /**
+     * Chuỗi dữ liệu VietQR (chuẩn NAPAS / EMVCo) — giống lib/printing/vietqr.dart của ứng dụng POS:
+     * chuyển khoản tới $account_no ngân hàng $bank_bin, điền sẵn số tiền + nội dung (số HĐ).
+     */
+    function vietqr_payload($bank_bin, $account_no, $amount = NULL, $purpose = NULL)
+    {
+        $field = function ($id, $value) { return $id.str_pad(strlen($value), 2, '0', STR_PAD_LEFT).$value; };
+
+        $merchant = $field('00', 'A000000727')
+            .$field('01', $field('00', $bank_bin).$field('01', $account_no))
+            .$field('02', 'QRIBFTTA');
+
+        $note = $purpose === NULL ? '' : substr(trim(preg_replace('/[^A-Za-z0-9 \-]/', '', $purpose)), 0, 25);
+        $has_amount = $amount !== NULL && $amount > 0;
+
+        $payload = $field('00', '01')
+            .$field('01', $has_amount ? '12' : '11')
+            .$field('38', $merchant)
+            .$field('53', '704')
+            .($has_amount ? $field('54', (string) $amount) : '')
+            .$field('58', 'VN')
+            .($note === '' ? '' : $field('62', $field('08', $note)))
+            .'6304';
+
+        // CRC-16/CCITT-FALSE (đa thức 0x1021, giá trị đầu 0xFFFF).
+        $crc = 0xFFFF;
+        for ($i = 0, $n = strlen($payload); $i < $n; $i++)
+        {
+            $crc ^= ord($payload[$i]) << 8;
+            for ($b = 0; $b < 8; $b++)
+            {
+                $crc = ($crc & 0x8000) ? (($crc << 1) ^ 0x1021) & 0xFFFF : ($crc << 1) & 0xFFFF;
+            }
+        }
+        return $payload.strtoupper(str_pad(dechex($crc), 4, '0', STR_PAD_LEFT));
+    }
+}

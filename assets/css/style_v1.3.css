@@ -215,17 +215,7 @@ body.pos-focus main > .container-fluid{ padding-top:.75rem !important; padding-b
 
 /* Phiếu K80 in ngay trên trang (Thông báo / Tạm tính) — cùng định dạng với hóa đơn
    views/cashier/invoice.php; trung hòa style mặc định của Bootstrap (hr mờ, line-height 1.5). */
-.receipt-k80{
-  width:80mm; margin:0 auto; padding:8px; font-family:'Courier New',monospace; font-size:12px; line-height:normal; color:#000;
-}
-.receipt-k80 hr{ border:0; border-top:1px dashed #000; opacity:1; color:#000; margin:.5em 0; }
-.receipt-k80 table{ width:100%; border-collapse:collapse; }
-.receipt-k80 td{ vertical-align:top; padding:2px 0; }
-.receipt-k80 .center{ text-align:center; }
-.receipt-k80 .right{ text-align:right; }
-.receipt-k80 .bold{ font-weight:bold; }
-.receipt-k80 .big{ font-size:14px; }
-.receipt-k80 .strike{ text-decoration:line-through; }
+/* .receipt-k80: xem receipt_k80.css */
 
 /* ---------- Small screens ---------- */
 @media (max-width: 575.98px){

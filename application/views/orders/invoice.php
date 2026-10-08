@@ -3,26 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <title>Hóa đơn - <?php echo htmlspecialchars($order['order_no']); ?></title>
+<link href="<?php echo base_url('assets/css/receipt_k80.css'); ?>" rel="stylesheet">
 <style>
-body{ font-family:'Courier New',monospace; font-size:12px; color:#000; margin:0; padding:8px; }
-.receipt{ width:80mm; margin:0 auto; }
-hr{ border-top:1px dashed #000; }
-table{ width:100%; border-collapse:collapse; }
-td{ vertical-align:top; padding:2px 0; }
-.center{ text-align:center; }
-.right{ text-align:right; }
-.bold{ font-weight:bold; }
-.big{ font-size:14px; }
-.no-print{ margin-top:16px; }
+body{ margin:0; padding:8px; background:#fff; }
+.no-print{ margin-top:16px; text-align:center; }
 .print-btn{ font-family:Arial,sans-serif; font-size:15px; padding:12px 24px; border:none; border-radius:8px; background:#6f4e37; color:#fff; }
-@media print{ .no-print{ display:none; } }
+@media print{ .no-print{ display:none; } body{ padding:0; } }
 </style>
 </head>
 <body>
-<div class="receipt">
+<div class="receipt-k80">
 <?php $this->load->view('orders/_invoice_body'); ?>
 </div>
-<div class="no-print center">
+<div class="no-print">
   <button class="print-btn" onclick="window.print();">🖨 In hóa đơn</button>
 </div>
 </body>

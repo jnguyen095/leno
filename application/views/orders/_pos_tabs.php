@@ -60,6 +60,7 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 // In một phiếu K80 đang ẩn trong trang (.print-slip[data-slip=name]): phiếu bếp, tạm tính, hóa đơn.
 // In ngay trong trang để không mở tab mới / không mất toàn màn hình.
@@ -71,6 +72,11 @@ window.posPrintSlip = function(name){
   var now = new Date(), pad = function(n){ return n < 10 ? '0' + n : n; };
   target.querySelectorAll('.js-print-time').forEach(function(el){
     el.textContent = pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear() + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+  });
+  // Mã VietQR chuyển khoản trên phiếu tạm tính (giống ứng dụng POS) — vẽ SVG ngay trước khi in.
+  if (window.qrcode) target.querySelectorAll('.js-vietqr[data-qr]').forEach(function(el){
+    var qr = qrcode(0, 'M'); qr.addData(el.getAttribute('data-qr')); qr.make();
+    el.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 4 });
   });
   window.print();
 };

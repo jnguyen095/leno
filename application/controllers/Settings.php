@@ -21,7 +21,7 @@ class Settings extends MY_Controller
             $new = (bool) $this->input->post('takeaway_enabled');
             $this->Setting_model->set('takeaway_enabled', $new ? '1' : '0');
             $this->audit('settings', 'UPDATE_TAKEAWAY', array('takeaway_enabled' => $old), array('takeaway_enabled' => $new));
-            redirect('me/settings');
+            $this->_saved('sales', $new ? 'Đã bật bán mang đi.' : 'Đã tắt bán mang đi.');
             return;
         }
 
@@ -53,7 +53,7 @@ class Settings extends MY_Controller
                 $this->Setting_model->set('bank_qr_account_name', mb_substr($account_name, 0, 100, 'UTF-8'));
                 $this->Setting_model->set('bank_qr_enabled', $enabled ? '1' : '0');
                 $this->audit('settings', 'UPDATE_BANK_QR', $old, $this->Setting_model->get_bank_qr());
-                redirect('me/settings');
+                $this->_saved('bank', 'Đã lưu thông tin chuyển khoản.');
                 return;
             }
         }
@@ -81,7 +81,7 @@ class Settings extends MY_Controller
                     $this->Setting_model->set('receipt_'.$key, $value);
                 }
                 $this->audit('settings', 'UPDATE_RECEIPT', $old, $new);
-                redirect('me/settings');
+                $this->_saved('receipt', 'Đã lưu thông tin in phiếu.');
                 return;
             }
         }
@@ -100,7 +100,7 @@ class Settings extends MY_Controller
                 $old = $this->Setting_model->get_vat_percent();
                 $this->Setting_model->set('vat_percent', (string) (float) $vat_percent);
                 $this->audit('settings', 'UPDATE_VAT', array('vat_percent' => $old), array('vat_percent' => (float) $vat_percent));
-                redirect('me/settings');
+                $this->_saved('sales', 'Đã lưu thuế VAT.');
                 return;
             }
         }
@@ -115,9 +115,24 @@ class Settings extends MY_Controller
             'vietqr_banks'        => Setting_model::VIETQR_BANKS,
             'receipt'             => $this->Setting_model->get_receipt_info(),
             'error'               => $error,
+            // Lỗi hiện ngay trong mục vừa gửi (form VAT không có trường 'form').
+            'error_section'       => self::FORM_SECTIONS[(string) $this->input->post('form')] ?? 'sales',
+            'success'             => $this->session->flashdata('settings_saved'),
+            'success_section'     => $this->session->flashdata('settings_section'),
         );
         $this->load->view('layout/header', $data);
         $this->load->view('settings/index', $data);
         $this->load->view('layout/footer');
+    }
+
+    /** Trường 'form' của từng form -> id mục trên trang (#sales, #receipt, #bank). */
+    const FORM_SECTIONS = array('' => 'sales', 'takeaway' => 'sales', 'receipt' => 'receipt', 'bank_qr' => 'bank');
+
+    /** Lưu xong: báo thành công ngay trong mục đó và cuộn về đúng mục. */
+    private function _saved($section, $message)
+    {
+        $this->session->set_flashdata('settings_saved', $message);
+        $this->session->set_flashdata('settings_section', $section);
+        redirect(site_url('me/settings').'#'.$section);
     }
 }

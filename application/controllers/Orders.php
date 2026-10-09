@@ -29,6 +29,12 @@ class Orders extends MY_Controller
         }
         $table_id = $this->input->get('table_id');
         $created_by = (int) $this->input->get('created_by');
+        // Chỉ ADMIN xem được đơn của mọi người; vai trò khác luôn chỉ thấy đơn do chính mình tạo
+        // (áp cho danh sách, số liệu tổng quan và xuất Excel).
+        if ($this->current_user['role'] !== 'ADMIN')
+        {
+            $created_by = (int) $this->current_user['id'];
+        }
         $payment_method = $this->input->get('payment_method');
         if ( ! in_array($payment_method, array('CASH', 'TRANSFER', 'CARD', 'QR', 'NONE'), TRUE))
         {

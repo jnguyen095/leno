@@ -14,7 +14,9 @@
   $base_qs = array('date_from' => $date_from, 'date_to' => $date_to);
   if ($table_id) $base_qs['table_id'] = $table_id;
   if ($payment_method) $base_qs['payment_method'] = $payment_method;
-  if ($created_by) $base_qs['created_by'] = $created_by;
+  $is_admin = $current_user['role'] === 'ADMIN';
+  // Không phải ADMIN: controller luôn lọc theo chính người đăng nhập -> không hiện bộ lọc / cột "Người tạo".
+  if ($is_admin && $created_by) $base_qs['created_by'] = $created_by;
   $url = function ($extra = array()) use ($base_qs) { return site_url('me/orders').'?'.http_build_query(array_merge($base_qs, $extra)); };
 
   // Số liệu theo trạng thái (cùng bộ lọc, mọi trạng thái).
@@ -35,8 +37,7 @@
   $range_label = ! $date_from && ! $date_to ? 'Tất cả các ngày'
     : ($date_from === $date_to ? 'Ngày '.date('d/m/Y', strtotime($date_from))
     : ($date_from ? date('d/m/Y', strtotime($date_from)) : '…').' – '.($date_to ? date('d/m/Y', strtotime($date_to)) : '…'));
-  $extra_filters = (int) (bool) $table_id + (int) (bool) $payment_method + (int) (bool) $created_by;
-  $is_admin = $current_user['role'] === 'ADMIN';
+  $extra_filters = (int) (bool) $table_id + (int) (bool) $payment_method + (int) ($is_admin && $created_by);
   $export_qs = (string) $this->input->server('QUERY_STRING');
 ?>
 <div class="container-fluid py-3 py-md-4 orders-page">
@@ -130,6 +131,7 @@
               <?php endforeach; ?>
             </select>
           </div>
+          <?php if ($is_admin): ?>
           <div class="col-12 col-md-4 col-xl-2">
             <label class="form-label">Người tạo</label>
             <select name="created_by" class="form-select form-select-sm">
@@ -139,7 +141,8 @@
               <?php endforeach; ?>
             </select>
           </div>
-          <div class="col-12 col-md-4 col-xl-2 d-flex gap-2">
+          <?php endif; ?>
+          <div class="<?php echo $is_admin ? 'col-12 col-md-4 col-xl-2' : 'col-12 col-md-4 col-xl-4'; ?> d-flex gap-2">
             <button class="btn btn-sm btn-brand flex-grow-1"><i class="bi bi-funnel"></i> Lọc</button>
             <?php if ($extra_filters): ?>
               <a href="<?php echo site_url('me/orders').'?'.http_build_query(array_merge($status ? array('status' => $status) : array(), array('date_from' => $date_from, 'date_to' => $date_to))); ?>"
@@ -154,7 +157,7 @@
     <div class="table-responsive d-none d-md-block">
       <table class="table table-hover align-middle mb-0 orders-table">
         <thead>
-          <tr><th>Mã đơn</th><th>Bàn</th><th>Người tạo</th><th>Thanh toán</th><th>Trạng thái</th><th class="text-end">Tổng tiền</th><th></th></tr>
+          <tr><th>Mã đơn</th><th>Bàn</th><?php if ($is_admin): ?><th>Người tạo</th><?php endif; ?><th>Thanh toán</th><th>Trạng thái</th><th class="text-end">Tổng tiền</th><th></th></tr>
         </thead>
         <tbody>
         <?php foreach ($orders as $o): $sm = isset($status_meta[$o['status']]) ? $status_meta[$o['status']] : array($o['status'], 'cancelled'); ?>
@@ -164,7 +167,7 @@
               <div class="small text-muted"><?php echo date('d/m/Y H:i', strtotime($o['created_at'])); ?></div>
             </td>
             <td><?php echo $o['table_name'] ? htmlspecialchars($o['table_name']) : '<span class="orders-takeaway"><i class="bi bi-bag-check"></i> Mang đi</span>'; ?></td>
-            <td><?php echo $o['created_by_name'] ? htmlspecialchars($o['created_by_name']) : '<span class="text-muted">—</span>'; ?></td>
+            <?php if ($is_admin): ?><td><?php echo $o['created_by_name'] ? htmlspecialchars($o['created_by_name']) : '<span class="text-muted">—</span>'; ?></td><?php endif; ?>
             <td>
               <?php if ($o['payment_method']): ?>
                 <span class="text-nowrap"><i class="bi <?php echo isset($payment_icons[$o['payment_method']]) ? $payment_icons[$o['payment_method']] : 'bi-wallet2'; ?> text-muted"></i> <?php echo htmlspecialchars(payment_method_label($o['payment_method'])); ?></span>
@@ -203,7 +206,7 @@
             <div class="d-flex flex-wrap align-items-center gap-2 mt-1 small">
               <span class="orders-status orders-status-<?php echo $sm[1]; ?>"><?php echo $sm[0]; ?></span>
               <?php if ($o['payment_method']): ?><span class="text-muted"><i class="bi <?php echo isset($payment_icons[$o['payment_method']]) ? $payment_icons[$o['payment_method']] : 'bi-wallet2'; ?>"></i> <?php echo htmlspecialchars(payment_method_label($o['payment_method'])); ?></span><?php endif; ?>
-              <?php if ($o['created_by_name']): ?><span class="text-muted"><i class="bi bi-person"></i> <?php echo htmlspecialchars($o['created_by_name']); ?></span><?php endif; ?>
+              <?php if ($is_admin && $o['created_by_name']): ?><span class="text-muted"><i class="bi bi-person"></i> <?php echo htmlspecialchars($o['created_by_name']); ?></span><?php endif; ?>
             </div>
           </a>
           <?php if ($is_admin): ?>

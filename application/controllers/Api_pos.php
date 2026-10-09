@@ -36,6 +36,8 @@ class Api_pos extends MY_Api_Controller
                 'takeaway_enabled' => $this->Setting_model->is_takeaway_enabled(),
                 // Tài khoản nhận chuyển khoản — ứng dụng tự tạo mã VietQR in trên phiếu tạm tính.
                 'bank_qr'          => $this->Setting_model->get_bank_qr(),
+                // Tên quán / địa chỉ / SĐT / lời cảm ơn in trên phiếu (Cài đặt → Thông tin in phiếu).
+                'receipt'          => $this->Setting_model->get_receipt_info(),
             ),
         ));
     }

@@ -377,3 +377,16 @@ if ( ! function_exists('vietqr_payload'))
         return $payload.strtoupper(str_pad(dechex($crc), 4, '0', STR_PAD_LEFT));
     }
 }
+
+if ( ! function_exists('asset_url'))
+{
+    /**
+     * Link tới file CSS/JS trong thư mục gốc kèm ?v=<thời điểm sửa file>: upload bản mới là trình duyệt
+     * (máy POS) tự tải lại, không cần Ctrl+F5. Vd: asset_url('assets/css/style_v1.3.css').
+     */
+    function asset_url($path)
+    {
+        $file = FCPATH.ltrim($path, '/');
+        return base_url($path).(is_file($file) ? '?v='.filemtime($file) : '');
+    }
+}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Hóa đơn - <?php echo htmlspecialchars($order['order_no']); ?></title>
-<link href="<?php echo base_url('assets/css/receipt_k80.css'); ?>" rel="stylesheet">
+<link href="<?php echo asset_url('assets/css/receipt_k80.css'); ?>" rel="stylesheet">
 <style>
 body{ margin:0; padding:8px; background:#fff; }
 .no-print{ margin-top:16px; text-align:center; }

@@ -83,7 +83,7 @@
     </div>
   <?php echo form_close(); ?>
 </div>
-<script src="<?php echo base_url('assets/js/image-compress.js'); ?>"></script>
+<script src="<?php echo asset_url('assets/js/image-compress.js'); ?>"></script>
 <?php if ( ! $product): ?>
 <script>
 // SKU tự động: đổi danh mục -> lấy SKU kế tiếp; gõ tay -> giữ mã tự nhập (bấm "Tự động" để quay lại).

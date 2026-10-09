@@ -5,9 +5,14 @@
   $paid = $order['status'] === 'PAID';
   $money = function ($v) { return number_format(round((float) $v), 0, ',', '.'); };
   $show_qr = ! $paid && ! empty($bank_qr['enabled']) && (float) $order['total_amount'] > 0;
+  // Tên quán / địa chỉ / SĐT / lời cảm ơn: Cài đặt → Thông tin in phiếu.
+  $CI =& get_instance();
+  $CI->load->model('Setting_model');
+  $receipt = $CI->Setting_model->get_receipt_info();
+  $contact = implode(' - ', array_filter(array($receipt['address'], $receipt['phone']), 'strlen'));
 ?>
-  <div class="center bold rk-shop">Leno</div>
-  <div class="center">28 Võ Văn Kiệt, BMT</div>
+  <div class="center bold rk-shop"><?php echo htmlspecialchars($receipt['shop_name']); ?></div>
+  <?php if ($contact !== ''): ?><div class="center"><?php echo htmlspecialchars($contact); ?></div><?php endif; ?>
   <div class="center bold rk-title"><?php echo $paid ? 'PHIẾU TÍNH TIỀN' : 'PHIẾU TẠM TÍNH'; ?></div>
   <?php if ( ! empty($order['created_by_name'])): ?>
   <div class="center">NVBH: <?php echo htmlspecialchars($order['created_by_name']); ?></div>
@@ -53,4 +58,4 @@
   <table><tr><td>Hình thức TT</td><td class="right"><?php echo htmlspecialchars(payment_method_label($payment['payment_method'])); ?></td></tr></table>
   <?php endif; ?>
   <hr>
-  <div class="center"><?php echo $paid ? 'Cảm ơn quý khách - Hẹn gặp lại!' : '-- Phiếu tạm tính, chưa phải hóa đơn --'; ?></div>
+  <div class="center"><?php echo $paid ? htmlspecialchars($receipt['footer']) : '-- Phiếu tạm tính, chưa phải hóa đơn --'; ?></div>

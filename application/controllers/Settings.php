@@ -58,7 +58,36 @@ class Settings extends MY_Controller
             }
         }
 
-        if ($this->input->method() === 'post' && $this->input->post('form') !== 'bank_qr')
+        if ($this->input->method() === 'post' && $this->input->post('form') === 'receipt')
+        {
+            $clean = function ($field, $max) {
+                return mb_substr(trim(preg_replace('/\s+/u', ' ', (string) $this->input->post($field, TRUE))), 0, $max, 'UTF-8');
+            };
+            $new = array(
+                'shop_name' => $clean('receipt_shop_name', 60),
+                'address'   => $clean('receipt_address', 120),
+                'phone'     => $clean('receipt_phone', 30),
+                'footer'    => $clean('receipt_footer', 120),
+            );
+            if ($new['shop_name'] === '')
+            {
+                $error = 'Nhập tên quán để in trên phiếu.';
+            }
+            else
+            {
+                $old = $this->Setting_model->get_receipt_info();
+                foreach ($new as $key => $value)
+                {
+                    $this->Setting_model->set('receipt_'.$key, $value);
+                }
+                $this->audit('settings', 'UPDATE_RECEIPT', $old, $new);
+                redirect('me/settings');
+                return;
+            }
+        }
+
+        // Form VAT (không có trường 'form').
+        if ($this->input->method() === 'post' && ! $this->input->post('form'))
         {
             $vat_percent = $this->input->post('vat_percent');
 
@@ -84,6 +113,7 @@ class Settings extends MY_Controller
             'bank_qr'             => $this->Setting_model->get_bank_qr(),
             'bank_qr_on'          => $this->Setting_model->get('bank_qr_enabled', '0') === '1',
             'vietqr_banks'        => Setting_model::VIETQR_BANKS,
+            'receipt'             => $this->Setting_model->get_receipt_info(),
             'error'               => $error,
         );
         $this->load->view('layout/header', $data);

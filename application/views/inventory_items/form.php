@@ -96,8 +96,8 @@
   <?php echo form_close(); ?>
 </div>
 
-<script src="<?php echo base_url('assets/js/image-compress.js'); ?>"></script>
-<script src="<?php echo base_url('assets/js/image-lightbox.js'); ?>"></script>
+<script src="<?php echo asset_url('assets/js/image-compress.js'); ?>"></script>
+<script src="<?php echo asset_url('assets/js/image-lightbox.js'); ?>"></script>
 <script>
 function toggleBaseUnitCost(){
   var has = document.getElementById('baseUnitSelect').value !== '';

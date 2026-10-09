@@ -42,6 +42,26 @@ class Setting_model extends CI_Model
         return $this->get('takeaway_enabled', '0') === '1';
     }
 
+    // ---- Thông tin in trên phiếu (tạm tính / hóa đơn) — Cài đặt → Thông tin in phiếu ----
+
+    const RECEIPT_DEFAULTS = array(
+        'shop_name' => 'Leno',
+        'address'   => '28 Võ Văn Kiệt, BMT',
+        'phone'     => '',
+        'footer'    => 'Cảm ơn quý khách - Hẹn gặp lại!',
+    );
+
+    /** Trả về: shop_name, address, phone, footer (chưa cấu hình thì dùng mặc định ở trên). */
+    public function get_receipt_info()
+    {
+        $info = array();
+        foreach (self::RECEIPT_DEFAULTS as $key => $default)
+        {
+            $info[$key] = (string) $this->get('receipt_'.$key, $default);
+        }
+        return $info;
+    }
+
     // ---- Thông tin website public (site/xem application/controllers/Public.php) ----
 
     public function get_site_name()

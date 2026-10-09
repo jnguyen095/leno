@@ -24,6 +24,37 @@
   </div>
 
   <div class="card border-0 shadow-sm rounded-4 mt-3">
+    <div class="card-header bg-white fw-semibold">Thông tin in phiếu</div>
+    <div class="card-body">
+      <?php echo form_open(current_url()); ?>
+        <input type="hidden" name="form" value="receipt">
+        <div class="mb-3">
+          <label class="form-label">Tên quán</label>
+          <input type="text" name="receipt_shop_name" class="form-control form-control-lg" maxlength="60" required
+                 value="<?php echo htmlspecialchars($receipt['shop_name']); ?>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Địa chỉ</label>
+          <input type="text" name="receipt_address" class="form-control form-control-lg" maxlength="120"
+                 value="<?php echo htmlspecialchars($receipt['address']); ?>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Số điện thoại <span class="text-muted small">(không bắt buộc)</span></label>
+          <input type="text" name="receipt_phone" class="form-control form-control-lg" maxlength="30" inputmode="tel"
+                 value="<?php echo htmlspecialchars($receipt['phone']); ?>">
+          <div class="form-text">Địa chỉ và số điện thoại in chung một dòng dưới tên quán.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Lời cảm ơn cuối hóa đơn</label>
+          <input type="text" name="receipt_footer" class="form-control form-control-lg" maxlength="120"
+                 value="<?php echo htmlspecialchars($receipt['footer']); ?>">
+        </div>
+        <button class="btn btn-brand btn-lg w-100">Lưu thay đổi</button>
+      <?php echo form_close(); ?>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 mt-3">
     <div class="card-header bg-white fw-semibold">Chuyển khoản (mã VietQR)</div>
     <div class="card-body">
       <?php echo form_open(current_url()); ?>

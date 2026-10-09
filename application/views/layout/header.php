@@ -6,8 +6,8 @@
 <title><?php echo isset($page_title) ? $page_title : 'Leno'; ?></title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link href="<?php echo base_url('assets/css/style_v1.3.css'); ?>" rel="stylesheet">
-<link href="<?php echo base_url('assets/css/receipt_k80.css'); ?>" rel="stylesheet">
+<link href="<?php echo asset_url('assets/css/style_v1.3.css'); ?>" rel="stylesheet">
+<link href="<?php echo asset_url('assets/css/receipt_k80.css'); ?>" rel="stylesheet">
 </head>
 <body>
 <script>

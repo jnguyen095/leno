@@ -206,6 +206,28 @@ class Order_model extends CI_Model
         return $this->db->get()->result_array();
     }
 
+    /**
+     * Tổng hợp theo trạng thái cho cùng bộ lọc (bỏ qua lọc trạng thái): array(status => array('count', 'total')).
+     * Dùng cho số đếm trên các tab trạng thái + doanh thu ở trang Đơn hàng.
+     */
+    public function summary_by_status($filters = array())
+    {
+        unset($filters['status']);
+        $this->db->select('order_sessions.status, COUNT(*) AS cnt, COALESCE(SUM(order_sessions.total_amount), 0) AS total', FALSE)
+            ->from($this->table)
+            ->join('table_sessions', 'table_sessions.id = order_sessions.table_session_id', 'left')
+            ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left');
+        $this->_apply_list_filters($filters);
+        $this->db->group_by('order_sessions.status');
+
+        $out = array();
+        foreach ($this->db->get()->result_array() as $r)
+        {
+            $out[$r['status']] = array('count' => (int) $r['cnt'], 'total' => (float) $r['total']);
+        }
+        return $out;
+    }
+
     public function count_list($filters = array())
     {
         $this->db->from($this->table)

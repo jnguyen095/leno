@@ -22,6 +22,11 @@ class Orders extends MY_Controller
     private function _list_filters()
     {
         $status = $this->input->get('status');
+        // "Chờ TT" (WAIT_PAYMENT) không còn dùng — link cũ có status lạ thì xem tất cả.
+        if ( ! in_array($status, array('OPEN', 'PAID', 'CANCELLED'), TRUE))
+        {
+            $status = '';
+        }
         $table_id = $this->input->get('table_id');
         $created_by = (int) $this->input->get('created_by');
         $payment_method = $this->input->get('payment_method');
@@ -74,6 +79,7 @@ class Orders extends MY_Controller
             'created_by'   => $created_by,
             'creators'     => $this->Order_model->get_creators(),
             'payment_method' => $payment_method,
+            'summary'      => $this->Order_model->summary_by_status($filters),
             'page'         => $page,
             'total_pages'  => $total_pages,
             'total'        => $total,

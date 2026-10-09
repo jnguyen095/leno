@@ -330,3 +330,51 @@ span#orderItemCountBadge {
   .settings-row:has(.settings-vat){ flex-direction:column; align-items:stretch; gap:.6rem; }
   .settings-row:has(.settings-vat) .settings-vat{ flex:1; width:auto; }
 }
+
+/* ---------- Trang Đơn hàng: thẻ tổng quan, tab trạng thái, bộ lọc, bảng / thẻ đơn ---------- */
+.orders-stat{ display:flex; align-items:center; gap:.75rem; background:#fff; border-radius:1rem; padding:.85rem 1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); height:100%; }
+.orders-stat-icon{ flex:0 0 42px; width:42px; height:42px; border-radius:.75rem; display:inline-flex; align-items:center; justify-content:center; font-size:1.25rem; }
+.orders-stat-label{ color:#868e96; font-size:.8rem; line-height:1.2; }
+.orders-stat-value{ font-weight:700; font-size:1.15rem; line-height:1.3; }
+.orders-stat-value small{ font-weight:400; color:#868e96; font-size:.75rem; }
+
+.orders-card{ background:#fff; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; }
+.orders-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.5rem 1rem 0; border-bottom:1px solid #eef0f2; }
+.orders-tabs{ display:flex; gap:1.25rem; overflow-x:auto; scrollbar-width:none; }
+.orders-tabs::-webkit-scrollbar{ display:none; }
+.orders-tabs a{ padding:.7rem 0; color:#6c757d; text-decoration:none; font-weight:500; white-space:nowrap; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.orders-tabs a:hover{ color:#212529; }
+.orders-tabs a.active{ color:var(--brand); border-bottom-color:var(--brand); }
+.orders-tabs a span{ display:inline-block; min-width:1.5rem; padding:0 .4rem; margin-left:.25rem; border-radius:999px; background:#f1f3f5; color:#6c757d; font-size:.75rem; text-align:center; }
+.orders-tabs a.active span{ background:rgba(1,144,219,.12); color:var(--brand); }
+.orders-toolbar .btn{ margin-bottom:.4rem; flex:0 0 auto; }
+
+.orders-filters{ padding:.85rem 1rem 1rem; background:#fafbfc; border-bottom:1px solid #eef0f2; }
+.orders-filters .form-label{ font-size:.75rem; color:#6c757d; margin-bottom:.2rem; }
+.orders-presets{ display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.65rem; }
+.orders-chip{ padding:.25rem .8rem; border-radius:999px; border:1px solid #dee2e6; background:#fff; color:#495057; font-size:.85rem; text-decoration:none; }
+.orders-chip:hover{ border-color:var(--brand); color:var(--brand); }
+.orders-chip.active{ background:var(--brand); border-color:var(--brand); color:#fff; }
+
+.orders-table thead th{ background:#fafbfc; color:#6c757d; font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.03em; border-bottom:1px solid #eef0f2; padding:.6rem .75rem; white-space:nowrap; }
+.orders-table td{ padding:.65rem .75rem; border-color:#f1f3f5; }
+.orders-table tbody tr:last-child td{ border-bottom:0; }
+.orders-row{ cursor:pointer; }
+.orders-takeaway{ color:#6c757d; white-space:nowrap; }
+
+/* Nhãn trạng thái dạng "pill" nhạt. */
+.orders-status{ display:inline-flex; align-items:center; gap:.3rem; padding:.15rem .6rem; border-radius:999px; font-size:.78rem; font-weight:600; white-space:nowrap; }
+.orders-status::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.orders-status-open{ background:#fff4e0; color:#b26a00; }
+.orders-status-paid{ background:#e6f6ec; color:#1e8a4c; }
+.orders-status-cancelled{ background:#f1f3f5; color:#6c757d; }
+
+.orders-list .orders-item{ display:flex; align-items:center; gap:.5rem; padding:.75rem 1rem; border-bottom:1px solid #f1f3f5; }
+.orders-list .orders-item:last-child{ border-bottom:0; }
+.orders-item-main{ flex:1; min-width:0; color:inherit; text-decoration:none; }
+.orders-pager{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; padding:.75rem 1rem; border-top:1px solid #eef0f2; }
+@media (max-width: 575.98px){
+  .orders-stat{ padding:.7rem; gap:.55rem; }
+  .orders-stat-icon{ flex-basis:34px; width:34px; height:34px; font-size:1.05rem; }
+  .orders-stat-value{ font-size:1rem; }
+}

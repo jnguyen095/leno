@@ -509,3 +509,30 @@ span#orderItemCountBadge {
 }
 /* Hộp xác nhận (appConfirm / form[data-confirm]). */
 .app-confirm-icon{ width:56px; height:56px; margin:0 auto; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#fdecea; color:#dc3545; font-size:1.6rem; }
+/* Sơ đồ bàn: nút Bảng giá / Khuyến mãi trên thanh tiêu đề (giống ứng dụng POS). Chưa chọn: chỉ biểu tượng;
+   đang áp: nền màu chính + tên (màn hình rộng) hoặc chấm xanh (màn hình hẹp). */
+.pos-topbar-actions .shop-offer-btn{ position:relative; display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.4rem .7rem; }
+.pos-topbar-actions .shop-offer-btn .bi{ font-size:1.05rem; }
+.shop-offer-label{ display:none; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.shop-offer-dot{ display:none; position:absolute; top:4px; right:5px; width:8px; height:8px; border-radius:50%; background:#2f9e44; box-shadow:0 0 0 2px #fff; }
+.pos-topbar-actions .shop-offer-btn.is-on{ background:#e7f3fc; border-color:rgba(1,144,219,.5); color:var(--brand); }
+.shop-offer-btn.is-on .shop-offer-dot{ display:block; }
+.shop-offer-btn.is-busy{ opacity:.55; pointer-events:none; }
+@media (min-width: 992px){
+  .shop-offer-btn.is-on .shop-offer-label{ display:inline; }
+  .shop-offer-btn.is-on .shop-offer-dot{ display:none; }
+}
+.shop-offer-menu{ min-width:280px; max-width:380px; padding:.35rem; border:0; border-radius:.85rem; box-shadow:0 10px 30px rgba(0,0,0,.15); }
+.shop-offer-head{ padding:.4rem .75rem .25rem; font-size:.7rem; font-weight:700; letter-spacing:.05em; color:#868e96; }
+.shop-offer-opt{ display:flex; align-items:flex-start; gap:.5rem; padding:.5rem .75rem; border-radius:.5rem; white-space:normal; }
+.shop-offer-opt > .bi{ visibility:hidden; color:var(--brand); font-size:1.1rem; line-height:1.2; }
+.shop-offer-opt.is-selected > .bi{ visibility:visible; }
+.shop-offer-opt span{ min-width:0; }
+.shop-offer-opt b{ display:block; font-weight:500; }
+.shop-offer-opt.is-selected b{ color:var(--brand); font-weight:600; }
+.shop-offer-opt small{ display:block; color:#868e96; font-size:.78rem; }
+.shop-offer-opt:active{ background:#e7f3fc; color:inherit; }
+.shop-offer-note{ padding:.35rem .75rem .45rem; font-size:.75rem; color:#868e96; }
+.shop-offer-toast{ position:fixed; top:72px; left:50%; transform:translateX(-50%); z-index:1080; padding:.55rem 1rem; border-radius:.75rem; font-weight:600; font-size:.9rem; box-shadow:0 6px 20px rgba(0,0,0,.15); }
+.shop-offer-toast.ok{ background:#e6f6ec; color:#1e8a4c; }
+.shop-offer-toast.err{ background:#fdecea; color:#b02a37; }

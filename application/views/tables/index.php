@@ -1,46 +1,50 @@
 <div class="container-fluid py-3 py-md-4">
-  <?php // Tiêu đề "Sơ đồ bàn" nằm ngay sau 2 tab; nút "Quản lý bàn" (ADMIN) đứng trước "Toàn màn hình". ?>
+  <?php
+    // Tiêu đề "Sơ đồ bàn" ngay sau 2 tab; trước "Toàn màn hình" là 2 nút Bảng giá / Khuyến mãi (giống ứng dụng POS):
+    // chọn ở đây áp ngay cho MỌI đơn đang mở (chưa thanh toán) và bàn mở sau; trang đơn chỉ bỏ được cho riêng đơn đó.
+    // Nút tô màu khi đang áp; ẩn khi hôm nay không có gì để chọn. (Quản lý bàn: ở trang Quản trị.)
+    $cur_book = $shop_offers['price_book'];
+    $cur_disc = $shop_offers['discount'];
+    $offer_menu = function ($kind, $icon, $title, $current, $none_label, $empty_label, $options, $selected_id) {
+      $on = $current !== NULL;
+  ?>
+    <div class="dropdown shop-offer" data-kind="<?php echo $kind; ?>">
+      <button type="button" class="btn btn-sm shop-offer-btn <?php echo $on ? 'is-on' : ''; ?>" data-bs-toggle="dropdown" data-bs-auto-close="true"
+              aria-expanded="false" title="<?php echo htmlspecialchars($title.': '.($on ? $current : $none_label)); ?>">
+        <i class="bi <?php echo $icon; ?>"></i>
+        <span class="shop-offer-label"><?php echo htmlspecialchars($on ? $current : $title); ?></span>
+        <span class="shop-offer-dot"></span>
+      </button>
+      <div class="dropdown-menu dropdown-menu-end shop-offer-menu">
+        <div class="shop-offer-head"><?php echo mb_strtoupper($title, 'UTF-8'); ?></div>
+        <button type="button" class="dropdown-item shop-offer-opt <?php echo ! $on ? 'is-selected' : ''; ?>" data-id="0" <?php echo $options || $on ? '' : 'disabled'; ?>>
+          <i class="bi bi-check2"></i><span><b><?php echo $options || $on ? $none_label : $empty_label; ?></b></span>
+        </button>
+        <?php foreach ($options as $o): ?>
+          <button type="button" class="dropdown-item shop-offer-opt <?php echo (int) $selected_id === (int) $o[0] ? 'is-selected' : ''; ?>" data-id="<?php echo (int) $o[0]; ?>">
+            <i class="bi bi-check2"></i><span><b><?php echo htmlspecialchars($o[1]); ?></b><?php if ($o[2] !== NULL): ?><small><?php echo htmlspecialchars($o[2]); ?></small><?php endif; ?></span>
+          </button>
+        <?php endforeach; ?>
+        <div class="dropdown-divider"></div>
+        <div class="shop-offer-note">Áp dụng cho mọi bàn đang phục vụ (chưa thanh toán) và bàn mở sau. Trang đơn có thể bỏ cho từng đơn.</div>
+      </div>
+    </div>
+  <?php
+    };
+  ?>
   <?php ob_start(); ?>
     <span class="fw-bold fs-5 text-nowrap">Sơ đồ bàn</span>
   <?php $pos_tab_title = ob_get_clean(); ?>
   <?php ob_start(); ?>
-    <?php if ($current_user['role'] === 'ADMIN'): ?>
-      <a href="<?php echo site_url('me/tables/manage'); ?>" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-sliders"></i> Quản lý bàn</a>
+    <?php if ($price_books || $discounts || $cur_book || $cur_disc): ?>
+      <?php $offer_menu('book', 'bi-tags', 'Bảng giá', $cur_book ? $cur_book['name'] : NULL, 'Giá gốc', 'Không có bảng giá hôm nay',
+              array_map(function ($b) { return array($b['id'], $b['name'], NULL); }, $price_books), $cur_book ? $cur_book['id'] : 0); ?>
+      <?php $offer_menu('discount', 'bi-percent', 'Khuyến mãi', $cur_disc ? $cur_disc['name'] : NULL, 'Không áp dụng', 'Không có khuyến mãi hôm nay',
+              array_map(function ($d) { return array($d['id'], $d['name'], Discount_model::describe($d['discount_type'], $d['value'], $d['max_discount'], $d['min_order'])); }, $discounts),
+              $cur_disc ? $cur_disc['id'] : 0); ?>
     <?php endif; ?>
   <?php $pos_tab_actions = ob_get_clean(); ?>
   <?php $this->load->view('orders/_pos_tabs', array('pos_tab_title' => $pos_tab_title, 'pos_tab_actions' => $pos_tab_actions)); ?>
-
-  <?php
-    // Bảng giá + khuyến mãi: chọn ở đây, áp ngay cho MỌI đơn đang mở (chưa thanh toán) và bàn mở sau.
-    // Trang đơn chỉ bỏ được cho riêng đơn đó. Chỉ hiện khi hôm nay có bảng giá / khuyến mãi hoặc đang chọn.
-    $cur_book = $shop_offers['price_book'];
-    $cur_disc = $shop_offers['discount'];
-  ?>
-  <?php if ($price_books || $discounts || $cur_book || $cur_disc): ?>
-  <div class="pos-offers pos-offers-shop mb-3" id="shopOffers">
-    <div class="pos-offer pos-price-book <?php echo $cur_book ? 'is-on' : ''; ?>">
-      <label for="shopPriceBook"><i class="bi bi-tags"></i> Bảng giá</label>
-      <select id="shopPriceBook" class="form-select" <?php echo $price_books ? '' : 'disabled'; ?>>
-        <option value="0"><?php echo $price_books ? 'Giá gốc' : 'Không có bảng giá hôm nay'; ?></option>
-        <?php foreach ($price_books as $pb): ?>
-          <option value="<?php echo (int) $pb['id']; ?>" <?php echo $cur_book && (int) $cur_book['id'] === (int) $pb['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($pb['name']); ?></option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-    <div class="pos-offer pos-discount <?php echo $cur_disc ? 'is-on' : ''; ?>">
-      <label for="shopDiscount"><i class="bi bi-percent"></i> Khuyến mãi</label>
-      <select id="shopDiscount" class="form-select" <?php echo $discounts ? '' : 'disabled'; ?>>
-        <option value="0"><?php echo $discounts ? 'Không áp dụng' : 'Không có khuyến mãi hôm nay'; ?></option>
-        <?php foreach ($discounts as $dc): ?>
-          <option value="<?php echo (int) $dc['id']; ?>" <?php echo $cur_disc && (int) $cur_disc['id'] === (int) $dc['id'] ? 'selected' : ''; ?>
-                  title="<?php echo htmlspecialchars(Discount_model::describe($dc['discount_type'], $dc['value'], $dc['max_discount'], $dc['min_order'])); ?>"><?php echo htmlspecialchars($dc['name']); ?></option>
-        <?php endforeach; ?>
-      </select>
-      <?php if ($cur_disc): ?><div class="pos-offer-hint"><?php echo htmlspecialchars(Discount_model::describe($cur_disc['discount_type'], $cur_disc['value'], $cur_disc['max_discount'], $cur_disc['min_order'])); ?></div><?php endif; ?>
-    </div>
-    <div class="pos-offers-note"><i class="bi bi-info-circle"></i> Áp dụng cho mọi bàn đang phục vụ (chưa thanh toán) và bàn mở sau. Trang đơn có thể bỏ cho từng đơn.</div>
-  </div>
-  <?php endif; ?>
 
   <?php if ($paid_order_id): ?>
     <div class="alert alert-success d-flex justify-content-between align-items-center py-2">
@@ -112,41 +116,62 @@ function refreshTables(){
 }
 setInterval(refreshTables, 5000);
 
-// Chọn bảng giá / khuyến mãi -> áp ngay cho mọi đơn đang mở (server tính lại), làm mới tiền trên các bàn.
+// Bảng giá / Khuyến mãi (nút trên thanh tiêu đề): chọn -> áp ngay cho mọi đơn đang mở (server tính lại),
+// cập nhật nút + dấu chọn tại chỗ và làm mới tiền trên các bàn.
 (function(){
-  var bar = document.getElementById('shopOffers');
-  if ( ! bar) return;
-  var book = document.getElementById('shopPriceBook'), disc = document.getElementById('shopDiscount');
-  var saved = {book: book.value, disc: disc.value};
-  function apply(){
-    var body = new URLSearchParams({price_book_id: book.value, discount_id: disc.value});
-    body.append('<?php echo $this->security->get_csrf_token_name(); ?>', '<?php echo $this->security->get_csrf_hash(); ?>');
-    book.disabled = disc.disabled = true;
-    fetch('<?php echo base_url('me/tables/offers.html'); ?>', {method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'}, body: body})
-      .then(function(r){ return r.json(); })
-      .then(function(res){
-        if ( ! res.success) throw new Error(res.message);
-        saved = {book: book.value, disc: disc.value};
-        book.closest('.pos-offer').classList.toggle('is-on', book.value !== '0');
-        disc.closest('.pos-offer').classList.toggle('is-on', disc.value !== '0');
-        var hint = disc.closest('.pos-offer').querySelector('.pos-offer-hint');
-        if (hint) hint.remove();
-        showOfferToast(res.message, true);
-        refreshTables();
-      })
-      .catch(function(e){ book.value = saved.book; disc.value = saved.disc; showOfferToast(e.message || 'Mất kết nối, vui lòng thử lại.', false); })
-      .then(function(){ book.disabled = book.options.length < 2; disc.disabled = disc.options.length < 2; });
+  var menus = document.querySelectorAll('.shop-offer');
+  if ( ! menus.length) return;
+  var state = {
+    book: <?php echo $cur_book ? (int) $cur_book['id'] : 0; ?>,
+    discount: <?php echo $cur_disc ? (int) $cur_disc['id'] : 0; ?>
+  };
+  var busy = false;
+  function render(){
+    menus.forEach(function(m){
+      var id = state[m.dataset.kind], btn = m.querySelector('.shop-offer-btn'), title = m.dataset.kind === 'book' ? 'Bảng giá' : 'Khuyến mãi';
+      var sel = null;
+      m.querySelectorAll('.shop-offer-opt').forEach(function(o){
+        var on = parseInt(o.dataset.id, 10) === id;
+        o.classList.toggle('is-selected', on);
+        if (on) sel = o;
+      });
+      btn.classList.toggle('is-on', id !== 0);
+      var name = id !== 0 && sel ? sel.querySelector('b').textContent : null;
+      m.querySelector('.shop-offer-label').textContent = name || title;
+      btn.title = title + ': ' + (name || (m.dataset.kind === 'book' ? 'Giá gốc' : 'Không áp dụng'));
+    });
   }
-  function showOfferToast(text, ok){
+  function toast(text, ok){
     var t = document.getElementById('offerToast');
-    if ( ! t) { t = document.createElement('div'); t.id = 'offerToast'; bar.appendChild(t); }
-    t.className = 'pos-offers-toast ' + (ok ? 'ok' : 'err');
+    if ( ! t) { t = document.createElement('div'); t.id = 'offerToast'; document.body.appendChild(t); }
+    t.className = 'shop-offer-toast ' + (ok ? 'ok' : 'err');
     t.innerHTML = '<i class="bi ' + (ok ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill') + '"></i> ';
     t.appendChild(document.createTextNode(text));
     clearTimeout(t._h); t._h = setTimeout(function(){ t.remove(); }, 3500);
   }
-  book.addEventListener('change', apply);
-  disc.addEventListener('change', apply);
+  document.querySelectorAll('.shop-offer-opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var kind = opt.closest('.shop-offer').dataset.kind, id = parseInt(opt.dataset.id, 10);
+      if (busy || id === state[kind]) return;
+      var next = {book: state.book, discount: state.discount};
+      next[kind] = id;
+      var body = new URLSearchParams({price_book_id: next.book, discount_id: next.discount});
+      body.append('<?php echo $this->security->get_csrf_token_name(); ?>', '<?php echo $this->security->get_csrf_hash(); ?>');
+      busy = true;
+      menus.forEach(function(m){ m.querySelector('.shop-offer-btn').classList.add('is-busy'); });
+      fetch('<?php echo base_url('me/tables/offers.html'); ?>', {method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'}, body: body})
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          if ( ! res.success) throw new Error(res.message);
+          state = next;
+          render();
+          toast(res.message, true);
+          refreshTables();
+        })
+        .catch(function(e){ toast(e.message || 'Mất kết nối, vui lòng thử lại.', false); })
+        .then(function(){ busy = false; menus.forEach(function(m){ m.querySelector('.shop-offer-btn').classList.remove('is-busy'); }); });
+    });
+  });
 })();
 </script>
 

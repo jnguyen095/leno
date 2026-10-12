@@ -277,6 +277,8 @@ function applyPanel(res){
 
 // ---- Bảng giá: người bán tự chọn cho đơn; đổi -> server tính lại mọi món, lưới thực đơn hiện giá mới ----
 function setPriceBook(sel){ postOrder('/price-book', {price_book_id: sel.value}); }
+// Khuyến mãi trên tổng đơn (cùng hàng với bảng giá) — server tính số tiền giảm, khối "Món đã gọi" render lại.
+function setDiscount(sel){ postOrder('/discount', {discount_id: sel.value}); }
 function renderMenuPrices(prices){
   var fmt = function(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
   document.querySelectorAll('.menu-product').forEach(function(el){

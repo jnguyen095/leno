@@ -252,6 +252,16 @@ class Orders extends MY_Controller
         $this->_respond($id, $error);
     }
 
+    /** Chọn / đổi / bỏ khuyến mãi trên tổng đơn (AJAX) — số tiền giảm tính lại theo tạm tính. */
+    public function discount($id)
+    {
+        $order = $this->_active_order_or_respond($id);
+        if ( ! $order) return;
+
+        $error = $this->pos_service->set_discount($order, (int) $this->input->post('discount_id'), $this->current_user['id']);
+        $this->_respond($id, $error);
+    }
+
     /** Ghi chú cho cả đơn (AJAX từ tab Thực đơn). */
     public function note($id)
     {

@@ -21,8 +21,29 @@ class Pos_service
         $this->CI->load->model(array(
             'Table_model', 'Table_session_model', 'Order_model', 'Order_item_model',
             'Product_model', 'Kitchen_ticket_model', 'Payment_model', 'Setting_model', 'Audit_log_model',
-            'Price_book_model',
+            'Price_book_model', 'Discount_model',
         ));
+    }
+
+    /**
+     * Chọn / đổi / bỏ khuyến mãi cho đơn (người bán tự chọn trên POS, chỉ khuyến mãi có hiệu lực hôm nay).
+     * Đơn chưa đủ giá trị tối thiểu vẫn chọn được — giảm 0đ cho tới khi đủ. Trả về NULL nếu thành công, hoặc chuỗi lỗi.
+     */
+    public function set_discount($order, $discount_id, $user_id)
+    {
+        $discount = NULL;
+        if ($discount_id)
+        {
+            $discount = $this->CI->Discount_model->find_applicable($discount_id);
+            if ( ! $discount)
+            {
+                return 'Khuyến mãi không tồn tại hoặc không áp dụng hôm nay.';
+            }
+        }
+        $this->CI->Order_model->set_discount($order['id'], $discount);
+        $this->CI->Audit_log_model->log('order', 'SET_DISCOUNT', array('discount_id' => $order['discount_id']),
+            array('order_id' => $order['id'], 'discount_id' => $discount ? (int) $discount['id'] : NULL), $user_id);
+        return NULL;
     }
 
     /**
@@ -462,6 +483,8 @@ class Pos_service
             // Bảng giá có hiệu lực hôm nay (người bán tự chọn) + giá mới theo bảng giá đơn đang dùng.
             'price_books'   => $is_active ? $this->CI->Price_book_model->get_applicable() : array(),
             'book_prices'   => $order['price_book_id'] ? $this->CI->Price_book_model->get_prices($order['price_book_id']) : array(),
+            // Khuyến mãi trên tổng đơn có hiệu lực hôm nay (người bán tự chọn, cùng hàng với bảng giá).
+            'discounts'     => $is_active ? $this->CI->Discount_model->get_applicable() : array(),
         );
     }
 }

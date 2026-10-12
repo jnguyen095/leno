@@ -272,7 +272,40 @@ class Api_pos extends MY_Api_Controller
             $error = $this->pos_service->set_price_book($this->Order_model->get_by_id($order_id), (int) $body['price_book_id'], $this->current_user['id']);
             if ($error) $this->fail(422, $error);
         }
+        // {"discount_id": 2} chọn khuyến mãi trên tổng đơn, {"discount_id": null} bỏ.
+        if (array_key_exists('discount_id', $body))
+        {
+            $error = $this->pos_service->set_discount($this->Order_model->get_by_id($order_id), (int) $body['discount_id'], $this->current_user['id']);
+            if ($error) $this->fail(422, $error);
+        }
         $this->_order_response($order_id);
+    }
+
+    /**
+     * GET /api/v1/discounts — khuyến mãi trên tổng đơn có hiệu lực hôm nay:
+     * [{"id", "name", "type": "PERCENT|AMOUNT", "value", "max_discount", "min_order", "description"}].
+     * Người bán tự chọn cho đơn (PATCH /orders/{id} {"discount_id": ...}).
+     */
+    public function discounts()
+    {
+        $this->_method('get');
+        $this->require_menu('orders', self::POS_ROLES);
+        $this->load->model('Discount_model');
+
+        $list = array();
+        foreach ($this->Discount_model->get_applicable() as $d)
+        {
+            $list[] = array(
+                'id'           => (int) $d['id'],
+                'name'         => $d['name'],
+                'type'         => $d['discount_type'],
+                'value'        => api_money($d['value']),
+                'max_discount' => $d['max_discount'] !== NULL ? api_money($d['max_discount']) : NULL,
+                'min_order'    => api_money($d['min_order']),
+                'description'  => Discount_model::describe($d['discount_type'], $d['value'], $d['max_discount'], $d['min_order']),
+            );
+        }
+        json_response(array('success' => TRUE, 'discounts' => $list));
     }
 
     /**

@@ -417,3 +417,21 @@ span#orderItemCountBadge {
 .pos-price-new{ color:#1e8a4c; font-weight:600; }
 .pos-price-new.up{ color:#b26a00; }
 .pos-product-price s{ color:#868e96; font-weight:400; font-size:.85em; margin-right:.15rem; }
+/* Khuyến mãi (Quản trị): chọn kiểu giảm + ví dụ trực quan. */
+.dc-type .btn-check:checked + .pos-seg-item{ background:#fff; color:var(--brand); box-shadow:0 1px 3px rgba(0,0,0,.12); }
+.dc-type .pos-seg-item{ cursor:pointer; }
+.dc-example{ background:#f6f9fc; border:1px dashed #cfe3f3; border-radius:.75rem; padding:.65rem .9rem; font-size:.9rem; color:#495057; }
+/* POS: hàng "Bảng giá | Khuyến mãi" — 2 cột (điện thoại hẹp: xếp dọc). */
+.pos-offers{ display:grid; grid-template-columns:1fr 1fr; gap:.5rem .75rem; background:#fafbfc; }
+.pos-offer{ min-width:0; border-radius:.6rem; }
+.pos-offer label{ display:block; font-size:.75rem; font-weight:600; color:#6c757d; margin:0 0 .15rem; white-space:nowrap; }
+.pos-offer .form-select{ max-width:none; width:100%; }
+.pos-offers .pos-price-book{ display:block; background:none; }
+.pos-offer.is-on label{ color:var(--brand); }
+.pos-offer.is-on .form-select{ border-color:var(--brand); font-weight:600; color:var(--brand); background-color:#f3faff; }
+.pos-discount.is-on label, .pos-discount.is-on .pos-offer-hint{ color:#1e8a4c; }
+.pos-discount.is-on .form-select{ border-color:#1e8a4c; color:#1e8a4c; background-color:#f1faf4; }
+.pos-discount.is-wait label, .pos-discount.is-wait .pos-offer-hint{ color:#b26a00; }
+.pos-discount.is-wait .form-select{ border-color:#f0ad4e; font-weight:600; color:#b26a00; background-color:#fff8ec; }
+.pos-offer-hint{ font-size:.75rem; margin-top:.2rem; }
+@media (max-width: 380px){ .pos-offers{ grid-template-columns:1fr; } }

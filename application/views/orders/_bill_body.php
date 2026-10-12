@@ -16,6 +16,8 @@
     if (isset($it['original_price']) && $it['original_price'] !== NULL && (float) $it['original_price'] > (float) $it['price'])
       $saved += ((float) $it['original_price'] - (float) $it['price']) * (int) $it['qty'];
   }
+  // Cộng cả khuyến mãi trên tổng đơn.
+  $saved += (float) $order['discount_amount'];
   $contact = implode(' - ', array_filter(array($receipt['address'], $receipt['phone']), 'strlen'));
 ?>
   <div class="center bold rk-shop"><?php echo htmlspecialchars($receipt['shop_name']); ?></div>
@@ -50,7 +52,7 @@
   <hr>
   <table>
     <tr><td>Tạm tính</td><td class="right"><?php echo $money($order['subtotal']); ?></td></tr>
-    <tr><td>Chiết khấu</td><td class="right"><?php echo (float) $order['discount_amount'] > 0 ? '-'.$money($order['discount_amount']) : '0'; ?></td></tr>
+    <tr><td>Chiết khấu<?php echo ! empty($order['discount_name']) && (float) $order['discount_amount'] > 0 ? ' ('.htmlspecialchars($order['discount_name']).')' : ''; ?></td><td class="right"><?php echo (float) $order['discount_amount'] > 0 ? '-'.$money($order['discount_amount']) : '0'; ?></td></tr>
     <?php if ((float) $order['vat_amount'] > 0): ?>
     <tr><td>VAT</td><td class="right"><?php echo $money($order['vat_amount']); ?></td></tr>
     <?php endif; ?>

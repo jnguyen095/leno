@@ -140,6 +140,11 @@ if ( ! function_exists('api_order'))
             // Bảng giá người bán chọn cho đơn (NULL = giá gốc); tên được lưu lại để in hóa đơn.
             'price_book_id'   => isset($order['price_book_id']) && $order['price_book_id'] !== NULL ? (int) $order['price_book_id'] : NULL,
             'price_book_name' => isset($order['price_book_name']) ? $order['price_book_name'] : NULL,
+            // Khuyến mãi trên tổng đơn người bán chọn (NULL = không); discount_amount = số tiền đang được giảm
+            // (0 nếu chưa đủ đơn tối thiểu discount_min_order).
+            'discount_id'        => isset($order['discount_id']) && $order['discount_id'] !== NULL ? (int) $order['discount_id'] : NULL,
+            'discount_name'      => isset($order['discount_name']) ? $order['discount_name'] : NULL,
+            'discount_min_order' => isset($order['discount_min_order']) && $order['discount_min_order'] !== NULL ? api_money($order['discount_min_order']) : NULL,
             'created_by_name' => $order['created_by_name'],
             'subtotal'        => api_money($order['subtotal']),
             'discount_amount' => api_money($order['discount_amount']),

@@ -73,20 +73,43 @@ class Order_model extends CI_Model
             ->where('status', 'ACTIVE')
             ->get('order_items')->row('amount');
 
+        // Khuyến mãi đơn đang dùng: tính lại theo tạm tính mới (chưa đủ giá trị tối thiểu = 0, đủ lại thì tự áp lại).
+        $discount = (float) $order['discount_amount'];
+        if ($order['discount_type'] !== NULL)
+        {
+            $this->load->model('Discount_model');
+            $discount = Discount_model::compute($order['discount_type'], $order['discount_value'], $order['discount_max'],
+                $order['discount_min_order'], $subtotal);
+        }
+
+        // VAT tính trên số tiền sau khuyến mãi.
         $this->load->model('Setting_model');
-        $vat = round($subtotal * $this->Setting_model->get_vat_rate());
-        $total = $subtotal - (float) $order['discount_amount'] + $vat;
+        $vat = round(max(0, $subtotal - $discount) * $this->Setting_model->get_vat_rate());
+        $total = $subtotal - $discount + $vat;
 
         $this->db->where('id', $order_id)->update($this->table, array(
-            'subtotal'     => $subtotal,
-            'vat_amount'   => $vat,
-            'total_amount' => max(0, $total),
+            'subtotal'        => $subtotal,
+            'discount_amount' => $discount,
+            'vat_amount'      => $vat,
+            'total_amount'    => max(0, $total),
         ));
     }
 
-    public function set_discount($order_id, $discount_amount)
+    /**
+     * Khuyến mãi người bán chọn cho đơn ($discount = dòng bảng discounts, NULL = bỏ). Lưu nguyên điều kiện lúc chọn
+     * để đơn không đổi khi khuyến mãi bị sửa / xoá; số tiền giảm được tính lại ngay.
+     */
+    public function set_discount($order_id, $discount)
     {
-        $this->db->where('id', $order_id)->update($this->table, array('discount_amount' => $discount_amount));
+        $this->db->where('id', $order_id)->update($this->table, array(
+            'discount_id'        => $discount ? (int) $discount['id'] : NULL,
+            'discount_name'      => $discount ? $discount['name'] : NULL,
+            'discount_type'      => $discount ? $discount['discount_type'] : NULL,
+            'discount_value'     => $discount ? $discount['value'] : NULL,
+            'discount_max'       => $discount ? $discount['max_discount'] : NULL,
+            'discount_min_order' => $discount ? $discount['min_order'] : NULL,
+            'discount_amount'    => 0,
+        ));
         $this->recalc_totals($order_id);
     }
 

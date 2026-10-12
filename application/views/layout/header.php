@@ -99,6 +99,7 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
             <?php if ($can_admin_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/categories'); ?>">Danh mục</a></li><?php endif; ?>
             <?php if ($can_admin_products): ?><li><a class="dropdown-item" href="<?php echo site_url('me/products'); ?>">Món</a></li><?php endif; ?>
             <?php if ($can_admin_recipes): // Bảng giá: chỉ ADMIN (giống Công thức pha chế). ?><li><a class="dropdown-item" href="<?php echo site_url('me/price-books'); ?>"><i class="bi bi-tags"></i> Bảng giá</a></li><?php endif; ?>
+            <?php if ($can_admin_recipes): // Khuyến mãi: chỉ ADMIN. ?><li><a class="dropdown-item" href="<?php echo site_url('me/discounts'); ?>"><i class="bi bi-percent"></i> Khuyến mãi</a></li><?php endif; ?>
             <?php if ($can_admin_inventory_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/categories'); ?>">Danh mục kho</a></li><?php endif; ?>
             <?php if ($can_admin_inventory_units): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/units'); ?>">Đơn vị tính</a></li><?php endif; ?>
             <?php if ($can_admin_dispense_points): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/dispense-points'); ?>">Điểm xuất kho</a></li><?php endif; ?>

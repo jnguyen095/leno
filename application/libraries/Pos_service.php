@@ -170,7 +170,85 @@ class Pos_service
         $this->CI->Audit_log_model->log('table', 'OPEN_TABLE', NULL,
             array('table_id' => $table_id, 'session_id' => $result['session_id'], 'order_id' => $result['order_id']), $user_id);
 
+        // Bàn mở mới nhận luôn bảng giá + khuyến mãi đang chọn ở Sơ đồ bàn.
+        $this->apply_shop_offers_to_order((int) $result['order_id'], $user_id);
+
         return (int) $result['order_id'];
+    }
+
+    // ---- Bảng giá + khuyến mãi chọn ở Sơ đồ bàn (dùng chung mọi máy) ----
+
+    /**
+     * Bảng giá / khuyến mãi đang chọn ở Sơ đồ bàn: array('price_book' => dòng|NULL, 'discount' => dòng|NULL).
+     * Lựa chọn hết hiệu lực (sang ngày / thứ khác, bị tắt, bị xoá) coi như không chọn.
+     */
+    public function shop_offers()
+    {
+        $book_id = (int) $this->CI->Setting_model->get('pos_price_book_id', 0);
+        $discount_id = (int) $this->CI->Setting_model->get('pos_discount_id', 0);
+        $book = NULL;
+        if ($book_id)
+        {
+            foreach ($this->CI->Price_book_model->get_applicable() as $b)
+            {
+                if ((int) $b['id'] === $book_id) { $book = $b; break; }
+            }
+        }
+        return array(
+            'price_book' => $book,
+            'discount'   => $discount_id ? $this->CI->Discount_model->find_applicable($discount_id) : NULL,
+        );
+    }
+
+    /**
+     * Chọn bảng giá + khuyến mãi ở Sơ đồ bàn (0 = bỏ): lưu làm lựa chọn chung và áp ngay cho MỌI đơn đang mở
+     * (chưa thanh toán), kể cả đơn đã từng bỏ ở trang đơn. Trả về array('count' => số đơn) hoặc array('error' => ...).
+     */
+    public function set_shop_offers($book_id, $discount_id, $user_id)
+    {
+        $book_id = (int) $book_id;
+        $discount_id = (int) $discount_id;
+        if ($book_id && ! $this->CI->Price_book_model->is_applicable($book_id))
+        {
+            return array('error' => 'Bảng giá không tồn tại hoặc không áp dụng hôm nay.');
+        }
+        if ($discount_id && ! $this->CI->Discount_model->find_applicable($discount_id))
+        {
+            return array('error' => 'Khuyến mãi không tồn tại hoặc không áp dụng hôm nay.');
+        }
+
+        $old = array('price_book_id' => (int) $this->CI->Setting_model->get('pos_price_book_id', 0), 'discount_id' => (int) $this->CI->Setting_model->get('pos_discount_id', 0));
+        $this->CI->Setting_model->set('pos_price_book_id', (string) $book_id);
+        $this->CI->Setting_model->set('pos_discount_id', (string) $discount_id);
+
+        $orders = $this->CI->Order_model->get_active_orders();
+        foreach ($orders as $o)
+        {
+            $this->apply_shop_offers_to_order((int) $o['id'], $user_id);
+        }
+        $this->CI->Audit_log_model->log('pos', 'SET_SHOP_OFFERS', $old,
+            array('price_book_id' => $book_id, 'discount_id' => $discount_id, 'orders' => count($orders)), $user_id);
+        return array('count' => count($orders));
+    }
+
+    /** Áp bảng giá + khuyến mãi đang chọn ở Sơ đồ bàn cho một đơn (không chọn = về giá gốc / bỏ khuyến mãi). */
+    public function apply_shop_offers_to_order($order_id, $user_id)
+    {
+        $offers = $this->shop_offers();
+        $order = $this->CI->Order_model->get_by_id($order_id);
+        if ( ! $order) return;
+
+        $book_id = $offers['price_book'] ? (int) $offers['price_book']['id'] : 0;
+        if ((int) $order['price_book_id'] !== $book_id)
+        {
+            $this->set_price_book($order, $book_id, $user_id);
+            $order = $this->CI->Order_model->get_by_id($order_id);
+        }
+        $discount_id = $offers['discount'] ? (int) $offers['discount']['id'] : 0;
+        if ((int) $order['discount_id'] !== $discount_id)
+        {
+            $this->set_discount($order, $discount_id, $user_id);
+        }
     }
 
     /**
@@ -480,11 +558,8 @@ class Pos_service
             'pending_count' => $pending_count,
             // Tài khoản nhận chuyển khoản: phiếu tạm tính in mã VietQR (giống ứng dụng POS).
             'bank_qr'       => $this->CI->Setting_model->get_bank_qr(),
-            // Bảng giá có hiệu lực hôm nay (người bán tự chọn) + giá mới theo bảng giá đơn đang dùng.
-            'price_books'   => $is_active ? $this->CI->Price_book_model->get_applicable() : array(),
+            // Giá mới theo bảng giá đơn đang dùng (bảng giá + khuyến mãi chọn ở Sơ đồ bàn; trang đơn chỉ bỏ được).
             'book_prices'   => $order['price_book_id'] ? $this->CI->Price_book_model->get_prices($order['price_book_id']) : array(),
-            // Khuyến mãi trên tổng đơn có hiệu lực hôm nay (người bán tự chọn, cùng hàng với bảng giá).
-            'discounts'     => $is_active ? $this->CI->Discount_model->get_applicable() : array(),
         );
     }
 }

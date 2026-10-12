@@ -242,23 +242,23 @@ class Orders extends MY_Controller
         $this->_respond($order_id);
     }
 
-    /** Chọn / đổi / bỏ bảng giá cho đơn (AJAX) — mọi món trong đơn được tính lại theo bảng giá mới. */
+    /** Bỏ bảng giá cho riêng đơn này (AJAX) — mọi món về giá gốc. Chọn bảng giá làm ở Sơ đồ bàn (Tables::offers). */
     public function price_book($id)
     {
         $order = $this->_active_order_or_respond($id);
         if ( ! $order) return;
 
-        $error = $this->pos_service->set_price_book($order, (int) $this->input->post('price_book_id'), $this->current_user['id']);
+        $error = $this->pos_service->set_price_book($order, 0, $this->current_user['id']);
         $this->_respond($id, $error);
     }
 
-    /** Chọn / đổi / bỏ khuyến mãi trên tổng đơn (AJAX) — số tiền giảm tính lại theo tạm tính. */
+    /** Bỏ khuyến mãi cho riêng đơn này (AJAX). Chọn khuyến mãi làm ở Sơ đồ bàn (Tables::offers). */
     public function discount($id)
     {
         $order = $this->_active_order_or_respond($id);
         if ( ! $order) return;
 
-        $error = $this->pos_service->set_discount($order, (int) $this->input->post('discount_id'), $this->current_user['id']);
+        $error = $this->pos_service->set_discount($order, 0, $this->current_user['id']);
         $this->_respond($id, $error);
     }
 

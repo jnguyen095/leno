@@ -43,6 +43,7 @@ $route['me/tables/manage/(:num)/delete'] = 'tables/manage_delete/$1';
 $route['me/tables/manage/(:num)/reset-status'] = 'tables/manage_reset_status/$1';
 
 $route['me/tables/(:num)'] = 'tables/detail/$1';
+$route['me/tables/offers'] = 'tables/offers';
 $route['me/tables/(:num)/open'] = 'tables/open/$1';
 $route['me/tables/(:num)/transfer'] = 'tables/transfer/$1';
 $route['me/tables/(:num)/note'] = 'tables/note/$1';
@@ -173,6 +174,8 @@ $route['api/v1/tables/(:num)/merge']['POST'] = 'api_pos/merge/$1';
 $route['api/v1/menu']['GET'] = 'api_pos/menu';
 $route['api/v1/price-books']['GET'] = 'api_pos/price_books';
 $route['api/v1/discounts']['GET'] = 'api_pos/discounts';
+$route['api/v1/offers']['GET'] = 'api_pos/offers';
+$route['api/v1/offers']['POST'] = 'api_pos/set_offers';
 $route['api/v1/orders/active']['GET'] = 'api_pos/active_orders';
 $route['api/v1/orders/history']['GET'] = 'api_pos/order_history';
 $route['api/v1/orders/(:num)']['GET'] = 'api_pos/order/$1';

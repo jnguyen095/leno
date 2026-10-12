@@ -266,19 +266,84 @@ class Api_pos extends MY_Api_Controller
         {
             $this->pos_service->set_order_note($order_id, $body['note'], $this->current_user['id']);
         }
-        // {"price_book_id": 3} chọn bảng giá (tính lại mọi món), {"price_book_id": null} về giá gốc.
+        // Bảng giá / khuyến mãi chọn ở Sơ đồ bàn (POST /offers, áp cho mọi đơn đang mở); ở đơn chỉ bỏ được:
+        // {"price_book_id": null} về giá gốc, {"discount_id": null} bỏ khuyến mãi — cho riêng đơn này.
+        foreach (array('price_book_id', 'discount_id') as $key)
+        {
+            if (array_key_exists($key, $body) && $body[$key])
+            {
+                $this->fail(422, 'Chọn bảng giá / khuyến mãi ở Sơ đồ bàn (áp cho mọi đơn đang mở). Ở đơn chỉ bỏ được.');
+            }
+        }
         if (array_key_exists('price_book_id', $body))
         {
-            $error = $this->pos_service->set_price_book($this->Order_model->get_by_id($order_id), (int) $body['price_book_id'], $this->current_user['id']);
-            if ($error) $this->fail(422, $error);
+            $this->pos_service->set_price_book($this->Order_model->get_by_id($order_id), 0, $this->current_user['id']);
         }
-        // {"discount_id": 2} chọn khuyến mãi trên tổng đơn, {"discount_id": null} bỏ.
         if (array_key_exists('discount_id', $body))
         {
-            $error = $this->pos_service->set_discount($this->Order_model->get_by_id($order_id), (int) $body['discount_id'], $this->current_user['id']);
-            if ($error) $this->fail(422, $error);
+            $this->pos_service->set_discount($this->Order_model->get_by_id($order_id), 0, $this->current_user['id']);
         }
         $this->_order_response($order_id);
+    }
+
+    /**
+     * GET /api/v1/offers — bảng giá + khuyến mãi đang chọn ở Sơ đồ bàn và các lựa chọn có hiệu lực hôm nay:
+     * {"price_book": {id, name}|null, "discount": {...}|null, "price_books": [{id, name, prices}], "discounts": [...]}.
+     */
+    public function offers()
+    {
+        $this->_method('get');
+        $this->require_menu('tables', self::POS_ROLES);
+        $this->_offers_response();
+    }
+
+    /**
+     * POST /api/v1/offers {"price_book_id": 3|null, "discount_id": 2|null} — chọn ở Sơ đồ bàn: áp ngay cho mọi đơn
+     * đang mở (chưa thanh toán) và bàn mở sau. Trả về như GET + "applied_count".
+     */
+    public function set_offers()
+    {
+        $this->_method('post');
+        $this->require_menu('tables', self::POS_ROLES);
+        $body = $this->input_json();
+        $result = $this->pos_service->set_shop_offers(
+            isset($body['price_book_id']) ? (int) $body['price_book_id'] : 0,
+            isset($body['discount_id']) ? (int) $body['discount_id'] : 0,
+            $this->current_user['id']
+        );
+        if (isset($result['error'])) $this->fail(422, $result['error']);
+        $this->_offers_response(array('applied_count' => $result['count']));
+    }
+
+    private function _offers_response(array $extra = array())
+    {
+        $this->load->model(array('Price_book_model', 'Discount_model'));
+        $discount_json = function ($d) {
+            return array(
+                'id'           => (int) $d['id'],
+                'name'         => $d['name'],
+                'type'         => $d['discount_type'],
+                'value'        => api_money($d['value']),
+                'max_discount' => $d['max_discount'] !== NULL ? api_money($d['max_discount']) : NULL,
+                'min_order'    => api_money($d['min_order']),
+                'description'  => Discount_model::describe($d['discount_type'], $d['value'], $d['max_discount'], $d['min_order']),
+            );
+        };
+        $books = array();
+        foreach ($this->Price_book_model->get_applicable() as $b)
+        {
+            $prices = array();
+            foreach ($this->Price_book_model->get_prices($b['id']) as $product_id => $price) $prices[(string) $product_id] = api_money($price);
+            $books[] = array('id' => (int) $b['id'], 'name' => $b['name'], 'prices' => (object) $prices);
+        }
+        $cur = $this->pos_service->shop_offers();
+        json_response(array_merge(array(
+            'success'     => TRUE,
+            'price_book'  => $cur['price_book'] ? array('id' => (int) $cur['price_book']['id'], 'name' => $cur['price_book']['name']) : NULL,
+            'discount'    => $cur['discount'] ? $discount_json($cur['discount']) : NULL,
+            'price_books' => $books,
+            'discounts'   => array_map($discount_json, $this->Discount_model->get_applicable()),
+        ), $extra));
     }
 
     /**

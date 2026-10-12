@@ -276,9 +276,11 @@ function applyPanel(res){
 }
 
 // ---- Bảng giá: người bán tự chọn cho đơn; đổi -> server tính lại mọi món, lưới thực đơn hiện giá mới ----
-function setPriceBook(sel){ postOrder('/price-book', {price_book_id: sel.value}); }
-// Khuyến mãi trên tổng đơn (cùng hàng với bảng giá) — server tính số tiền giảm, khối "Món đã gọi" render lại.
-function setDiscount(sel){ postOrder('/discount', {discount_id: sel.value}); }
+// Bảng giá / khuyến mãi chọn ở Sơ đồ bàn; ở trang đơn chỉ bỏ cho riêng đơn này (về giá gốc / không giảm).
+function removeOffer(kind){
+  var msg = kind === 'discount' ? 'Bỏ khuyến mãi cho đơn này?' : 'Bỏ bảng giá — đơn này tính theo giá gốc?';
+  posConfirm(msg, 'Bỏ').then(function(ok){ if (ok) postOrder(kind === 'discount' ? '/discount' : '/price-book', {}); });
+}
 function renderMenuPrices(prices){
   var fmt = function(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
   document.querySelectorAll('.menu-product').forEach(function(el){

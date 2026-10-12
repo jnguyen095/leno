@@ -435,3 +435,26 @@ span#orderItemCountBadge {
 .pos-discount.is-wait .form-select{ border-color:#f0ad4e; font-weight:600; color:#b26a00; background-color:#fff8ec; }
 .pos-offer-hint{ font-size:.75rem; margin-top:.2rem; }
 @media (max-width: 380px){ .pos-offers{ grid-template-columns:1fr; } }
+/* Sơ đồ bàn: chọn bảng giá + khuyến mãi cho mọi đơn đang mở. */
+.pos-offers-shop{ position:relative; padding:.75rem 1rem; background:#fff; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+.pos-offers-shop .pos-offer label{ font-size:.8rem; }
+.pos-offers-note{ grid-column:1 / -1; font-size:.75rem; color:#868e96; }
+.pos-offers-toast{ grid-column:1 / -1; font-size:.85rem; font-weight:600; padding:.35rem .6rem; border-radius:.5rem; }
+.pos-offers-toast.ok{ background:#e6f6ec; color:#1e8a4c; }
+.pos-offers-toast.err{ background:#fdecea; color:#b02a37; }
+/* Trang đơn: bảng giá / khuyến mãi của đơn dạng thẻ, ✕ để bỏ cho riêng đơn này. */
+.pos-offer-chip{ display:flex; align-items:center; gap:.5rem; min-width:0; padding:.4rem .5rem .4rem .65rem; border-radius:.6rem; border:1px solid #e9ecef; background:#fff; }
+.pos-offer-chip > .bi{ font-size:1rem; color:#adb5bd; }
+.pos-offer-text{ flex:1; min-width:0; line-height:1.25; }
+.pos-offer-text small{ display:block; font-size:.7rem; font-weight:600; color:#868e96; text-transform:uppercase; letter-spacing:.02em; }
+.pos-offer-text span{ display:block; font-weight:600; font-size:.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pos-offer-text em{ display:block; font-style:normal; font-size:.72rem; }
+.pos-offer-chip.is-none span{ color:#868e96; font-weight:500; }
+.pos-offer-chip.is-on{ border-color:var(--brand); background:#f3faff; }
+.pos-offer-chip.is-on > .bi, .pos-offer-chip.is-on span{ color:var(--brand); }
+.pos-offer-chip.is-disc{ border-color:#1e8a4c; background:#f1faf4; }
+.pos-offer-chip.is-disc > .bi, .pos-offer-chip.is-disc span, .pos-offer-chip.is-disc em{ color:#1e8a4c; }
+.pos-offer-chip.is-wait{ border-color:#f0ad4e; background:#fff8ec; }
+.pos-offer-chip.is-wait > .bi, .pos-offer-chip.is-wait span, .pos-offer-chip.is-wait em{ color:#b26a00; }
+.pos-offer-remove{ flex:0 0 auto; width:28px; height:28px; border:0; border-radius:50%; background:rgba(0,0,0,.05); color:#6c757d; display:inline-flex; align-items:center; justify-content:center; font-size:.75rem; }
+.pos-offer-remove:hover{ background:#dc3545; color:#fff; }

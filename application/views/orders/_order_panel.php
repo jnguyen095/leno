@@ -9,62 +9,38 @@
     <?php if ($is_active && $pending_count): ?><span class="badge bg-warning text-dark"><?php echo $pending_count; ?> món chưa báo bếp</span><?php endif; ?>
   </div>
   <?php
-    // Hàng "Bảng giá | Khuyến mãi": người bán tự chọn (không tự áp) trong các bảng giá / khuyến mãi có hiệu lực hôm nay.
-    // Bảng giá đổi -> tính lại mọi món; khuyến mãi -> giảm trên tạm tính (chưa đủ đơn tối thiểu thì giảm 0đ).
-    // Lựa chọn đơn đang dùng mà hôm nay hết hiệu lực vẫn hiện để giữ nguyên.
-    $price_books = isset($price_books) ? $price_books : array();
-    $discounts = isset($discounts) ? $discounts : array();
-    $book_listed = ! $order['price_book_id'] || in_array((int) $order['price_book_id'], array_map('intval', array_column($price_books, 'id')), TRUE);
-    $disc_listed = ! $order['discount_id'] || in_array((int) $order['discount_id'], array_map('intval', array_column($discounts, 'id')), TRUE);
+    // Bảng giá + khuyến mãi của đơn: chọn ở Sơ đồ bàn (áp cho mọi đơn đang mở). Ở đây người bán chỉ xem,
+    // hoặc bấm ✕ để bỏ cho riêng đơn này (về giá gốc / không giảm).
+    $has_book = ! empty($order['price_book_id']);
     $has_disc = $order['discount_type'] !== NULL;
-    $disc_short = function ($d) {
-      $min = (float) $d['min_order'] > 0 ? ' · từ '.number_format((float) $d['min_order'] / 1000, 0, ',', '.').'K' : '';
-      return $d['name'].$min;
-    };
-    // Khuyến mãi đã chọn nhưng đơn chưa đủ giá trị tối thiểu.
+    // Khuyến mãi đã áp nhưng đơn chưa đủ giá trị tối thiểu.
     $disc_short_of = $has_disc && (float) $order['discount_amount'] <= 0 ? max(0, (float) $order['discount_min_order'] - (float) $order['subtotal']) : 0;
   ?>
-  <?php if ($is_active && ($price_books || $discounts || $order['price_book_id'] || $has_disc)): ?>
+  <?php if ($has_book || $has_disc): ?>
     <div class="px-3 py-2 border-bottom pos-offers">
-      <div class="pos-offer pos-price-book <?php echo $order['price_book_id'] ? 'is-on' : ''; ?>">
-        <label for="priceBookSelect"><i class="bi bi-tags"></i> Bảng giá</label>
-        <select id="priceBookSelect" class="form-select form-select-sm" onchange="setPriceBook(this)" <?php echo $price_books || $order['price_book_id'] ? '' : 'disabled'; ?>>
-          <option value=""><?php echo $price_books || $order['price_book_id'] ? 'Giá gốc' : 'Không có bảng giá hôm nay'; ?></option>
-          <?php if ( ! $book_listed): ?>
-            <option value="<?php echo (int) $order['price_book_id']; ?>" selected><?php echo htmlspecialchars($order['price_book_name']); ?> (hết hiệu lực)</option>
-          <?php endif; ?>
-          <?php foreach ($price_books as $pb): ?>
-            <option value="<?php echo (int) $pb['id']; ?>" <?php echo (int) $order['price_book_id'] === (int) $pb['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($pb['name']); ?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-      <div class="pos-offer pos-discount <?php echo $has_disc ? ($disc_short_of > 0 ? 'is-wait' : 'is-on') : ''; ?>">
-        <label for="discountSelect"><i class="bi bi-percent"></i> Khuyến mãi</label>
-        <select id="discountSelect" class="form-select form-select-sm" onchange="setDiscount(this)" <?php echo $discounts || $has_disc ? '' : 'disabled'; ?>>
-          <option value=""><?php echo $discounts || $has_disc ? 'Không áp dụng' : 'Không có khuyến mãi hôm nay'; ?></option>
-          <?php if ($has_disc && ! $disc_listed): ?>
-            <option value="<?php echo (int) $order['discount_id']; ?>" selected><?php echo htmlspecialchars($order['discount_name']); ?> (hết hiệu lực)</option>
-          <?php endif; ?>
-          <?php foreach ($discounts as $dc): ?>
-            <option value="<?php echo (int) $dc['id']; ?>" <?php echo (int) $order['discount_id'] === (int) $dc['id'] ? 'selected' : ''; ?>
-                    title="<?php echo htmlspecialchars(Discount_model::describe($dc['discount_type'], $dc['value'], $dc['max_discount'], $dc['min_order'])); ?>"><?php echo htmlspecialchars($disc_short($dc)); ?></option>
-          <?php endforeach; ?>
-        </select>
-        <?php if ($has_disc): ?>
-          <div class="pos-offer-hint">
-            <?php if ($disc_short_of > 0): ?>
-              <i class="bi bi-hourglass-split"></i> Mua thêm <?php echo money_format_vnd($disc_short_of); ?> để được giảm
-            <?php else: ?>
-              <i class="bi bi-check-circle-fill"></i> Đã giảm <?php echo money_format_vnd($order['discount_amount']); ?>
-            <?php endif; ?>
-          </div>
+      <div class="pos-offer-chip <?php echo $has_book ? 'is-on' : 'is-none'; ?>">
+        <i class="bi bi-tags"></i>
+        <div class="pos-offer-text">
+          <small>Bảng giá</small>
+          <span><?php echo $has_book ? htmlspecialchars($order['price_book_name']) : 'Giá gốc'; ?></span>
+        </div>
+        <?php if ($has_book && $is_active): ?>
+          <button type="button" class="pos-offer-remove" onclick="removeOffer('price-book')" title="Bỏ bảng giá — đơn này về giá gốc"><i class="bi bi-x-lg"></i></button>
         <?php endif; ?>
       </div>
-    </div>
-  <?php elseif ( ! $is_active && ( ! empty($order['price_book_name']) || ! empty($order['discount_name']))): ?>
-    <div class="px-3 py-2 border-bottom small d-flex flex-wrap gap-3">
-      <?php if ( ! empty($order['price_book_name'])): ?><span><i class="bi bi-tags"></i> <b>Bảng giá:</b> <?php echo htmlspecialchars($order['price_book_name']); ?></span><?php endif; ?>
-      <?php if ( ! empty($order['discount_name'])): ?><span><i class="bi bi-percent"></i> <b>Khuyến mãi:</b> <?php echo htmlspecialchars($order['discount_name']); ?> (−<?php echo money_format_vnd($order['discount_amount']); ?>)</span><?php endif; ?>
+      <div class="pos-offer-chip <?php echo $has_disc ? ($disc_short_of > 0 ? 'is-wait' : 'is-disc') : 'is-none'; ?>">
+        <i class="bi bi-percent"></i>
+        <div class="pos-offer-text">
+          <small>Khuyến mãi</small>
+          <span><?php echo $has_disc ? htmlspecialchars($order['discount_name']) : 'Không áp dụng'; ?></span>
+          <?php if ($has_disc): ?>
+            <em><?php echo $disc_short_of > 0 ? 'Mua thêm '.money_format_vnd($disc_short_of).' để được giảm' : 'Đã giảm '.money_format_vnd($order['discount_amount']); ?></em>
+          <?php endif; ?>
+        </div>
+        <?php if ($has_disc && $is_active): ?>
+          <button type="button" class="pos-offer-remove" onclick="removeOffer('discount')" title="Bỏ khuyến mãi cho đơn này"><i class="bi bi-x-lg"></i></button>
+        <?php endif; ?>
+      </div>
     </div>
   <?php endif; ?>
   <?php // Ghi chú cho cả đơn — in trên phiếu bếp và phiếu tạm tính. ?>

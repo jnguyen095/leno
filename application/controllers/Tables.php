@@ -8,7 +8,7 @@ class Tables extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model(array('Table_model', 'Table_session_model', 'Order_model', 'Order_item_model', 'Kitchen_ticket_model', 'Setting_model'));
+        $this->load->model(array('Table_model', 'Table_session_model', 'Order_model', 'Order_item_model', 'Kitchen_ticket_model', 'Setting_model', 'Price_book_model', 'Discount_model'));
         $this->load->library('pos_service');
     }
 
@@ -40,11 +40,32 @@ class Tables extends MY_Controller
             'tables'       => $tables,
             'paid_order_id' => $paid_order_id,
             'paid_invoice' => $paid_invoice,
+            // Bảng giá + khuyến mãi chọn ở đây áp cho mọi đơn đang mở và bàn mở mới.
+            'shop_offers'  => $this->pos_service->shop_offers(),
+            'price_books'  => $this->Price_book_model->get_applicable(),
+            'discounts'    => $this->Discount_model->get_applicable(),
         );
         $data = array_merge($data, $this->pos_tabs_data('tables'));
         $this->load->view('layout/header', $data);
         $this->load->view('tables/index', $data);
         $this->load->view('layout/footer');
+    }
+
+    /**
+     * POST (AJAX) — chọn bảng giá + khuyến mãi ở Sơ đồ bàn (price_book_id / discount_id, 0 = bỏ): áp ngay cho mọi
+     * đơn đang mở (chưa thanh toán) và cho bàn mở sau này. Trang đơn chỉ bỏ được cho riêng đơn đó.
+     */
+    public function offers()
+    {
+        if ($this->input->method() !== 'post') show_404();
+        $result = $this->pos_service->set_shop_offers($this->input->post('price_book_id'), $this->input->post('discount_id'), $this->current_user['id']);
+        if (isset($result['error']))
+        {
+            json_response(array('success' => FALSE, 'message' => $result['error']), 422);
+            return;
+        }
+        json_response(array('success' => TRUE, 'count' => $result['count'],
+            'message' => $result['count'] ? 'Đã áp dụng cho '.$result['count'].' đơn đang mở.' : 'Đã lưu — áp dụng cho bàn mở sau.'));
     }
 
     public function open($id)

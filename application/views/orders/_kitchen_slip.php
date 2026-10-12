@@ -23,7 +23,7 @@
   <?php foreach ($sections as $i => $sec): ?>
     <?php if ($i > 0): ?><hr><?php endif; ?>
     <?php if ($sec[0]): ?><div class="bold"><?php echo $sec[0]; ?></div><?php endif; ?>
-    <table class="rk-items">
+    <table class="rk-items rk-kitchen">
       <colgroup><col style="width:80%"><col style="width:20%"></colgroup>
       <tr class="bold"><td>Tên món</td><td class="center">SL</td></tr>
       <?php foreach ($sec[1] as $line):

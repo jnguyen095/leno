@@ -43,21 +43,11 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         $can_inventory_history = $can('inventory.history');
         $show_inventory_menu = $can_stock_in || $can_stock_out || $can_stock_adjust || $can_inventory_items || $can_inventory_history;
 
-        $can_admin_tables_manage = $current_user['role'] === 'ADMIN'; // luôn gắn với inline _require_admin() trong Tables::manage*, không đưa vào RBAC động
-        $can_admin_recipes = $current_user['role'] === 'ADMIN'; // Recipes::$allowed_roles, không đưa vào RBAC động
-        $can_admin_categories = $can('admin.categories');
-        $can_admin_products = $can('admin.products');
-        $can_admin_inventory_categories = $can('admin.inventory_categories');
-        $can_admin_inventory_units = $can('admin.inventory_units');
-        $can_admin_dispense_points = $can('admin.dispense_points');
-        $can_admin_users = $can('admin.users');
-        $can_admin_payroll = $can('admin.payroll');
-        $can_admin_audit_logs = $can('admin.audit_logs');
-        $can_admin_settings = $can('admin.settings');
-        $can_admin_customer_display = $can('admin.customer_display');
-        $show_admin_menu = $can_admin_tables_manage || $can_admin_recipes || $can_admin_categories || $can_admin_products || $can_admin_inventory_categories
-          || $can_admin_inventory_units || $can_admin_dispense_points || $can_admin_users || $can_admin_payroll || $can_admin_audit_logs || $can_admin_settings
-          || $can_admin_customer_display;
+        // Quản trị: trang /me/admin + menu trái các trang quản trị (xem admin_menu_helper).
+        $CI->load->helper('admin_menu');
+        $admin_groups = admin_menu_groups($current_user);
+        $show_admin_menu = (bool) $admin_groups;
+        $admin_active_url = $show_admin_menu ? admin_menu_active_url($admin_groups, $CI->uri->uri_string()) : NULL;
       ?>
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <?php if ($can('dashboard')): ?>
@@ -91,29 +81,7 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         </li>
         <?php endif; ?>
         <?php if ($show_admin_menu): ?>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-gear"></i> Quản trị</a>
-          <ul class="dropdown-menu">
-            <?php if ($can_admin_tables_manage): ?><li><a class="dropdown-item" href="<?php echo site_url('me/tables/manage'); ?>"><i class="bi bi-grid-3x3-gap"></i> Quản lý bàn</a></li><?php endif; ?>
-            <?php if ($can_admin_recipes): ?><li><a class="dropdown-item" href="<?php echo site_url('me/recipes'); ?>"><i class="bi bi-egg-fried"></i> Công thức pha chế</a></li><?php endif; ?>
-            <?php if ($can_admin_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/categories'); ?>">Danh mục</a></li><?php endif; ?>
-            <?php if ($can_admin_products): ?><li><a class="dropdown-item" href="<?php echo site_url('me/products'); ?>">Món</a></li><?php endif; ?>
-            <?php if ($can_admin_recipes): // Bảng giá: chỉ ADMIN (giống Công thức pha chế). ?><li><a class="dropdown-item" href="<?php echo site_url('me/price-books'); ?>"><i class="bi bi-tags"></i> Bảng giá</a></li><?php endif; ?>
-            <?php if ($can_admin_recipes): // Khuyến mãi: chỉ ADMIN. ?><li><a class="dropdown-item" href="<?php echo site_url('me/discounts'); ?>"><i class="bi bi-percent"></i> Khuyến mãi</a></li><?php endif; ?>
-            <?php if ($can_admin_inventory_categories): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/categories'); ?>">Danh mục kho</a></li><?php endif; ?>
-            <?php if ($can_admin_inventory_units): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/units'); ?>">Đơn vị tính</a></li><?php endif; ?>
-            <?php if ($can_admin_dispense_points): ?><li><a class="dropdown-item" href="<?php echo site_url('me/inventory/dispense-points'); ?>">Điểm xuất kho</a></li><?php endif; ?>
-            <?php if ($can_admin_users): ?><li><a class="dropdown-item" href="<?php echo site_url('me/users'); ?>">Người dùng</a></li><?php endif; ?>
-            <?php if ($current_user['role'] === 'ADMIN'): ?><li><a class="dropdown-item" href="<?php echo site_url('me/menu-permissions'); ?>">Gán quyền menu</a></li><?php endif; ?>
-            <?php if ($can_admin_payroll): ?><li><a class="dropdown-item" href="<?php echo site_url('me/payroll/admin'); ?>">Quản lý lương</a></li><?php endif; ?>
-            <?php if ($can_admin_audit_logs): ?><li><a class="dropdown-item" href="<?php echo site_url('me/audit-logs'); ?>"><i class="bi bi-journal-text"></i> Nhật ký hệ thống</a></li><?php endif; ?>
-            <?php if ($can_admin_customer_display): ?><li><a class="dropdown-item" href="<?php echo site_url('me/customer-display'); ?>"><i class="bi bi-display"></i> Màn hình khách</a></li><?php endif; ?>
-            <?php if ($can_admin_settings): ?>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="<?php echo site_url('me/settings'); ?>"><i class="bi bi-gear"></i> Cài đặt</a></li>
-            <?php endif; ?>
-          </ul>
-        </li>
+        <li class="nav-item"><a class="nav-link <?php echo $admin_active_url ? 'active' : ''; ?>" href="<?php echo site_url('me/admin'); ?>"><i class="bi bi-gear"></i> Quản trị</a></li>
         <?php endif; ?>
       </ul>
       <ul class="navbar-nav">
@@ -134,3 +102,9 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
 </nav>
 <?php endif; ?>
 <main>
+<?php if ( ! empty($admin_active_url)): $CI->admin_shell_open = TRUE; ?>
+<?php // Trang quản trị: menu trái (máy tính) / dãy nút trượt ngang (điện thoại); footer đóng khung. ?>
+<div class="admin-shell">
+  <?php $this->load->view('layout/_admin_nav', array('admin_groups' => $admin_groups, 'admin_active_url' => $admin_active_url)); ?>
+  <div class="admin-shell-main">
+<?php endif; ?>

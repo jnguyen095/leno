@@ -202,7 +202,13 @@
 
   // Menu mục dính ngay dưới thanh điều hướng (cao khác nhau trên máy tính / điện thoại).
   var page = document.querySelector('.settings-page'), bar = document.querySelector('.navbar.sticky-top');
-  function setTop(){ page.style.setProperty('--settings-top', ((bar ? bar.offsetHeight : 56) + (window.innerWidth >= 992 ? 16 : 0)) + 'px'); }
+  // Điện thoại: dưới thanh điều hướng còn dãy menu Quản trị (dính) -> cộng thêm chiều cao của nó.
+  var adminNav = document.querySelector('.admin-nav');
+  function setTop(){
+    var mobile = window.innerWidth < 992;
+    var h = (bar ? bar.offsetHeight : 56) + (mobile && adminNav ? adminNav.offsetHeight : 0) + (mobile ? 0 : 16);
+    page.style.setProperty('--settings-top', h + 'px');
+  }
   setTop(); window.addEventListener('resize', setTop);
 
   // Menu mục: tô sáng mục đang xem khi cuộn; trên điện thoại cuộn dãy mục để mục đang xem luôn hiện.

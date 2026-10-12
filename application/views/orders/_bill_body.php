@@ -32,7 +32,6 @@
     <div class="rk-lines">
       <div>Số HĐ: <?php echo htmlspecialchars($order['order_no']); ?></div>
       <div>Thời gian: <?php if ($paid): ?><?php echo date('d/m/Y H:i', strtotime($order['paid_at'])); ?><?php else: ?><span class="js-print-time"><?php echo date('d/m/Y H:i'); ?></span><?php endif; ?></div>
-      <?php if ( ! empty($order['price_book_name'])): ?><div>Bảng giá: <b><?php echo htmlspecialchars($order['price_book_name']); ?></b></div><?php endif; ?>
       <?php if ( ! $paid && ! empty($order['note'])): ?><div class="italic">Ghi chú: <?php echo htmlspecialchars($order['note']); ?></div><?php endif; ?>
     </div>
   </div>

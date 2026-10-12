@@ -109,6 +109,7 @@ $route['me/recipes/(:num)/delete'] = 'recipes/delete/$1';
 $route['me/recipes/(:num)/ingredients/add'] = 'recipes/add_ingredient/$1';
 $route['me/recipes/(:num)/ingredients/(:num)/delete'] = 'recipes/delete_ingredient/$1/$2';
 
+$route['me/admin'] = 'admin/index';
 $route['me/settings'] = 'settings/index';
 $route['me/audit-logs'] = 'audit_logs/index';
 $route['me/customer-display'] = 'customer_display/index';

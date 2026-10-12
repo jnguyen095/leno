@@ -137,6 +137,9 @@ if ( ! function_exists('api_order'))
             'table_id'        => $order['table_id'] !== NULL ? (int) $order['table_id'] : NULL,
             'table_name'      => $order['table_name'] ?: 'Mang đi',
             'table_note'      => $order['table_note'],
+            // Bảng giá người bán chọn cho đơn (NULL = giá gốc); tên được lưu lại để in hóa đơn.
+            'price_book_id'   => isset($order['price_book_id']) && $order['price_book_id'] !== NULL ? (int) $order['price_book_id'] : NULL,
+            'price_book_name' => isset($order['price_book_name']) ? $order['price_book_name'] : NULL,
             'created_by_name' => $order['created_by_name'],
             'subtotal'        => api_money($order['subtotal']),
             'discount_amount' => api_money($order['discount_amount']),
@@ -161,6 +164,8 @@ if ( ! function_exists('api_order_item'))
             'qty'           => (int) $it['qty'],
             'notified_qty'  => (int) $it['notified_qty'],
             'price'         => api_money($it['price']),
+            // Giá gốc khi bán theo bảng giá (NULL = bán đúng giá gốc) — hiện gạch ngang cạnh giá mới.
+            'original_price' => isset($it['original_price']) && $it['original_price'] !== NULL ? api_money($it['original_price']) : NULL,
             'amount'        => api_money($it['amount']),
             'note'          => $it['note'],
             'notified_note' => $it['notified_note'],

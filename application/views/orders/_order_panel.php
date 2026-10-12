@@ -8,6 +8,28 @@
     <span>Món đã gọi</span>
     <?php if ($is_active && $pending_count): ?><span class="badge bg-warning text-dark"><?php echo $pending_count; ?> món chưa báo bếp</span><?php endif; ?>
   </div>
+  <?php
+    // Bảng giá: người bán tự chọn (không tự áp) trong các bảng giá có hiệu lực hôm nay; đổi -> tính lại mọi món.
+    // Bảng giá đơn đang dùng mà hôm nay hết hiệu lực vẫn hiện để giữ nguyên lựa chọn.
+    $price_books = isset($price_books) ? $price_books : array();
+    $book_listed = ! $order['price_book_id'] || in_array((int) $order['price_book_id'], array_map('intval', array_column($price_books, 'id')), TRUE);
+  ?>
+  <?php if ($is_active && ($price_books || $order['price_book_id'])): ?>
+    <div class="px-3 py-2 border-bottom pos-price-book <?php echo $order['price_book_id'] ? 'is-on' : ''; ?>">
+      <label for="priceBookSelect"><i class="bi bi-tags"></i> Bảng giá</label>
+      <select id="priceBookSelect" class="form-select form-select-sm" onchange="setPriceBook(this)">
+        <option value="">Giá gốc</option>
+        <?php if ( ! $book_listed): ?>
+          <option value="<?php echo (int) $order['price_book_id']; ?>" selected><?php echo htmlspecialchars($order['price_book_name']); ?> (hết hiệu lực)</option>
+        <?php endif; ?>
+        <?php foreach ($price_books as $pb): ?>
+          <option value="<?php echo (int) $pb['id']; ?>" <?php echo (int) $order['price_book_id'] === (int) $pb['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($pb['name']); ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  <?php elseif ( ! $is_active && ! empty($order['price_book_name'])): ?>
+    <div class="px-3 py-2 border-bottom small"><i class="bi bi-tags"></i> <b>Bảng giá:</b> <?php echo htmlspecialchars($order['price_book_name']); ?></div>
+  <?php endif; ?>
   <?php // Ghi chú cho cả đơn — in trên phiếu bếp và phiếu tạm tính. ?>
   <?php // Bên phải hàng ghi chú: "Lịch sử báo bếp" — các lần bấm "Thông báo" (giống ứng dụng POS), in lại được. ?>
   <div class="px-3 py-2 border-bottom d-flex align-items-start gap-2">

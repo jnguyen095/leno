@@ -9,6 +9,13 @@
   $CI =& get_instance();
   $CI->load->model('Setting_model');
   $receipt = $CI->Setting_model->get_receipt_info();
+  // Bảng giá: tổng tiền khách được giảm so với giá gốc (món bị tăng giá không tính).
+  $saved = 0;
+  foreach ($items as $it)
+  {
+    if (isset($it['original_price']) && $it['original_price'] !== NULL && (float) $it['original_price'] > (float) $it['price'])
+      $saved += ((float) $it['original_price'] - (float) $it['price']) * (int) $it['qty'];
+  }
   $contact = implode(' - ', array_filter(array($receipt['address'], $receipt['phone']), 'strlen'));
 ?>
   <div class="center bold rk-shop"><?php echo htmlspecialchars($receipt['shop_name']); ?></div>
@@ -23,6 +30,7 @@
     <div class="rk-lines">
       <div>Số HĐ: <?php echo htmlspecialchars($order['order_no']); ?></div>
       <div>Thời gian: <?php if ($paid): ?><?php echo date('d/m/Y H:i', strtotime($order['paid_at'])); ?><?php else: ?><span class="js-print-time"><?php echo date('d/m/Y H:i'); ?></span><?php endif; ?></div>
+      <?php if ( ! empty($order['price_book_name'])): ?><div>Bảng giá: <b><?php echo htmlspecialchars($order['price_book_name']); ?></b></div><?php endif; ?>
       <?php if ( ! $paid && ! empty($order['note'])): ?><div class="italic">Ghi chú: <?php echo htmlspecialchars($order['note']); ?></div><?php endif; ?>
     </div>
   </div>
@@ -33,7 +41,7 @@
     <?php foreach ($items as $it): ?>
     <tr>
       <td><?php echo htmlspecialchars($it['product_name']); ?><?php if ( ! $paid && ! empty($it['note'])): ?> <i>(<?php echo htmlspecialchars($it['note']); ?>)</i><?php endif; ?></td>
-      <td class="right"><?php echo $money($it['price']); ?></td>
+      <td class="right"><?php if (isset($it['original_price']) && $it['original_price'] !== NULL): // giá gốc gạch ngang, giá mới bên dưới ?><s class="rk-old"><?php echo $money($it['original_price']); ?></s><br><?php endif; ?><?php echo $money($it['price']); ?></td>
       <td class="center"><?php echo (int) $it['qty']; ?></td>
       <td class="right"><?php echo $money($it['amount']); ?></td>
     </tr>
@@ -47,6 +55,9 @@
     <tr><td>VAT</td><td class="right"><?php echo $money($order['vat_amount']); ?></td></tr>
     <?php endif; ?>
     <tr class="bold"><td>TỔNG CỘNG</td><td class="right"><?php echo $money($order['total_amount']); ?></td></tr>
+    <?php if ($saved > 0): ?>
+    <tr class="italic"><td>Bạn đã tiết kiệm</td><td class="right"><?php echo $money($saved); ?></td></tr>
+    <?php endif; ?>
   </table>
   <?php if ($show_qr): ?>
   <div class="rk-qr js-vietqr" data-qr="<?php echo htmlspecialchars(vietqr_payload($bank_qr['bin'], $bank_qr['account_no'], (int) round($order['total_amount']), $order['order_no'])); ?>"></div>

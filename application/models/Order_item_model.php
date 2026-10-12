@@ -5,13 +5,15 @@ class Order_item_model extends CI_Model
 {
     protected $table = 'order_items';
 
-    public function add($order_session_id, $product_id, $qty, $price, $note = NULL)
+    /** $original_price: giá gốc khi bán theo bảng giá (NULL = bán đúng giá gốc). */
+    public function add($order_session_id, $product_id, $qty, $price, $note = NULL, $original_price = NULL)
     {
         $data = array(
             'order_session_id' => $order_session_id,
             'product_id'       => $product_id,
             'qty'              => $qty,
             'price'            => $price,
+            'original_price'   => $original_price,
             'amount'           => $price * $qty,
             'note'             => $note,
             'status'           => 'ACTIVE',
@@ -26,7 +28,7 @@ class Order_item_model extends CI_Model
      * để bấm thêm nhiều lần không sinh nhiều dòng; phần tăng thêm sẽ được báo bếp ở
      * lần "Thông báo" kế tiếp (qty > notified_qty).
      */
-    public function add_or_merge($order_session_id, $product_id, $qty, $price, $note = NULL)
+    public function add_or_merge($order_session_id, $product_id, $qty, $price, $note = NULL, $original_price = NULL)
     {
         if ($note === NULL || $note === '')
         {
@@ -42,7 +44,7 @@ class Order_item_model extends CI_Model
                 return $existing['id'];
             }
         }
-        return $this->add($order_session_id, $product_id, $qty, $price, $note ?: NULL);
+        return $this->add($order_session_id, $product_id, $qty, $price, $note ?: NULL, $original_price);
     }
 
     /** Ghi lại phần bếp đã nhận ở lần "Thông báo": số lượng + ghi chú tại thời điểm đó. */
@@ -61,6 +63,16 @@ class Order_item_model extends CI_Model
     {
         return $it['status'] === 'ACTIVE' && (int) $it['notified_qty'] > 0
             && (string) $it['note'] !== (string) $it['notified_note'];
+    }
+
+    /** Đổi giá một dòng (chọn / đổi bảng giá): tính lại thành tiền theo số lượng hiện tại. */
+    public function set_price($id, $price, $original_price, $qty)
+    {
+        return $this->db->where('id', $id)->update($this->table, array(
+            'price'          => $price,
+            'original_price' => $original_price,
+            'amount'         => $price * $qty,
+        ));
     }
 
     public function update_qty($id, $qty)

@@ -11,7 +11,13 @@
     <div class="flex-grow-1" style="min-width:0; overflow-wrap:break-word;">
       <div class="fw-semibold lh-sm"><?php echo htmlspecialchars($it['product_name']); ?></div>
       <div class="small text-muted">
-        <span class="text-nowrap"><?php echo money_format_vnd($it['price']); ?><?php if ( ! $editable): ?> x <?php echo $it['qty']; ?><?php endif; ?></span>
+        <span class="text-nowrap">
+          <?php // Bán theo bảng giá: giá gốc gạch ngang + giá mới (xanh = giảm, cam = tăng). ?>
+          <?php if (isset($it['original_price']) && $it['original_price'] !== NULL): ?>
+            <s class="pos-price-old"><?php echo money_format_vnd($it['original_price']); ?></s>
+            <span class="pos-price-new <?php echo (float) $it['price'] > (float) $it['original_price'] ? 'up' : ''; ?>"><?php echo money_format_vnd($it['price']); ?></span>
+          <?php else: ?><?php echo money_format_vnd($it['price']); ?><?php endif; ?><?php if ( ! $editable): ?> x <?php echo $it['qty']; ?><?php endif; ?>
+        </span>
         <?php if ($is_active && $pending_delta > 0): ?>
           <span class="badge text-warning">Chưa báo<?php echo (int) $it['notified_qty'] > 0 ? ' +'.$pending_delta : ''; ?></span>
         <?php elseif ($is_active && $pending_delta < 0): ?>

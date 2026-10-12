@@ -21,7 +21,53 @@ class Pos_service
         $this->CI->load->model(array(
             'Table_model', 'Table_session_model', 'Order_model', 'Order_item_model',
             'Product_model', 'Kitchen_ticket_model', 'Payment_model', 'Setting_model', 'Audit_log_model',
+            'Price_book_model',
         ));
+    }
+
+    /**
+     * Giá bán theo bảng giá: array(giá bán, giá gốc khi khác giá bán | NULL).
+     * Món không có trong bảng giá (hoặc chưa chọn bảng giá) -> bán giá gốc, original = NULL.
+     */
+    public static function book_price($base_price, array $book_prices, $product_id)
+    {
+        $base = (float) $base_price;
+        if ( ! isset($book_prices[(int) $product_id])) return array($base, NULL);
+        $price = (float) $book_prices[(int) $product_id];
+        return array($price, abs($price - $base) < 0.005 ? NULL : $base);
+    }
+
+    /**
+     * Chọn / đổi / bỏ bảng giá cho đơn (người bán tự chọn trên POS). Mọi món đang có trong đơn được tính
+     * lại theo bảng giá mới (bỏ chọn = về giá gốc). Chỉ chọn được bảng giá đang có hiệu lực hôm nay.
+     * Trả về NULL nếu thành công, hoặc chuỗi lỗi.
+     */
+    public function set_price_book($order, $book_id, $user_id)
+    {
+        $book = NULL;
+        if ($book_id)
+        {
+            $book = $this->CI->Price_book_model->get_by_id($book_id);
+            if ( ! $book || ! $this->CI->Price_book_model->is_applicable($book_id))
+            {
+                return 'Bảng giá không tồn tại hoặc không áp dụng hôm nay.';
+            }
+        }
+
+        $this->CI->Order_model->set_price_book($order['id'], $book ? (int) $book['id'] : NULL, $book ? $book['name'] : NULL);
+
+        $book_prices = $book ? $this->CI->Price_book_model->get_prices($book['id']) : array();
+        foreach ($this->CI->Order_item_model->get_active_by_order($order['id']) as $it)
+        {
+            // Giá gốc = giá gốc đã lưu lúc bán (nếu từng áp bảng giá), không thì chính giá hiện tại của dòng.
+            $base = $it['original_price'] !== NULL ? $it['original_price'] : $it['price'];
+            list($price, $original) = self::book_price($base, $book_prices, $it['product_id']);
+            $this->CI->Order_item_model->set_price($it['id'], $price, $original, (int) $it['qty']);
+        }
+        $this->CI->Order_model->recalc_totals($order['id']);
+        $this->CI->Audit_log_model->log('order', 'SET_PRICE_BOOK', array('price_book_id' => $order['price_book_id']),
+            array('order_id' => $order['id'], 'price_book_id' => $book ? (int) $book['id'] : NULL), $user_id);
+        return NULL;
     }
 
     public function is_active($order)
@@ -113,6 +159,9 @@ class Pos_service
     public function add_items($order_id, array $items, $user_id)
     {
         $added = array();
+        // Đơn đã chọn bảng giá -> món mới cũng bán theo bảng giá đó (món không có trong bảng giá = giá gốc).
+        $order = $this->CI->Order_model->get_by_id($order_id);
+        $book_prices = $order && $order['price_book_id'] ? $this->CI->Price_book_model->get_prices($order['price_book_id']) : array();
         foreach ($items as $it)
         {
             $product = isset($it['product_id']) ? $this->CI->Product_model->get_by_id($it['product_id']) : NULL;
@@ -120,7 +169,8 @@ class Pos_service
 
             $qty = max(1, (int) (isset($it['qty']) ? $it['qty'] : 1));
             $note = clean_note(isset($it['note']) ? $it['note'] : NULL);
-            $this->CI->Order_item_model->add_or_merge($order_id, $product['id'], $qty, $product['price'], $note);
+            list($price, $original) = self::book_price($product['price'], $book_prices, $product['id']);
+            $this->CI->Order_item_model->add_or_merge($order_id, $product['id'], $qty, $price, $note, $original);
             $added[] = array('product_id' => $product['id'], 'qty' => $qty, 'note' => $note);
         }
 
@@ -409,6 +459,9 @@ class Pos_service
             'pending_count' => $pending_count,
             // Tài khoản nhận chuyển khoản: phiếu tạm tính in mã VietQR (giống ứng dụng POS).
             'bank_qr'       => $this->CI->Setting_model->get_bank_qr(),
+            // Bảng giá có hiệu lực hôm nay (người bán tự chọn) + giá mới theo bảng giá đơn đang dùng.
+            'price_books'   => $is_active ? $this->CI->Price_book_model->get_applicable() : array(),
+            'book_prices'   => $order['price_book_id'] ? $this->CI->Price_book_model->get_prices($order['price_book_id']) : array(),
         );
     }
 }

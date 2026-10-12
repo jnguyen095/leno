@@ -115,7 +115,7 @@
           <div class="row g-2" id="productGrid">
             <?php $cat_index = 0; foreach ($products_by_category as $cat_name => $products): $cat_key = $cat_index++; ?>
               <?php foreach ($products as $p): ?>
-              <div class="col-4 col-sm-2 col-xl-2 menu-product" data-cat="<?php echo $cat_key; ?>" data-name="<?php echo htmlspecialchars($p['product_name']); ?>" data-sku="<?php echo htmlspecialchars((string) $p['sku']); ?>">
+              <div class="col-4 col-sm-2 col-xl-2 menu-product" data-cat="<?php echo $cat_key; ?>" data-name="<?php echo htmlspecialchars($p['product_name']); ?>" data-sku="<?php echo htmlspecialchars((string) $p['sku']); ?>" data-id="<?php echo (int) $p['id']; ?>" data-base="<?php echo (float) $p['price']; ?>">
                 <button type="button" class="pos-product-card w-100" onclick="addProduct(<?php echo $p['id']; ?>, this)">
                   <?php // Giá nằm đè giữa đáy ảnh để thẻ gọn hơn; tên món bên dưới. ?>
                   <div class="pos-product-media">
@@ -124,7 +124,8 @@
                     <?php else: ?>
                       <div class="pos-product-img pos-product-img-empty"><i class="bi bi-cup-straw"></i></div>
                     <?php endif; ?>
-                    <span class="pos-product-price"><?php echo money_format_vnd($p['price']); ?></span>
+                    <?php // Theo bảng giá đơn đang dùng: giá mới, kèm giá gốc gạch ngang. Đổi bảng giá -> JS cập nhật (renderMenuPrices). ?>
+                    <span class="pos-product-price"><?php if (isset($book_prices[(int) $p['id']]) && (float) $book_prices[(int) $p['id']] !== (float) $p['price']): ?><s><?php echo money_format_vnd($p['price']); ?></s> <?php echo money_format_vnd($book_prices[(int) $p['id']]); ?><?php else: ?><?php echo money_format_vnd($p['price']); ?><?php endif; ?></span>
                   </div>
                   <div class="pos-product-name"><?php echo htmlspecialchars($p['product_name']); ?></div>
                 </button>
@@ -270,7 +271,19 @@ function applyPanel(res){
     document.getElementById('payPendingCount').textContent = res.pending_count;
     document.getElementById('payPendingWarn').classList.toggle('d-none', ! res.pending_count);
   }
+  if (res.book_prices !== undefined) renderMenuPrices(res.book_prices);
   showAjaxError(res.success === false ? (res.message || 'Không thực hiện được.') : null);
+}
+
+// ---- Bảng giá: người bán tự chọn cho đơn; đổi -> server tính lại mọi món, lưới thực đơn hiện giá mới ----
+function setPriceBook(sel){ postOrder('/price-book', {price_book_id: sel.value}); }
+function renderMenuPrices(prices){
+  var fmt = function(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
+  document.querySelectorAll('.menu-product').forEach(function(el){
+    var base = parseFloat(el.dataset.base), p = prices[el.dataset.id], label = el.querySelector('.pos-product-price');
+    if (p !== undefined && Math.abs(p - base) > 0.004) label.innerHTML = '<s>' + fmt(base) + '</s> ' + fmt(p);
+    else label.textContent = fmt(base);
+  });
 }
 
 function showAjaxError(msg){

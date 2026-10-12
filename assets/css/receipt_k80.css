@@ -27,3 +27,5 @@
 .receipt-k80 .rk-kitchen tr:last-child td{ border-bottom:0; }
 .receipt-k80 .rk-kitchen td + td{ font-weight:bold; font-size:1.15em; }
 .receipt-k80 .rk-kitchen tr:first-child td + td{ font-size:1em; }
+/* Bảng giá: giá gốc gạch ngang (nhỏ) phía trên giá mới. */
+.receipt-k80 .rk-old{ font-size:.85em; }

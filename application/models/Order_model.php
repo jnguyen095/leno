@@ -90,6 +90,12 @@ class Order_model extends CI_Model
         $this->recalc_totals($order_id);
     }
 
+    /** Bảng giá đang áp cho đơn (lưu cả tên để in hóa đơn đúng kể cả khi bảng giá bị sửa / xoá). */
+    public function set_price_book($id, $book_id, $book_name)
+    {
+        return $this->db->where('id', $id)->update($this->table, array('price_book_id' => $book_id, 'price_book_name' => $book_name));
+    }
+
     public function set_note($id, $note)
     {
         return $this->db->where('id', $id)->update($this->table, array('note' => $note));

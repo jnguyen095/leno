@@ -242,6 +242,16 @@ class Orders extends MY_Controller
         $this->_respond($order_id);
     }
 
+    /** Chọn / đổi / bỏ bảng giá cho đơn (AJAX) — mọi món trong đơn được tính lại theo bảng giá mới. */
+    public function price_book($id)
+    {
+        $order = $this->_active_order_or_respond($id);
+        if ( ! $order) return;
+
+        $error = $this->pos_service->set_price_book($order, (int) $this->input->post('price_book_id'), $this->current_user['id']);
+        $this->_respond($id, $error);
+    }
+
     /** Ghi chú cho cả đơn (AJAX từ tab Thực đơn). */
     public function note($id)
     {
@@ -296,6 +306,8 @@ class Orders extends MY_Controller
             'total'         => (float) $panel['order']['total_amount'],
             'total_text'    => money_format_vnd($panel['order']['total_amount']),
             'pending_count' => $panel['pending_count'],
+            // Giá theo bảng giá đơn đang dùng (product_id => giá) — cập nhật giá trên lưới thực đơn.
+            'book_prices'   => (object) $panel['book_prices'],
         ));
     }
 

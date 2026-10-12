@@ -266,7 +266,36 @@ class Api_pos extends MY_Api_Controller
         {
             $this->pos_service->set_order_note($order_id, $body['note'], $this->current_user['id']);
         }
+        // {"price_book_id": 3} chọn bảng giá (tính lại mọi món), {"price_book_id": null} về giá gốc.
+        if (array_key_exists('price_book_id', $body))
+        {
+            $error = $this->pos_service->set_price_book($this->Order_model->get_by_id($order_id), (int) $body['price_book_id'], $this->current_user['id']);
+            if ($error) $this->fail(422, $error);
+        }
         $this->_order_response($order_id);
+    }
+
+    /**
+     * GET /api/v1/price-books — bảng giá có hiệu lực hôm nay (đang bật, trong khoảng ngày, đúng thứ) kèm giá
+     * từng món: [{"id", "name", "prices": {"product_id": giá}}]. Người bán tự chọn cho đơn (PATCH /orders/{id}).
+     */
+    public function price_books()
+    {
+        $this->_method('get');
+        $this->require_menu('orders', self::POS_ROLES);
+        $this->load->model('Price_book_model');
+
+        $books = array();
+        foreach ($this->Price_book_model->get_applicable() as $b)
+        {
+            $prices = array();
+            foreach ($this->Price_book_model->get_prices($b['id']) as $product_id => $price)
+            {
+                $prices[(string) $product_id] = api_money($price);
+            }
+            $books[] = array('id' => (int) $b['id'], 'name' => $b['name'], 'prices' => (object) $prices);
+        }
+        json_response(array('success' => TRUE, 'price_books' => $books));
     }
 
     /**

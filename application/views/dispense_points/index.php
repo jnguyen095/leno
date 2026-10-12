@@ -12,9 +12,9 @@
           <td><?php echo htmlspecialchars($d['name']); ?></td>
           <td><span class="badge bg-<?php echo $d['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $d['status']; ?></span></td>
           <td>
-            <a href="<?php echo site_url('me/inventory/dispense-points/'.$d['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-            <?php echo form_open('me/inventory/dispense-points/'.$d['id'].'/delete', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Ẩn điểm xuất kho này?');")); ?>
-              <button class="btn btn-sm btn-outline-danger">Ẩn</button>
+            <a href="<?php echo site_url('me/inventory/dispense-points/'.$d['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa điểm xuất kho"><i class="bi bi-pencil"></i></a>
+            <?php echo form_open('me/inventory/dispense-points/'.$d['id'].'/delete', array('class'=>'d-inline', 'data-confirm' => html_escape('Ẩn điểm xuất kho "'.$d['name'].'"?'), 'data-confirm-ok' => 'Ẩn')); ?>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Ẩn điểm xuất kho"><i class="bi bi-eye-slash"></i></button>
             <?php echo form_close(); ?>
           </td>
         </tr>

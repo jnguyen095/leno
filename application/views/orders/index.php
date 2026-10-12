@@ -146,7 +146,7 @@
             <button class="btn btn-sm btn-brand flex-grow-1"><i class="bi bi-funnel"></i> Lọc</button>
             <?php if ($extra_filters): ?>
               <a href="<?php echo site_url('me/orders').'?'.http_build_query(array_merge($status ? array('status' => $status) : array(), array('date_from' => $date_from, 'date_to' => $date_to))); ?>"
-                 class="btn btn-sm btn-outline-secondary" title="Bỏ lọc bàn / thanh toán / người tạo"><i class="bi bi-x-lg"></i></a>
+                 class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Bỏ lọc bàn / thanh toán / người tạo"><i class="bi bi-x-lg"></i></a>
             <?php endif; ?>
           </div>
         <?php echo form_close(); ?>
@@ -176,14 +176,14 @@
             <td><span class="orders-status orders-status-<?php echo $sm[1]; ?>"><?php echo $sm[0]; ?></span></td>
             <td class="text-end fw-semibold text-nowrap"><?php echo money_format_vnd($o['total_amount']); ?></td>
             <td class="text-end text-nowrap">
-              <a href="<?php echo site_url('me/orders/'.$o['id']); ?>" class="btn btn-sm btn-light" title="Xem đơn"><i class="bi bi-eye"></i></a>
+              <a href="<?php echo site_url('me/orders/'.$o['id']); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Xem đơn"><i class="bi bi-eye"></i></a>
               <?php if ($o['status'] === 'PAID'): ?>
-                <a href="<?php echo site_url('me/orders/'.$o['id'].'/invoice'); ?>" target="_blank" class="btn btn-sm btn-light" title="In hóa đơn"><i class="bi bi-printer"></i></a>
+                <a href="<?php echo site_url('me/orders/'.$o['id'].'/invoice'); ?>" target="_blank" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="In hóa đơn"><i class="bi bi-printer"></i></a>
               <?php endif; ?>
               <?php if ($is_admin): ?>
-                <?php echo form_open('me/orders/'.$o['id'].'/delete', array('class' => 'd-inline js-order-delete', 'data-no' => $o['order_no'])); ?>
+                <?php echo form_open('me/orders/'.$o['id'].'/delete', array('class' => 'd-inline', 'data-confirm' => html_escape('Xoá hẳn đơn '.$o['order_no'].'?'), 'data-confirm-message' => 'Món, phiếu bếp và thanh toán của đơn cũng bị xoá, không khôi phục được.')); ?>
                   <input type="hidden" name="back_qs" value="<?php echo htmlspecialchars($export_qs); ?>">
-                  <button class="btn btn-sm btn-light text-danger" title="Xoá đơn"><i class="bi bi-trash"></i></button>
+                  <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá đơn"><i class="bi bi-trash"></i></button>
                 <?php echo form_close(); ?>
               <?php endif; ?>
             </td>
@@ -210,9 +210,9 @@
             </div>
           </a>
           <?php if ($is_admin): ?>
-            <?php echo form_open('me/orders/'.$o['id'].'/delete', array('class' => 'js-order-delete', 'data-no' => $o['order_no'])); ?>
+            <?php echo form_open('me/orders/'.$o['id'].'/delete', array('data-confirm' => html_escape('Xoá hẳn đơn '.$o['order_no'].'?'), 'data-confirm-message' => 'Món, phiếu bếp và thanh toán của đơn cũng bị xoá, không khôi phục được.')); ?>
               <input type="hidden" name="back_qs" value="<?php echo htmlspecialchars($export_qs); ?>">
-              <button class="btn btn-sm btn-light text-danger" title="Xoá đơn"><i class="bi bi-trash"></i></button>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá đơn"><i class="bi bi-trash"></i></button>
             <?php echo form_close(); ?>
           <?php endif; ?>
         </div>
@@ -271,10 +271,5 @@ document.querySelectorAll('.orders-row').forEach(function(tr){
     window.location.href = tr.dataset.href;
   });
 });
-// Xoá đơn: xác nhận trước.
-document.querySelectorAll('.js-order-delete').forEach(function(f){
-  f.addEventListener('submit', function(e){
-    if ( ! confirm('Xoá hẳn đơn ' + f.dataset.no + '? Món, phiếu bếp và thanh toán của đơn cũng bị xoá, không khôi phục được.')) e.preventDefault();
-  });
-});
+// Xoá đơn: hỏi bằng hộp xác nhận trong trang (form data-confirm, xem layout/footer.php).
 </script>

@@ -20,9 +20,9 @@
           </td>
           <td><span class="badge bg-<?php echo $r['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $r['status']==='ACTIVE'?'Hoạt động':'Ẩn'; ?></span></td>
           <td class="text-nowrap">
-            <a href="<?php echo site_url('me/recipes/'.$r['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-            <?php echo form_open('me/recipes/'.$r['id'].'/delete', array('class' => 'd-inline', 'onsubmit' => "return confirm('Xóa công thức này? Toàn bộ thành phần cũng sẽ bị xóa.');")); ?>
-              <button class="btn btn-sm btn-outline-danger">Xóa</button>
+            <a href="<?php echo site_url('me/recipes/'.$r['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa công thức"><i class="bi bi-pencil"></i></a>
+            <?php echo form_open('me/recipes/'.$r['id'].'/delete', array('class' => 'd-inline', 'data-confirm' => html_escape('Xoá công thức "'.$r['name'].'"?'), 'data-confirm-message' => html_escape('Toàn bộ thành phần của công thức cũng bị xoá.'))); ?>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá công thức"><i class="bi bi-trash"></i></button>
             <?php echo form_close(); ?>
           </td>
         </tr>

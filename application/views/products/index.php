@@ -68,9 +68,9 @@
           <td class="text-end"><?php echo money_format_vnd($p['price']); ?></td>
           <td><span class="badge bg-<?php echo $p['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $p['status']; ?></span></td>
           <td>
-            <a href="<?php echo site_url('me/products/'.$p['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-            <?php echo form_open('me/products/'.$p['id'].'/delete', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Ẩn sản phẩm này?');")); ?>
-              <button class="btn btn-sm btn-outline-danger">Ẩn</button>
+            <a href="<?php echo site_url('me/products/'.$p['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa món"><i class="bi bi-pencil"></i></a>
+            <?php echo form_open('me/products/'.$p['id'].'/delete', array('class'=>'d-inline', 'data-confirm' => html_escape('Ẩn món "'.$p['product_name'].'"?'), 'data-confirm-message' => html_escape('Món bị ẩn sẽ không hiện trên thực đơn POS.'), 'data-confirm-ok' => 'Ẩn')); ?>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Ẩn món"><i class="bi bi-eye-slash"></i></button>
             <?php echo form_close(); ?>
           </td>
         </tr>

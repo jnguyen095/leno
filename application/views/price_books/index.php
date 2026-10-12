@@ -66,10 +66,3 @@
   </div>
   <?php endif; ?>
 </div>
-<script>
-document.querySelectorAll('.js-pb-delete').forEach(function(f){
-  f.addEventListener('submit', function(e){
-    if ( ! confirm('Xoá bảng giá "' + f.dataset.name + '"? Đơn đã bán theo bảng giá này vẫn giữ nguyên giá.')) e.preventDefault();
-  });
-});
-</script>

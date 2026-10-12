@@ -87,8 +87,8 @@
                 <?php if ($b['note']): ?><div class="text-muted small"><?php echo htmlspecialchars($b['note']); ?></div><?php endif; ?>
               </td>
               <td class="text-end">
-                <?php echo form_open('me/payroll/record/'.$target_user['id'].'/bonus/'.$b['id'].'/delete?period='.$period, array('class' => 'd-inline', 'onsubmit' => "return confirm('Xóa khoản thưởng này?');")); ?>
-                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                <?php echo form_open('me/payroll/record/'.$target_user['id'].'/bonus/'.$b['id'].'/delete?period='.$period, array('class' => 'd-inline', 'data-confirm' => html_escape('Xoá khoản thưởng này?'))); ?>
+                  <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá khoản thưởng"><i class="bi bi-trash"></i></button>
                 <?php echo form_close(); ?>
               </td>
             </tr>

@@ -25,14 +25,14 @@
           <td class="text-end"><?php echo $t['capacity']; ?></td>
           <td><span class="badge bg-<?php echo table_status_badge($t['status']); ?>"><?php echo $t['status']; ?></span></td>
           <td class="text-nowrap">
-            <a href="<?php echo site_url('me/tables/manage/'.$t['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+            <a href="<?php echo site_url('me/tables/manage/'.$t['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa bàn"><i class="bi bi-pencil"></i></a>
             <?php if ($t['status'] !== 'AVAILABLE'): ?>
-              <?php echo form_open('me/tables/manage/'.$t['id'].'/reset-status', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Bắt bàn này về trạng thái Trống? Đơn hàng đang mở (nếu có) sẽ bị hủy.');")); ?>
-                <button class="btn btn-sm btn-outline-warning">Đặt lại</button>
+              <?php echo form_open('me/tables/manage/'.$t['id'].'/reset-status', array('class'=>'d-inline', 'data-confirm' => html_escape('Đặt lại "'.$t['table_name'].'" về Trống?'), 'data-confirm-message' => html_escape('Đơn hàng đang mở của bàn (nếu có) sẽ bị huỷ.'), 'data-confirm-ok' => 'Đặt lại')); ?>
+                <button class="btn btn-sm btn-light text-warning-emphasis" data-bs-toggle="tooltip" title="Đặt lại bàn về Trống"><i class="bi bi-arrow-counterclockwise"></i></button>
               <?php echo form_close(); ?>
             <?php else: ?>
-              <?php echo form_open('me/tables/manage/'.$t['id'].'/delete', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Xóa bàn này?');")); ?>
-                <button class="btn btn-sm btn-outline-danger">Xóa</button>
+              <?php echo form_open('me/tables/manage/'.$t['id'].'/delete', array('class'=>'d-inline', 'data-confirm' => html_escape('Xoá "'.$t['table_name'].'"?'))); ?>
+                <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá bàn"><i class="bi bi-trash"></i></button>
               <?php echo form_close(); ?>
             <?php endif; ?>
           </td>

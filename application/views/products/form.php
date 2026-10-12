@@ -21,7 +21,7 @@
           <?php // Thêm mới: SKU tự sinh theo danh mục (CPE-01, CPE-02...), vẫn cho sửa tay. ?>
           <div class="input-group">
             <input type="text" name="sku" id="skuInput" class="form-control" value="<?php echo htmlspecialchars($suggested_sku); ?>">
-            <button type="button" class="btn btn-outline-secondary d-none" id="skuAutoBtn" onclick="useAutoSku()" title="Dùng lại mã tự động">
+            <button type="button" class="btn btn-outline-secondary d-none" id="skuAutoBtn" onclick="useAutoSku()" data-bs-toggle="tooltip" title="Dùng lại mã tự động">
               <i class="bi bi-arrow-repeat"></i> Tự động
             </button>
           </div>

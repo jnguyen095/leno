@@ -118,8 +118,8 @@
                 <?php endif; ?>
               </td>
               <td class="text-end">
-                <?php echo form_open('me/recipes/'.$recipe['id'].'/ingredients/'.$ing['id'].'/delete', array('class' => 'd-inline', 'onsubmit' => "return confirm('Xóa thành phần này?');")); ?>
-                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                <?php echo form_open('me/recipes/'.$recipe['id'].'/ingredients/'.$ing['id'].'/delete', array('class' => 'd-inline', 'data-confirm' => html_escape('Xoá thành phần này?'))); ?>
+                  <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá thành phần"><i class="bi bi-trash"></i></button>
                 <?php echo form_close(); ?>
               </td>
             </tr>

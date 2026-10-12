@@ -507,3 +507,5 @@ span#orderItemCountBadge {
   .admin-nav-home.active, .admin-nav-link.active{ border-color:transparent; }
   .admin-home{ padding:1rem .75rem 1.5rem; }
 }
+/* Hộp xác nhận (appConfirm / form[data-confirm]). */
+.app-confirm-icon{ width:56px; height:56px; margin:0 auto; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#fdecea; color:#dc3545; font-size:1.6rem; }

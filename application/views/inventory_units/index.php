@@ -12,9 +12,9 @@
           <td><?php echo htmlspecialchars($u['name']); ?></td>
           <td><span class="badge bg-<?php echo $u['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $u['status']; ?></span></td>
           <td>
-            <a href="<?php echo site_url('me/inventory/units/'.$u['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-            <?php echo form_open('me/inventory/units/'.$u['id'].'/delete', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Ẩn đơn vị tính này?');")); ?>
-              <button class="btn btn-sm btn-outline-danger">Ẩn</button>
+            <a href="<?php echo site_url('me/inventory/units/'.$u['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa đơn vị tính"><i class="bi bi-pencil"></i></a>
+            <?php echo form_open('me/inventory/units/'.$u['id'].'/delete', array('class'=>'d-inline', 'data-confirm' => html_escape('Ẩn đơn vị tính "'.$u['name'].'"?'), 'data-confirm-ok' => 'Ẩn')); ?>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Ẩn đơn vị tính"><i class="bi bi-eye-slash"></i></button>
             <?php echo form_close(); ?>
           </td>
         </tr>

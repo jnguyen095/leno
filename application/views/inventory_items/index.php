@@ -95,10 +95,10 @@
           </td>
           <?php if ($current_user['role'] === 'ADMIN'): ?>
           <td class="text-nowrap">
-            <a href="<?php echo site_url('me/inventory/items/'.$it['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+            <a href="<?php echo site_url('me/inventory/items/'.$it['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa sản phẩm kho"><i class="bi bi-pencil"></i></a>
             <?php if ($it['status'] === 'ACTIVE'): ?>
-            <?php echo form_open('me/inventory/items/'.$it['id'].'/delete', array('class' => 'd-inline', 'onsubmit' => "return confirm('Xóa sản phẩm kho này? Sản phẩm sẽ chuyển sang trạng thái Đã xoá, có thể khôi phục lại qua Sửa.');")); ?>
-              <button class="btn btn-sm btn-outline-danger">Xóa</button>
+            <?php echo form_open('me/inventory/items/'.$it['id'].'/delete', array('class' => 'd-inline', 'data-confirm' => html_escape('Xoá "'.$it['name'].'"?'), 'data-confirm-message' => html_escape('Sản phẩm chuyển sang trạng thái Đã xoá, có thể khôi phục lại qua Sửa.'))); ?>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá sản phẩm kho"><i class="bi bi-trash"></i></button>
             <?php echo form_close(); ?>
             <?php endif; ?>
           </td>

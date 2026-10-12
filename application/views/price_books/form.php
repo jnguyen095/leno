@@ -99,7 +99,7 @@
           </div>
           <div class="col-12 col-md-2 d-flex gap-2">
             <button type="button" class="btn btn-sm btn-brand flex-grow-1" id="bulkApply">Áp dụng</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="bulkClear" title="Xoá giá mới của danh mục đang chọn"><i class="bi bi-eraser"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="bulkClear" data-bs-toggle="tooltip" title="Xoá giá mới của danh mục đang chọn"><i class="bi bi-eraser"></i></button>
           </div>
         </div>
         <div class="form-text">Giá theo % được làm tròn tới 1.000đ. Áp dụng xong vẫn sửa tay được từng món.</div>

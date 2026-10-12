@@ -66,10 +66,3 @@
   </div>
   <?php endif; ?>
 </div>
-<script>
-document.querySelectorAll('.js-dc-delete').forEach(function(f){
-  f.addEventListener('submit', function(e){
-    if ( ! confirm('Xoá khuyến mãi "' + f.dataset.name + '"? Đơn đã áp khuyến mãi này vẫn giữ nguyên.')) e.preventDefault();
-  });
-});
-</script>

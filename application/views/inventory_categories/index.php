@@ -13,9 +13,9 @@
           <td><?php echo $c['sort_order']; ?></td>
           <td><span class="badge bg-<?php echo $c['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $c['status']; ?></span></td>
           <td>
-            <a href="<?php echo site_url('me/inventory/categories/'.$c['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-            <?php echo form_open('me/inventory/categories/'.$c['id'].'/delete', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Ẩn danh mục này?');")); ?>
-              <button class="btn btn-sm btn-outline-danger">Ẩn</button>
+            <a href="<?php echo site_url('me/inventory/categories/'.$c['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa danh mục kho"><i class="bi bi-pencil"></i></a>
+            <?php echo form_open('me/inventory/categories/'.$c['id'].'/delete', array('class'=>'d-inline', 'data-confirm' => html_escape('Ẩn danh mục kho "'.$c['name'].'"?'), 'data-confirm-ok' => 'Ẩn')); ?>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Ẩn danh mục kho"><i class="bi bi-eye-slash"></i></button>
             <?php echo form_close(); ?>
           </td>
         </tr>

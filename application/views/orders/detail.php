@@ -196,7 +196,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Lịch sử báo bếp — <?php echo htmlspecialchars($table_label); ?></h5>
-        <button type="button" class="btn btn-sm btn-link text-secondary ms-auto" onclick="openKitchenHistory()" title="Tải lại"><i class="bi bi-arrow-clockwise fs-5"></i></button>
+        <button type="button" class="btn btn-sm btn-link text-secondary ms-auto" onclick="openKitchenHistory()" data-bs-toggle="tooltip" title="Tải lại"><i class="bi bi-arrow-clockwise fs-5"></i></button>
         <button type="button" class="btn-close ms-1" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" id="kitchenHistoryBody"></div>

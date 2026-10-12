@@ -81,16 +81,16 @@
               </div>
               <div class="d-flex flex-column gap-1">
                 <?php echo form_open('me/customer-display/'.$s['id'].'/move/up', array('class' => 'm-0')); ?>
-                  <button class="btn btn-sm btn-light" title="Lên trước" <?php echo $i === 0 ? 'disabled' : ''; ?>><i class="bi bi-arrow-up"></i></button>
+                  <button class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Lên trước" <?php echo $i === 0 ? 'disabled' : ''; ?>><i class="bi bi-arrow-up"></i></button>
                 <?php echo form_close(); ?>
                 <?php echo form_open('me/customer-display/'.$s['id'].'/move/down', array('class' => 'm-0')); ?>
-                  <button class="btn btn-sm btn-light" title="Xuống sau" <?php echo $i === count($slides) - 1 ? 'disabled' : ''; ?>><i class="bi bi-arrow-down"></i></button>
+                  <button class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Xuống sau" <?php echo $i === count($slides) - 1 ? 'disabled' : ''; ?>><i class="bi bi-arrow-down"></i></button>
                 <?php echo form_close(); ?>
                 <?php echo form_open('me/customer-display/'.$s['id'].'/toggle', array('class' => 'm-0')); ?>
-                  <button class="btn btn-sm btn-light" title="<?php echo $active ? 'Ẩn' : 'Hiện'; ?>"><i class="bi <?php echo $active ? 'bi-eye-slash' : 'bi-eye'; ?>"></i></button>
+                  <button class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="<?php echo $active ? 'Ẩn ảnh khỏi màn hình khách' : 'Hiện ảnh trên màn hình khách'; ?>"><i class="bi <?php echo $active ? 'bi-eye-slash' : 'bi-eye'; ?>"></i></button>
                 <?php echo form_close(); ?>
-                <?php echo form_open('me/customer-display/'.$s['id'].'/delete', array('class' => 'm-0', 'onsubmit' => "return confirm('Xoá ảnh này?');")); ?>
-                  <button class="btn btn-sm btn-light text-danger" title="Xoá"><i class="bi bi-trash"></i></button>
+                <?php echo form_open('me/customer-display/'.$s['id'].'/delete', array('class' => 'm-0', 'data-confirm' => html_escape('Xoá ảnh này?'), 'data-confirm-message' => html_escape('Ảnh sẽ không còn trên màn hình khách.'))); ?>
+                  <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Xoá ảnh"><i class="bi bi-trash"></i></button>
                 <?php echo form_close(); ?>
               </div>
             </div>

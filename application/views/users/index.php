@@ -47,10 +47,10 @@
           <td><?php echo $u['end_date'] ? date('d/m/Y', strtotime($u['end_date'])) : '—'; ?></td>
           <td><span class="badge bg-<?php echo $u['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $u['status']; ?></span></td>
           <td>
-            <a href="<?php echo site_url('me/users/'.$u['id'].'/edit'); ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+            <a href="<?php echo site_url('me/users/'.$u['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa người dùng"><i class="bi bi-pencil"></i></a>
             <?php if ((int)$u['id'] !== (int)$current_user['id']): ?>
-            <?php echo form_open('me/users/'.$u['id'].'/delete', array('class'=>'d-inline', 'onsubmit'=>"return confirm('Vô hiệu hóa tài khoản này?');")); ?>
-              <button class="btn btn-sm btn-outline-danger">Vô hiệu hóa</button>
+            <?php echo form_open('me/users/'.$u['id'].'/delete', array('class'=>'d-inline', 'data-confirm' => html_escape('Vô hiệu hoá tài khoản "'.$u['username'].'"?'), 'data-confirm-message' => html_escape('Người này sẽ không đăng nhập được nữa.'), 'data-confirm-ok' => 'Vô hiệu hoá')); ?>
+              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Vô hiệu hoá tài khoản"><i class="bi bi-person-slash"></i></button>
             <?php echo form_close(); ?>
             <?php endif; ?>
           </td>

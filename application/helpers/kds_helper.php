@@ -59,16 +59,26 @@ if ( ! function_exists('clean_note'))
     }
 }
 
+if ( ! function_exists('payment_methods'))
+{
+    /**
+     * Hình thức thanh toán dùng trong toàn hệ thống (POS web, ứng dụng, lọc đơn, Excel, hóa đơn): mã => nhãn.
+     * Chỉ Tiền mặt + Chuyển khoản (cột payments.payment_method cũng chỉ nhận 2 giá trị này — migration 007).
+     */
+    function payment_methods()
+    {
+        return array(
+            'CASH'     => 'Tiền mặt',
+            'TRANSFER' => 'Chuyển khoản',
+        );
+    }
+}
+
 if ( ! function_exists('payment_method_label'))
 {
     function payment_method_label($method)
     {
-        $map = array(
-            'CASH'     => 'Tiền mặt',
-            'TRANSFER' => 'Chuyển khoản',
-            'CARD'     => 'Thẻ',
-            'QR'       => 'QR Pay',
-        );
+        $map = payment_methods();
         return isset($map[$method]) ? $map[$method] : $method;
     }
 }

@@ -156,21 +156,35 @@
           <i class="bi bi-exclamation-triangle"></i> Còn <span id="payPendingCount"><?php echo $pending_count; ?></span> món chưa báo bếp.
         </div>
         <div class="d-flex justify-content-between fs-4 fw-bold mb-3"><span>Tổng cộng</span><span class="text-brand" id="payTotal"><?php echo money_format_vnd($order['total_amount']); ?></span></div>
+        <?php // Hình thức thanh toán: 2 nút to (Tiền mặt / Chuyển khoản) thay cho danh sách xổ xuống — xem payment_methods(). ?>
         <div class="mb-3">
-          <label class="form-label">Phương thức</label>
-          <select name="payment_method" id="paymentMethod" class="form-select form-select-lg" onchange="onPayMethodChange()">
-            <option value="CASH">Tiền mặt</option>
-            <option value="CARD">Thẻ</option>
-            <option value="TRANSFER">Chuyển khoản</option>
-            <option value="QR">QR Pay</option>
-          </select>
+          <label class="form-label">Hình thức thanh toán</label>
+          <div class="pay-methods" role="group">
+            <?php $pay_icons = array('CASH' => 'bi-cash-coin', 'TRANSFER' => 'bi-bank'); $first = TRUE; ?>
+            <?php foreach (payment_methods() as $code => $label): ?>
+              <input type="radio" class="btn-check" name="payment_method" value="<?php echo $code; ?>" id="payMethod<?php echo $code; ?>"
+                     autocomplete="off" onchange="onPayMethodChange()" <?php echo $first ? 'checked' : ''; ?>>
+              <label class="pay-method" for="payMethod<?php echo $code; ?>"><i class="bi <?php echo $pay_icons[$code]; ?>"></i> <?php echo $label; ?></label>
+              <?php $first = FALSE; ?>
+            <?php endforeach; ?>
+          </div>
         </div>
+        <?php if ( ! empty($bank_qr['enabled'])): ?>
+          <div id="transferInfo" class="pay-transfer-info d-none">
+            <i class="bi bi-bank"></i>
+            <div><b><?php echo htmlspecialchars($bank_qr['bank_name']); ?> — <?php echo htmlspecialchars($bank_qr['account_no']); ?></b>
+              <?php if ($bank_qr['account_name'] !== ''): ?><div><?php echo htmlspecialchars($bank_qr['account_name']); ?></div><?php endif; ?>
+              <small>Kiểm tra đã nhận đủ tiền trước khi xác nhận. Nội dung chuyển khoản: số hóa đơn.</small></div>
+          </div>
+        <?php endif; ?>
         <div id="receivedGroup">
           <div class="mb-2">
             <label class="form-label">Khách đưa</label>
             <input type="number" name="received_amount" id="receivedAmount" class="form-control form-control-lg" min="0" step="1000"
                    value="<?php echo (int) $order['total_amount']; ?>" oninput="calcChange()">
           </div>
+          <?php // Gợi ý số tiền khách đưa (đủ tiền + làm tròn lên theo mệnh giá) — bấm để điền nhanh. Vẽ bởi renderCashSuggestions(). ?>
+          <div class="cash-suggest mb-2" id="cashSuggest"></div>
           <div class="fs-5">Tiền thối lại: <span class="fw-bold text-success" id="changeAmount">0đ</span></div>
         </div>
       </div>
@@ -430,19 +444,64 @@ function printProvisional(){
 function openPayModal(){
   whenIdle(function(){
     onPayMethodChange();
+    renderCashSuggestions(); // theo tổng tiền mới nhất (đổi món / bảng giá / khuyến mãi qua AJAX)
     bootstrap.Modal.getOrCreateInstance(document.getElementById('payModal')).show();
   });
 }
 
 function onPayMethodChange(){
-  var isCash = document.getElementById('paymentMethod').value === 'CASH';
+  var checked = document.querySelector('#payModal input[name="payment_method"]:checked');
+  var isCash = ! checked || checked.value === 'CASH';
   document.getElementById('receivedGroup').classList.toggle('d-none', !isCash);
+  // Chuyển khoản: hiện tài khoản nhận (Cài đặt → Chuyển khoản) để đối chiếu.
+  var info = document.getElementById('transferInfo');
+  if (info) info.classList.toggle('d-none', isCash);
   calcChange();
 }
 
 function calcChange(){
   var received = parseFloat(document.getElementById('receivedAmount').value) || 0;
   document.getElementById('changeAmount').textContent = Math.max(0, received - ORDER_TOTAL).toLocaleString('vi-VN') + 'đ';
+  // Tô nút gợi ý trùng số tiền đang nhập.
+  document.querySelectorAll('#cashSuggest .cash-chip').forEach(function(b){
+    b.classList.toggle('active', parseFloat(b.dataset.amount) === received);
+  });
+}
+
+// Gợi ý tiền khách đưa: "Đủ tiền" + 3 mức làm tròn lên gần nhất theo mệnh giá + mức tròn 500.000 kế tiếp (tờ lớn),
+// vd 120.000 -> 150.000, 200.000, 500.000; 216.000 -> 220.000, 250.000, 300.000, 500.000; 500.000 -> 600.000, 1.000.000.
+function cashSuggestions(total){
+  var up = function(step){ return Math.ceil(total / step) * step; };
+  var out = [];
+  [10000, 20000, 50000, 100000, 200000, 500000, 1000000].forEach(function(step){
+    var v = up(step);
+    if (v > total && out.indexOf(v) === -1) out.push(v);
+  });
+  out.sort(function(a, b){ return a - b; });
+  var pick = out.slice(0, 3);
+  var big = up(500000) > total ? up(500000) : up(500000) + 500000;
+  if (pick.indexOf(big) === -1) pick.push(big);
+  return pick.sort(function(a, b){ return a - b; });
+}
+function renderCashSuggestions(){
+  var box = document.getElementById('cashSuggest');
+  if ( ! box) return;
+  var total = Math.round(ORDER_TOTAL);
+  var chips = [{amount: total, label: 'Đủ tiền'}].concat(cashSuggestions(total).map(function(v){ return {amount: v, label: v.toLocaleString('vi-VN')}; }));
+  box.innerHTML = '';
+  chips.forEach(function(c){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cash-chip';
+    b.dataset.amount = c.amount;
+    b.textContent = c.label;
+    b.addEventListener('click', function(){
+      document.getElementById('receivedAmount').value = c.amount;
+      calcChange();
+    });
+    box.appendChild(b);
+  });
+  calcChange();
 }
 
 <?php if ($kitchen_slip): ?>

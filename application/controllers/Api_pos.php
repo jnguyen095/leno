@@ -38,6 +38,9 @@ class Api_pos extends MY_Api_Controller
                 'bank_qr'          => $this->Setting_model->get_bank_qr(),
                 // Tên quán / địa chỉ / SĐT / lời cảm ơn in trên phiếu (Cài đặt → Thông tin in phiếu).
                 'receipt'          => $this->Setting_model->get_receipt_info(),
+                // Hình thức thanh toán hợp lệ (giống web): [{"code": "CASH", "label": "Tiền mặt"}, {"code": "TRANSFER", ...}].
+                'payment_methods'  => array_map(function ($code, $label) { return array('code' => $code, 'label' => $label); },
+                    array_keys(payment_methods()), payment_methods()),
             ),
         ));
     }
@@ -491,7 +494,8 @@ class Api_pos extends MY_Api_Controller
     }
 
     /**
-     * POST /api/v1/orders/{id}/pay {"payment_method": "CASH|CARD|TRANSFER|QR", "received_amount": 100000}
+     * POST /api/v1/orders/{id}/pay {"payment_method": "CASH|TRANSFER", "received_amount": 100000}
+     * (received_amount chỉ cần với CASH; danh sách hình thức: settings.payment_methods ở GET /me).
      * Chốt đơn, đóng phiên bàn, bàn về Trống. Trả về đơn đã thanh toán kèm 'payment'.
      */
     public function pay($order_id)
@@ -504,7 +508,7 @@ class Api_pos extends MY_Api_Controller
         $method = isset($body['payment_method']) ? (string) $body['payment_method'] : 'CASH';
         if ( ! in_array($method, Pos_service::PAYMENT_METHODS, TRUE))
         {
-            $this->fail(422, 'Phương thức thanh toán không hợp lệ.');
+            $this->fail(422, 'Hình thức thanh toán không hợp lệ (chỉ Tiền mặt hoặc Chuyển khoản).');
         }
         $received = isset($body['received_amount']) ? (float) $body['received_amount'] : 0;
 

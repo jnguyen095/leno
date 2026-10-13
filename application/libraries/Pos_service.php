@@ -10,7 +10,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Pos_service
 {
     const ACTIVE_STATUSES = array('OPEN', 'WAIT_PAYMENT');
-    const PAYMENT_METHODS = array('CASH', 'CARD', 'TRANSFER', 'QR');
+    /** Hình thức thanh toán hợp lệ — cùng danh sách với payment_methods() (kds_helper). */
+    const PAYMENT_METHODS = array('CASH', 'TRANSFER');
 
     protected $CI;
 
@@ -440,9 +441,10 @@ class Pos_service
             return array('error' => 'Đơn chưa có món nào để thanh toán.');
         }
 
+        // Chỉ Tiền mặt / Chuyển khoản; mã khác báo lỗi (trước đây lặng lẽ ghi thành tiền mặt).
         if ( ! in_array($method, self::PAYMENT_METHODS, TRUE))
         {
-            $method = 'CASH';
+            return array('error' => 'Hình thức thanh toán không hợp lệ (chỉ Tiền mặt hoặc Chuyển khoản).');
         }
         $total = (float) $order['total_amount'];
         $received = $method === 'CASH' ? (float) $received_amount : $total;

@@ -294,7 +294,7 @@ class Order_model extends CI_Model
         {
             $this->db->where('order_sessions.created_by', (int) $filters['created_by']);
         }
-        // Phương thức thanh toán (CASH/TRANSFER/CARD/QR) hoặc NONE = đơn chưa có thanh toán.
+        // Phương thức thanh toán (CASH/TRANSFER, xem payment_methods()) hoặc NONE = đơn chưa có thanh toán.
         if ( ! empty($filters['payment_method']))
         {
             if ($filters['payment_method'] === 'NONE')

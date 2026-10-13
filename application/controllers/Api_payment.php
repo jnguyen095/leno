@@ -31,7 +31,7 @@ class Api_payment extends MY_Api_Controller
             return;
         }
 
-        if ( ! in_array($method, array('CASH', 'CARD', 'TRANSFER', 'QR'), TRUE))
+        if ( ! array_key_exists($method, payment_methods()))
         {
             json_response(array('success' => FALSE, 'message' => 'Phương thức thanh toán không hợp lệ'), 400);
             return;

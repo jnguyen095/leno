@@ -36,7 +36,7 @@ class Orders extends MY_Controller
             $created_by = (int) $this->current_user['id'];
         }
         $payment_method = $this->input->get('payment_method');
-        if ( ! in_array($payment_method, array('CASH', 'TRANSFER', 'CARD', 'QR', 'NONE'), TRUE))
+        if ( ! in_array($payment_method, array_merge(array_keys(payment_methods()), array('NONE')), TRUE))
         {
             $payment_method = '';
         }

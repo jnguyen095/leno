@@ -1,8 +1,8 @@
 <?php
   // Danh sách đơn hàng: thẻ tổng quan + tab trạng thái (kèm số đơn) + bộ lọc (thu gọn trên điện thoại)
   // + bảng (máy tính) / danh sách thẻ (điện thoại) + phân trang.
-  $payment_options = array('CASH' => 'Tiền mặt', 'TRANSFER' => 'Chuyển khoản', 'CARD' => 'Thẻ', 'QR' => 'QR Pay', 'NONE' => 'Chưa thanh toán');
-  $payment_icons = array('CASH' => 'bi-cash-coin', 'TRANSFER' => 'bi-bank', 'CARD' => 'bi-credit-card', 'QR' => 'bi-qr-code');
+  $payment_options = payment_methods() + array('NONE' => 'Chưa thanh toán');
+  $payment_icons = array('CASH' => 'bi-cash-coin', 'TRANSFER' => 'bi-bank');
   $status_meta = array(
     'OPEN'      => array('Đang phục vụ', 'open'),
     'PAID'      => array('Đã thanh toán', 'paid'),

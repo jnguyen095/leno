@@ -345,8 +345,8 @@ window.posChipSwiper = function(bar, activeIndex){
         <a href="<?php echo site_url('me/orders/'.$po['id']); ?>"
            class="btn btn-sm <?php echo (int) $po['id'] === (int) $pos_order_id ? 'btn-brand' : 'btn-outline-secondary'; ?>">
           <?php if ( ! empty($po['is_takeaway']) || empty($po['table_id'])): ?><i class="bi bi-bag-check"></i><?php endif; ?>
-          <?php echo htmlspecialchars($po['table_name'] ?: 'Mang đi #'.$po['order_no']); ?>
-          <span class="opacity-75 small"><?php echo money_format_vnd($po['total_amount']); ?></span>
+          <?php // Chỉ tên bàn (không kèm tổng tiền); mọi nút cùng kích thước, tên dài cắt "…" (title hiện đủ). ?>
+          <span class="pos-chip-name" title="<?php echo htmlspecialchars($po['table_name'] ?: 'Mang đi #'.$po['order_no']); ?>"><?php echo htmlspecialchars($po['table_name'] ?: 'Mang đi #'.$po['order_no']); ?></span>
         </a>
       </div>
       <?php endforeach; ?>

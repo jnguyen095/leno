@@ -1,5 +1,61 @@
 <div class="container-fluid py-3 py-md-4">
-  <h4 class="fw-bold mb-3"><i class="bi bi-journal-text"></i> Nhật ký hệ thống</h4>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h4 class="fw-bold mb-0"><i class="bi bi-journal-text"></i> Nhật ký hệ thống</h4>
+    <?php if ($current_user['role'] === 'ADMIN'): ?>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#purgePanel" aria-expanded="false">
+        <i class="bi bi-trash3"></i> Dọn dẹp nhật ký cũ
+      </button>
+    <?php endif; ?>
+  </div>
+
+  <?php if ($this->session->flashdata('success')): ?>
+    <div class="alert alert-success py-2 small"><i class="bi bi-check-circle-fill"></i> <?php echo htmlspecialchars($this->session->flashdata('success')); ?></div>
+  <?php endif; ?>
+  <?php if ($this->session->flashdata('error')): ?>
+    <div class="alert alert-danger py-2 small"><?php echo htmlspecialchars($this->session->flashdata('error')); ?></div>
+  <?php endif; ?>
+
+  <?php if ($current_user['role'] === 'ADMIN'): ?>
+  <?php // Dọn dẹp: xoá nhật ký cũ hơn N tháng (chọn mốc, xem trước số bản ghi, xác nhận bằng hộp thoại). ?>
+  <div class="collapse" id="purgePanel">
+    <div class="purge-card mb-3">
+      <div class="fw-semibold mb-1"><i class="bi bi-trash3 text-danger"></i> Xoá nhật ký cũ</div>
+      <div class="small text-muted mb-3">Xoá vĩnh viễn các bản ghi trước mốc đã chọn để nhẹ dữ liệu. Lịch sử báo bếp của các đơn còn đang mở luôn được giữ lại.</div>
+      <?php echo form_open('me/audit-logs/purge', array('id' => 'purgeForm', 'data-confirm' => 'Xoá nhật ký cũ?', 'data-confirm-ok' => 'Xoá vĩnh viễn')); ?>
+        <div class="purge-options">
+          <?php foreach ($purge_options as $i => $o): ?>
+            <input type="radio" class="btn-check" name="months" value="<?php echo $o['months']; ?>" id="purge<?php echo $o['months']; ?>"
+                   data-count="<?php echo $o['count']; ?>" data-before="<?php echo date('d/m/Y', strtotime($o['before'])); ?>" <?php echo $o['months'] === 3 ? 'checked' : ''; ?>>
+            <label class="purge-option" for="purge<?php echo $o['months']; ?>">
+              <b>Cũ hơn <?php echo $o['months'] === 12 ? '1 năm' : $o['months'].' tháng'; ?></b>
+              <small>trước <?php echo date('d/m/Y', strtotime($o['before'])); ?></small>
+              <span class="purge-count <?php echo $o['count'] ? '' : 'is-zero'; ?>"><?php echo number_format($o['count'], 0, ',', '.'); ?> bản ghi</span>
+            </label>
+          <?php endforeach; ?>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <button class="btn btn-danger" id="purgeBtn"><i class="bi bi-trash3"></i> <span>Xoá</span></button>
+        </div>
+      <?php echo form_close(); ?>
+    </div>
+  </div>
+  <script>
+  // Nút + nội dung hộp xác nhận theo mốc đang chọn; không có gì để xoá thì khoá nút.
+  (function(){
+    var form = document.getElementById('purgeForm'), btn = document.getElementById('purgeBtn');
+    function sync(){
+      var r = form.querySelector('input[name="months"]:checked'), n = parseInt(r.dataset.count, 10);
+      var fmt = n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      btn.querySelector('span').textContent = n ? 'Xoá ' + fmt + ' bản ghi' : 'Không có gì để xoá';
+      btn.disabled = n === 0;
+      form.dataset.confirm = 'Xoá vĩnh viễn ' + fmt + ' bản ghi trước ngày ' + r.dataset.before + '?';
+      form.dataset.confirmMessage = 'Không khôi phục được. Lịch sử báo bếp của các đơn còn đang mở vẫn được giữ.';
+    }
+    form.querySelectorAll('input[name="months"]').forEach(function(r){ r.addEventListener('change', sync); });
+    sync();
+  })();
+  </script>
+  <?php endif; ?>
 
   <?php echo form_open('me/audit-logs', array('method' => 'get', 'class' => 'row g-2 align-items-center mb-3')); ?>
     <div class="col-auto">

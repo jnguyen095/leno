@@ -50,9 +50,55 @@ class Audit_logs extends MY_Controller
             'total_pages'  => $total_pages,
             'total'        => $total,
             'per_page'     => self::PER_PAGE,
+            // Dọn dẹp: mỗi mốc -> ngày cắt + số bản ghi sẽ xoá.
+            'purge_options' => $this->_purge_options(),
         );
         $this->load->view('layout/header', $data);
         $this->load->view('audit_logs/index', $data);
         $this->load->view('layout/footer');
+    }
+
+    /** Các mốc dọn dẹp cho phép (tháng) — tối thiểu 1 tháng để không lỡ xoá nhật ký gần đây. */
+    const PURGE_MONTHS = array(1, 3, 6, 12);
+
+    /**
+     * POST — xoá nhật ký cũ hơn N tháng (months ∈ PURGE_MONTHS). Giữ "Thông báo" (báo bếp) của đơn còn mở.
+     * Ghi lại một dòng nhật ký về lần dọn này (ai, xoá bao nhiêu, trước ngày nào).
+     */
+    public function purge()
+    {
+        if ($this->input->method() !== 'post') show_404();
+        // Xem nhật ký có thể được gán quyền cho vai trò khác; xoá thì chỉ ADMIN.
+        if ($this->current_user['role'] !== 'ADMIN')
+        {
+            $this->output->set_status_header(403);
+            echo $this->load->view('errors/forbidden', array('current_user' => $this->current_user), TRUE);
+            exit;
+        }
+        $months = (int) $this->input->post('months');
+        if ( ! in_array($months, self::PURGE_MONTHS, TRUE))
+        {
+            $this->session->set_flashdata('error', 'Mốc thời gian không hợp lệ.');
+            redirect('me/audit-logs');
+            return;
+        }
+        $before = date('Y-m-d 00:00:00', strtotime('-'.$months.' months'));
+        $deleted = $this->Audit_log_model->purge_before($before);
+        $this->audit('audit_log', 'PURGE', NULL, array('months' => $months, 'before' => $before, 'deleted' => $deleted));
+        $this->session->set_flashdata('success', $deleted
+            ? 'Đã xoá '.number_format($deleted, 0, ',', '.').' bản ghi trước ngày '.date('d/m/Y', strtotime($before)).'.'
+            : 'Không có bản ghi nào trước ngày '.date('d/m/Y', strtotime($before)).'.');
+        redirect('me/audit-logs');
+    }
+
+    private function _purge_options()
+    {
+        $out = array();
+        foreach (self::PURGE_MONTHS as $m)
+        {
+            $before = date('Y-m-d 00:00:00', strtotime('-'.$m.' months'));
+            $out[] = array('months' => $m, 'before' => $before, 'count' => $this->Audit_log_model->count_before($before));
+        }
+        return $out;
     }
 }

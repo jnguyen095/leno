@@ -536,3 +536,12 @@ span#orderItemCountBadge {
 .shop-offer-toast{ position:fixed; top:72px; left:50%; transform:translateX(-50%); z-index:1080; padding:.55rem 1rem; border-radius:.75rem; font-weight:600; font-size:.9rem; box-shadow:0 6px 20px rgba(0,0,0,.15); }
 .shop-offer-toast.ok{ background:#e6f6ec; color:#1e8a4c; }
 .shop-offer-toast.err{ background:#fdecea; color:#b02a37; }
+/* Nhật ký hệ thống: dọn dẹp nhật ký cũ. */
+.purge-card{ background:#fff; border:1px solid #f5c2c7; border-radius:1rem; padding:1rem 1.1rem; }
+.purge-options{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:.5rem; }
+.purge-option{ display:flex; flex-direction:column; gap:.1rem; padding:.65rem .8rem; border:1px solid #dee2e6; border-radius:.75rem; cursor:pointer; background:#fff; }
+.purge-option small{ color:#868e96; }
+.purge-count{ margin-top:.25rem; font-weight:600; color:#b02a37; font-size:.85rem; }
+.purge-count.is-zero{ color:#adb5bd; font-weight:500; }
+.btn-check:checked + .purge-option{ border-color:#dc3545; background:#fff5f5; box-shadow:0 0 0 .15rem rgba(220,53,69,.15); }
+@media (max-width: 767.98px){ .purge-options{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }

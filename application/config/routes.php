@@ -112,6 +112,7 @@ $route['me/recipes/(:num)/ingredients/(:num)/delete'] = 'recipes/delete_ingredie
 $route['me/admin'] = 'admin/index';
 $route['me/settings'] = 'settings/index';
 $route['me/audit-logs'] = 'audit_logs/index';
+$route['me/audit-logs/purge'] = 'audit_logs/purge';
 $route['me/customer-display'] = 'customer_display/index';
 $route['me/customer-display/upload'] = 'customer_display/upload';
 $route['me/customer-display/(:num)/update'] = 'customer_display/update/$1';

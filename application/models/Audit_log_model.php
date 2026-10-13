@@ -39,6 +39,51 @@ class Audit_log_model extends CI_Model
             ->get()->result_array();
     }
 
+    // ---- Dọn nhật ký cũ (Nhật ký hệ thống → Dọn dẹp) ----
+
+    /**
+     * id các bản ghi "Thông báo" (NOTIFY_KITCHEN) trước $before của đơn CÒN ĐANG MỞ — phải giữ lại vì Lịch sử báo bếp
+     * của đơn đọc từ nhật ký (Pos_service::kitchen_history).
+     */
+    private function _kept_kitchen_ids($before)
+    {
+        $rows = $this->db->select('id, new_data')->where('action', 'NOTIFY_KITCHEN')->where('created_at <', $before)
+            ->get($this->table)->result_array();
+        if ( ! $rows) return array();
+
+        $open = array();
+        foreach ($this->db->select('id')->where_in('status', array('OPEN', 'WAIT_PAYMENT'))->get('order_sessions')->result_array() as $o)
+        {
+            $open[(int) $o['id']] = TRUE;
+        }
+        $keep = array();
+        foreach ($rows as $r)
+        {
+            $data = json_decode($r['new_data'], TRUE);
+            if (is_array($data) && isset($data['order_id']) && isset($open[(int) $data['order_id']])) $keep[] = (int) $r['id'];
+        }
+        return $keep;
+    }
+
+    /** Số bản ghi sẽ bị xoá nếu dọn mọi bản ghi trước $before (Y-m-d H:i:s), trừ phần phải giữ. */
+    public function count_before($before)
+    {
+        $keep = $this->_kept_kitchen_ids($before);
+        $this->db->where('created_at <', $before);
+        if ($keep) $this->db->where_not_in('id', $keep);
+        return (int) $this->db->count_all_results($this->table);
+    }
+
+    /** Xoá mọi bản ghi trước $before, trừ "Thông báo" của đơn còn mở. Trả về số bản ghi đã xoá. */
+    public function purge_before($before)
+    {
+        $keep = $this->_kept_kitchen_ids($before);
+        $this->db->where('created_at <', $before);
+        if ($keep) $this->db->where_not_in('id', $keep);
+        $this->db->delete($this->table);
+        return (int) $this->db->affected_rows();
+    }
+
     public function get_recent($limit = 100)
     {
         return $this->db->order_by('id', 'DESC')->limit($limit)->get($this->table)->result_array();

@@ -331,6 +331,54 @@ class Order_model extends CI_Model
             ->get()->result_array();
     }
 
+    /**
+     * Báo cáo cuối ngày (ca làm) của một nhân viên: đơn do người này tạo trong [$from, $to] — đếm theo trạng thái.
+     * Đơn chưa có món nào (mở bàn rồi để trống) không tính; đơn đã huỷ thì tính dù mọi món đã huỷ.
+     * Trả về array(count, paid_count, open_count, open_total, cancelled_count).
+     */
+    public function shift_order_counts($user_id, $from, $to)
+    {
+        $rows = $this->db->select('order_sessions.status, order_sessions.total_amount,
+                (SELECT COUNT(*) FROM order_items oi WHERE oi.order_session_id = order_sessions.id) AS line_count', FALSE)
+            ->from($this->table)
+            ->where('order_sessions.created_by', (int) $user_id)
+            ->where('order_sessions.created_at >=', $from)
+            ->where('order_sessions.created_at <=', $to)
+            ->get()->result_array();
+
+        $out = array('count' => 0, 'paid_count' => 0, 'open_count' => 0, 'open_total' => 0.0, 'cancelled_count' => 0);
+        foreach ($rows as $r)
+        {
+            if ((int) $r['line_count'] === 0) continue;
+            $out['count']++;
+            if ($r['status'] === 'PAID') $out['paid_count']++;
+            elseif ($r['status'] === 'CANCELLED') $out['cancelled_count']++;
+            else { $out['open_count']++; $out['open_total'] += (float) $r['total_amount']; }
+        }
+        return $out;
+    }
+
+    /**
+     * Tiền nhân viên đã thu trong [$from, $to] (thanh toán do người này xác nhận, kể cả đơn người khác tạo),
+     * theo hình thức: method => array(count, total).
+     */
+    public function shift_payments($user_id, $from, $to)
+    {
+        $rows = $this->db->select('payment_method, COUNT(*) AS cnt, COALESCE(SUM(amount), 0) AS total', FALSE)
+            ->from('payments')
+            ->where('paid_by', (int) $user_id)
+            ->where('paid_at >=', $from)
+            ->where('paid_at <=', $to)
+            ->group_by('payment_method')
+            ->get()->result_array();
+        $out = array();
+        foreach ($rows as $r)
+        {
+            $out[$r['payment_method']] = array('count' => (int) $r['cnt'], 'total' => (float) $r['total']);
+        }
+        return $out;
+    }
+
     /** Nhân viên đã từng tạo đơn — cho bộ lọc "Người tạo" ở danh sách Đơn hàng. */
     public function get_creators()
     {

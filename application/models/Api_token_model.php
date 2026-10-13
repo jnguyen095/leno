@@ -67,6 +67,20 @@ class Api_token_model extends CI_Model
         return $row;
     }
 
+    /** Dòng token (không gia hạn) — vd lấy giờ đăng nhập của thiết bị cho báo cáo cuối ngày. */
+    public function get_by_token($token)
+    {
+        return $this->db->where('token_hash', hash('sha256', (string) $token))->get($this->table)->row_array();
+    }
+
+    /** Đổi mật khẩu: huỷ token các thiết bị khác của user, giữ thiết bị đang dùng. */
+    public function delete_others($user_id, $keep_token)
+    {
+        return $this->db->where('user_id', (int) $user_id)
+            ->where('token_hash !=', hash('sha256', (string) $keep_token))
+            ->delete($this->table);
+    }
+
     public function delete_by_token($token)
     {
         return $this->db->where('token_hash', hash('sha256', (string) $token))->delete($this->table);

@@ -167,6 +167,7 @@ $route['api/tables/status'] = 'api_tables/status';
 // API ứng dụng di động/tablet (Flutter) — bearer token, xem Api_auth / Api_pos
 $route['api/v1/auth/login']['POST'] = 'api_auth/login';
 $route['api/v1/auth/logout']['POST'] = 'api_pos/logout';
+$route['api/v1/auth/password']['POST'] = 'api_pos/change_password';
 $route['api/v1/me']['GET'] = 'api_pos/me';
 $route['api/v1/display/config']['GET'] = 'api_pos/display_config';
 $route['api/v1/tables']['GET'] = 'api_pos/tables';
@@ -180,6 +181,7 @@ $route['api/v1/offers']['GET'] = 'api_pos/offers';
 $route['api/v1/offers']['POST'] = 'api_pos/set_offers';
 $route['api/v1/orders/active']['GET'] = 'api_pos/active_orders';
 $route['api/v1/orders/history']['GET'] = 'api_pos/order_history';
+$route['api/v1/reports/shift']['GET'] = 'api_pos/shift_report';
 $route['api/v1/orders/(:num)']['GET'] = 'api_pos/order/$1';
 $route['api/v1/orders/(:num)']['PATCH'] = 'api_pos/update_order/$1';
 $route['api/v1/orders/(:num)/items']['POST'] = 'api_pos/add_items/$1';

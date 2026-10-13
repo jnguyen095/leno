@@ -88,6 +88,42 @@ class Api_pos extends MY_Api_Controller
         json_response(array('success' => TRUE));
     }
 
+    /**
+     * POST /api/v1/auth/password {"current_password": "...", "new_password": "..."} — đổi mật khẩu (giống web,
+     * Profile::change_password). Xong thì các thiết bị / trình duyệt khác phải đăng nhập lại; thiết bị này giữ token.
+     */
+    public function change_password()
+    {
+        $this->_method('post');
+        $body = $this->input_json();
+        $current = isset($body['current_password']) ? (string) $body['current_password'] : '';
+        $new = isset($body['new_password']) ? (string) $body['new_password'] : '';
+
+        $this->load->model(array('User_model', 'User_remember_model', 'Audit_log_model'));
+        $user = $this->User_model->get_by_id($this->current_user['id']);
+        if ( ! $user || ! password_verify($current, $user['password']))
+        {
+            $this->fail(422, 'Mật khẩu hiện tại không đúng.');
+        }
+        if (strlen($new) < 6)
+        {
+            $this->fail(422, 'Mật khẩu mới phải có ít nhất 6 ký tự.');
+        }
+        if ($new === $current)
+        {
+            $this->fail(422, 'Mật khẩu mới phải khác mật khẩu hiện tại.');
+        }
+
+        $this->User_model->update($user['id'], array('password' => $new));
+        $this->User_remember_model->delete_for_user($user['id']);
+        if ($this->api_token)
+        {
+            $this->Api_token_model->delete_others($user['id'], $this->api_token);
+        }
+        $this->Audit_log_model->log('user', 'CHANGE_PASSWORD', NULL, array('id' => (int) $user['id'], 'via' => 'app'), $user['id']);
+        json_response(array('success' => TRUE, 'message' => 'Đã đổi mật khẩu. Các thiết bị khác cần đăng nhập lại.'));
+    }
+
     // ---- Sơ đồ bàn --------------------------------------------------------------
 
     /** GET /api/v1/tables */
@@ -189,6 +225,54 @@ class Api_pos extends MY_Api_Controller
     }
 
     /**
+     * GET /api/v1/reports/shift[?from=YYYY-MM-DD HH:MM] — báo cáo cuối ngày của người đang đăng nhập, từ lúc đăng nhập
+     * trên thiết bị này (token tạo lúc nào; nếu từ hôm trước thì tính từ 00:00 hôm nay) tới bây giờ:
+     * số đơn đã tạo (đã thanh toán / đang mở / đã huỷ) và tiền đã thu theo hình thức (Tiền mặt, Chuyển khoản).
+     */
+    public function shift_report()
+    {
+        $this->_method('get');
+        $this->require_menu('orders', self::POS_ROLES);
+
+        $token = $this->api_token ? $this->Api_token_model->get_by_token($this->api_token) : NULL;
+        $login_at = $token ? $token['created_at'] : NULL;
+        $today = date('Y-m-d 00:00:00');
+        $from = $login_at && $login_at > $today ? $login_at : $today;
+        $req = trim((string) $this->input->get('from'));
+        if ($req !== '' && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/', $req) && strtotime($req))
+        {
+            $from = date('Y-m-d H:i:s', strtotime($req));
+        }
+        $to = date('Y-m-d H:i:s');
+
+        $orders = $this->Order_model->shift_order_counts($this->current_user['id'], $from, $to);
+        $orders['open_total'] = api_money($orders['open_total']);
+        $paid = $this->Order_model->shift_payments($this->current_user['id'], $from, $to);
+        $by_method = array();
+        $total = 0.0;
+        $count = 0;
+        foreach (payment_methods() as $code => $label)
+        {
+            $m = isset($paid[$code]) ? $paid[$code] : array('count' => 0, 'total' => 0.0);
+            $by_method[] = array('method' => $code, 'label' => $label, 'count' => $m['count'], 'total' => api_money($m['total']));
+            $total += $m['total'];
+            $count += $m['count'];
+        }
+
+        json_response(array(
+            'success'     => TRUE,
+            'user'        => array('id' => (int) $this->current_user['id'], 'username' => $this->current_user['username'],
+                'fullname' => $this->current_user['fullname']),
+            'device_name' => $token ? $token['device_name'] : NULL,
+            'login_at'    => $login_at,
+            'from'        => $from,
+            'to'          => $to,
+            'orders'      => $orders,
+            'payments'    => array('count' => $count, 'total' => api_money($total), 'by_method' => $by_method),
+        ));
+    }
+
+    /**
      * GET /api/v1/orders/history?date=YYYY-MM-DD — đơn do người đang đăng nhập tạo trong ngày
      * (mặc định hôm nay), mới nhất trước, kèm tổng kết.
      */
@@ -269,22 +353,31 @@ class Api_pos extends MY_Api_Controller
         {
             $this->pos_service->set_order_note($order_id, $body['note'], $this->current_user['id']);
         }
-        // Bảng giá / khuyến mãi chọn ở Sơ đồ bàn (POST /offers, áp cho mọi đơn đang mở); ở đơn chỉ bỏ được:
-        // {"price_book_id": null} về giá gốc, {"discount_id": null} bỏ khuyến mãi — cho riêng đơn này.
-        foreach (array('price_book_id', 'discount_id') as $key)
+        // Bảng giá / khuyến mãi chọn ở Sơ đồ bàn (POST /offers, áp cho mọi đơn đang mở). Ở đơn:
+        // {"price_book_id": null} về giá gốc, {"discount_id": null} bỏ khuyến mãi — cho riêng đơn này;
+        // {"price_book_id": <id đang chọn ở Sơ đồ bàn>} / {"discount_id": ...} áp lại sau khi đã bỏ.
+        // Chọn bảng giá / khuyến mãi khác với Sơ đồ bàn thì không được.
+        $shop = $this->pos_service->shop_offers();
+        $shop_ids = array(
+            'price_book_id' => $shop['price_book'] ? (int) $shop['price_book']['id'] : 0,
+            'discount_id'   => $shop['discount'] ? (int) $shop['discount']['id'] : 0,
+        );
+        foreach ($shop_ids as $key => $shop_id)
         {
-            if (array_key_exists($key, $body) && $body[$key])
+            if (array_key_exists($key, $body) && $body[$key] && (int) $body[$key] !== $shop_id)
             {
-                $this->fail(422, 'Chọn bảng giá / khuyến mãi ở Sơ đồ bàn (áp cho mọi đơn đang mở). Ở đơn chỉ bỏ được.');
+                $this->fail(422, 'Chỉ áp lại được bảng giá / khuyến mãi đang chọn ở Sơ đồ bàn (có thể vừa đổi — tải lại để xem).');
             }
         }
         if (array_key_exists('price_book_id', $body))
         {
-            $this->pos_service->set_price_book($this->Order_model->get_by_id($order_id), 0, $this->current_user['id']);
+            $error = $this->pos_service->set_price_book($this->Order_model->get_by_id($order_id), (int) $body['price_book_id'], $this->current_user['id']);
+            if ($error) $this->fail(422, $error);
         }
         if (array_key_exists('discount_id', $body))
         {
-            $this->pos_service->set_discount($this->Order_model->get_by_id($order_id), 0, $this->current_user['id']);
+            $error = $this->pos_service->set_discount($this->Order_model->get_by_id($order_id), (int) $body['discount_id'], $this->current_user['id']);
+            if ($error) $this->fail(422, $error);
         }
         $this->_order_response($order_id);
     }

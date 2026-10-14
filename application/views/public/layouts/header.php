@@ -46,8 +46,7 @@
   <nav class="navbar navbar-expand-lg pap-navbar" aria-label="Điều hướng chính">
     <div class="container">
       <a class="navbar-brand pap-brand" href="<?php echo site_url(); ?>">
-        <img src="<?php echo base_url('assets/img/logo_sm-removebg_header.png'); ?>" alt="<?php echo htmlspecialchars($site_name); ?>" width="100px">
-        <span class="pap-brand-name">Leno</span>
+        <img src="<?php echo base_url('assets/img/nang-nghieng-icon.png'); ?>" alt="<?php echo htmlspecialchars($site_name); ?>" width="150px">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#papNav" aria-controls="papNav" aria-expanded="false" aria-label="Mở menu">
         <i class="bi bi-list"></i>
@@ -65,9 +64,9 @@
                 $pap_home = 'dashboard';
                 if ($current_user['role'] === 'STOCKTAKER') $pap_home = 'stock/adjust';
               ?>
-              <a class="nav-link" href="<?php echo site_url('me/'.$pap_home); ?>" title="Vào hệ thống quản lý"><i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user['fullname']); ?></a>
+              <a class="nav-link" href="<?php echo site_url('me/'.$pap_home); ?>" title="Vào hệ thống quản lý"><i class="bi bi-person-circle"></i>&nbsp;<?php echo htmlspecialchars($current_user['fullname']); ?></a>
             <?php else: ?>
-              <a class="nav-link" href="<?php echo site_url('login'); ?>" title="Đăng nhập nhân viên"><i class="bi bi-box-arrow-in-right"></i> Đăng nhập</a>
+              <a class="nav-link" href="<?php echo site_url('login'); ?>" title="Đăng nhập nhân viên"><i class="bi bi-box-arrow-in-right"></i>&nbsp;Đăng nhập</a>
             <?php endif; ?>
           </li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">

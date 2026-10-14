@@ -4,7 +4,7 @@
   <div class="container">
     <div class="row g-4">
       <div class="col-md-4">
-        <div class="pap-footer-brand">Leno</div>
+        <div class="pap-footer-brand">Nắng Nghiêng</div>
         <p class="pap-footer-tagline">Vui chơi • Thể thao • Cà phê • Check-in</p>
         <div class="pap-footer-social">
           <?php if ($site_facebook): ?><a href="<?php echo htmlspecialchars($site_facebook); ?>" target="_blank" rel="noopener" aria-label="Facebook Leno"><i class="bi bi-facebook"></i></a><?php endif; ?>
@@ -31,7 +31,7 @@
       </div>
     </div>
     <hr class="pap-footer-divider">
-    <div class="pap-footer-bottom">&copy; <?php echo date('Y'); ?> Leno. Tất cả các quyền được bảo lưu.</div>
+    <div class="pap-footer-bottom">&copy; <?php echo date('Y'); ?> Nắng Nghiêng. Tất cả các quyền được bảo lưu.</div>
   </div>
 </footer>
 

@@ -311,8 +311,8 @@ class Api_pos extends MY_Api_Controller
     }
 
     /**
-     * GET /api/v1/reports/shift[?from=YYYY-MM-DD HH:MM] — báo cáo cuối ngày của người đang đăng nhập, từ lúc đăng nhập
-     * trên thiết bị này (token tạo lúc nào; nếu từ hôm trước thì tính từ 00:00 hôm nay) tới bây giờ:
+     * GET /api/v1/reports/shift[?from=YYYY-MM-DD HH:MM] — báo cáo cuối ngày của người đang đăng nhập, từ đầu ngày
+     * (00:00 hôm nay, hoặc ?from=...) tới bây giờ:
      * số đơn đã tạo (đã thanh toán / đang mở / đã huỷ) và tiền đã thu theo hình thức (Tiền mặt, Chuyển khoản).
      */
     public function shift_report()
@@ -323,7 +323,7 @@ class Api_pos extends MY_Api_Controller
         $token = $this->api_token ? $this->Api_token_model->get_by_token($this->api_token) : NULL;
         $login_at = $token ? $token['created_at'] : NULL;
         $today = date('Y-m-d 00:00:00');
-        $from = $login_at && $login_at > $today ? $login_at : $today;
+        $from = $today; // mặc định từ đầu ngày (00:00 hôm nay); login_at chỉ để tham khảo
         $req = trim((string) $this->input->get('from'));
         if ($req !== '' && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/', $req) && strtotime($req))
         {

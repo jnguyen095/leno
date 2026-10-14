@@ -59,6 +59,9 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         <?php if ($can('orders')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/orders'); ?>"><i class="bi bi-receipt"></i> Đơn hàng</a></li>
         <?php endif; ?>
+        <?php if ($can('cashbook')): // Sổ quỹ: ADMIN hoặc vai trò được gán menu "Sổ quỹ". ?>
+        <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/cashbook'); ?>"><i class="bi bi-journal-bookmark"></i> Sổ quỹ</a></li>
+        <?php endif; ?>
         <?php if ($can('pha_che')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/pha-che'); ?>"><i class="bi bi-cup-straw"></i> Pha chế</a></li>
         <?php endif; ?>

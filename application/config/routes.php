@@ -109,6 +109,13 @@ $route['me/recipes/(:num)/delete'] = 'recipes/delete/$1';
 $route['me/recipes/(:num)/ingredients/add'] = 'recipes/add_ingredient/$1';
 $route['me/recipes/(:num)/ingredients/(:num)/delete'] = 'recipes/delete_ingredient/$1/$2';
 
+$route['me/cashbook'] = 'cashbook/index';
+$route['me/cashbook/save'] = 'cashbook/save';
+$route['me/cashbook/export'] = 'cashbook/export';
+$route['me/cashbook/(:num)/delete'] = 'cashbook/delete/$1';
+$route['me/cashbook/categories'] = 'cashbook/categories';
+$route['me/cashbook/categories/save'] = 'cashbook/category_save';
+$route['me/cashbook/categories/(:num)/toggle'] = 'cashbook/category_toggle/$1';
 $route['me/admin'] = 'admin/index';
 $route['me/settings'] = 'settings/index';
 $route['me/audit-logs'] = 'audit_logs/index';

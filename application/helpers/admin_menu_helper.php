@@ -29,6 +29,11 @@ if ( ! function_exists('admin_menu_groups'))
                 array($is_admin, 'me/price-books', 'bi-tags', 'Bảng giá', 'Giá riêng theo dịp'),
                 array($is_admin, 'me/discounts', 'bi-percent', 'Khuyến mãi', 'Giảm trên tổng đơn'),
             )),
+            // Sổ quỹ có link riêng trên thanh điều hướng (gán quyền được cho vai trò khác) nên không đặt ở đây,
+            // tránh hiện "Quản trị" cho người chỉ có quyền Sổ quỹ.
+            array('Tài chính', 'bi-journal-bookmark', array(
+                array($is_admin, 'me/cashbook/categories', 'bi-tags', 'Loại thu chi', 'Danh mục thu / chi của Sổ quỹ'),
+            )),
             array('Kho', 'bi-box-seam', array(
                 array($can('admin.inventory_categories'), 'me/inventory/categories', 'bi-box-seam', 'Danh mục kho', 'Nhóm nguyên liệu'),
                 array($can('admin.inventory_units'), 'me/inventory/units', 'bi-rulers', 'Đơn vị tính', 'Gram, ml, hộp...'),

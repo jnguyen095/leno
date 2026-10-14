@@ -159,6 +159,7 @@ $route['me/stock/in/import-template'] = 'stock/in_import_template';
 $route['me/stock/out'] = 'stock/out';
 $route['me/stock/adjust'] = 'stock/adjust';
 $route['me/stock/history'] = 'stock/history';
+$route['me/stock/history/purge'] = 'stock/purge_history';
 
 // JSON API — nội bộ, cần đăng nhập (MY_Api_Controller)
 $route['api/payment'] = 'api_payment/create';

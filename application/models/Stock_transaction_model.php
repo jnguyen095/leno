@@ -149,6 +149,25 @@ class Stock_transaction_model extends CI_Model
     }
 
     /** Tổng số lô (batch) khớp bộ lọc — dùng để tính phân trang. */
+    // ---- Dọn lịch sử cũ (Lịch sử nhập/xuất kho → Dọn dẹp) ----
+    // Tồn kho lưu ở inventory_items.qty_on_hand, không tính lại từ lịch sử -> xoá lịch sử không đổi tồn kho.
+
+    /** Số dòng lịch sử (từng sản phẩm) và số phiếu trước $before (Y-m-d H:i:s). */
+    public function count_before($before)
+    {
+        // (LINES là từ khoá của MySQL nên đặt tên cột khác.)
+        $row = $this->db->select('COUNT(*) AS line_count, COUNT(DISTINCT batch_id) AS batch_count', FALSE)
+            ->where('created_at <', $before)->get($this->table)->row_array();
+        return array('lines' => (int) $row['line_count'], 'batches' => (int) $row['batch_count']);
+    }
+
+    /** Xoá lịch sử trước $before. Trả về số dòng đã xoá. */
+    public function purge_before($before)
+    {
+        $this->db->where('created_at <', $before)->delete($this->table);
+        return (int) $this->db->affected_rows();
+    }
+
     public function count_batches($filters = array())
     {
         $this->_apply_filters($filters);

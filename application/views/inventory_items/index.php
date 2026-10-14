@@ -30,7 +30,7 @@
     </div>
     <div class="col-auto">
       <select name="category_id" class="form-select" onchange="this.form.submit()">
-        <option value="">Tất cả danh mục</option>
+        <option value="">-- Chọn danh mục --</option>
         <?php foreach ($categories as $c): ?>
           <option value="<?php echo $c['id']; ?>" <?php echo ((string) $category_id === (string) $c['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($c['name']); ?></option>
         <?php endforeach; ?>
@@ -60,6 +60,9 @@
     </div>
   <?php echo form_close(); ?>
 
+  <?php if ( ! $category_id): // Giống Nhập / Xuất / Kiểm kho: chọn Danh mục trước mới hiện danh sách. ?>
+    <div class="stock-pick-hint"><i class="bi bi-funnel"></i> Chọn <b>Danh mục</b> để hiện danh sách sản phẩm kho.</div>
+  <?php else: ?>
   <div class="table-responsive">
     <table class="table bg-white shadow-sm rounded align-middle">
       <thead class="table-light">
@@ -111,6 +114,7 @@
       </tbody>
     </table>
   </div>
+  <?php endif; ?>
 </div>
 
 <script src="<?php echo asset_url('assets/js/image-lightbox.js'); ?>"></script>

@@ -348,10 +348,56 @@ class Stock extends MY_Controller
             'total_pages'  => $total_pages,
             'total'        => $total,
             'per_page'     => self::PER_PAGE,
+            // Dọn dẹp (chỉ ADMIN): mỗi mốc -> ngày cắt + số phiếu / dòng sẽ xoá.
+            'purge_options' => $this->current_user['role'] === 'ADMIN' ? $this->_purge_options() : array(),
         );
         $this->load->view('layout/header', $data);
         $this->load->view('stock/history', $data);
         $this->load->view('layout/footer');
+    }
+
+    /** Các mốc dọn lịch sử cho phép (tháng) — giống Nhật ký hệ thống, tối thiểu 1 tháng. */
+    const PURGE_MONTHS = array(1, 3, 6, 12);
+
+    /**
+     * POST — xoá lịch sử nhập/xuất/kiểm kho cũ hơn N tháng (chỉ ADMIN). Tồn kho hiện tại không đổi (lưu riêng ở
+     * inventory_items.qty_on_hand). Ghi một dòng Nhật ký hệ thống về lần dọn này.
+     */
+    public function purge_history()
+    {
+        if ($this->input->method() !== 'post') show_404();
+        if ($this->current_user['role'] !== 'ADMIN')
+        {
+            $this->output->set_status_header(403);
+            echo $this->load->view('errors/forbidden', array('current_user' => $this->current_user), TRUE);
+            exit;
+        }
+        $months = (int) $this->input->post('months');
+        if ( ! in_array($months, self::PURGE_MONTHS, TRUE))
+        {
+            $this->session->set_flashdata('error', 'Mốc thời gian không hợp lệ.');
+            redirect('me/stock/history');
+            return;
+        }
+        $before = date('Y-m-d 00:00:00', strtotime('-'.$months.' months'));
+        $count = $this->Stock_transaction_model->count_before($before);
+        $deleted = $this->Stock_transaction_model->purge_before($before);
+        $this->audit('stock', 'PURGE_HISTORY', NULL, array('months' => $months, 'before' => $before, 'batches' => $count['batches'], 'lines' => $deleted));
+        $this->session->set_flashdata('success', $deleted
+            ? 'Đã xoá '.number_format($count['batches'], 0, ',', '.').' phiếu ('.number_format($deleted, 0, ',', '.').' dòng) trước ngày '.date('d/m/Y', strtotime($before)).'. Tồn kho không thay đổi.'
+            : 'Không có lịch sử nào trước ngày '.date('d/m/Y', strtotime($before)).'.');
+        redirect('me/stock/history');
+    }
+
+    private function _purge_options()
+    {
+        $out = array();
+        foreach (self::PURGE_MONTHS as $m)
+        {
+            $before = date('Y-m-d 00:00:00', strtotime('-'.$m.' months'));
+            $out[] = array('months' => $m, 'before' => $before) + $this->Stock_transaction_model->count_before($before);
+        }
+        return $out;
     }
 
     /** Đọc file bulk nhập kho (.xlsx/.csv): cột SKU, Số lượng, Ghi chú. */

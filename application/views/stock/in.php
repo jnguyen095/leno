@@ -11,7 +11,7 @@
     <div class="col-sm-6">
       <label class="form-label">Danh mục</label>
       <select id="categorySelect" class="form-select">
-        <option value="">Tất cả danh mục</option>
+        <option value="">-- Chọn danh mục --</option>
         <?php foreach ($categories as $c): ?>
           <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['name']); ?></option>
         <?php endforeach; ?>
@@ -25,11 +25,14 @@
 
   <?php echo form_open(current_url(), array('id' => 'stockInForm')); ?>
     <div id="itemsList"></div>
+    <?php // Số đã nhập ở danh mục khác (đang không hiện) — giữ bằng input ẩn để vẫn gửi đi khi xác nhận. ?>
+    <div id="carriedInputs"></div>
+    <div id="carriedNote" class="small text-muted mb-2" style="display:none;"></div>
     <div id="noteWrap" class="mb-3" style="display:none;">
       <label class="form-label">Ghi chú (tuỳ chọn, áp dụng cho tất cả)</label>
       <input type="text" name="note" class="form-control" placeholder="Vd: nhập từ nhà cung cấp A">
     </div>
-    <div id="submitWrap" class="d-grid" style="display:none;">
+    <div id="submitWrap" style="display:none;">
       <button type="submit" class="btn btn-brand btn-lg"><i class="bi bi-check-lg"></i> Xác nhận nhập kho</button>
     </div>
   <?php echo form_close(); ?>
@@ -57,14 +60,14 @@
   function renderItems(items){
     if (items.length === 0){
       itemsList.innerHTML = '<p class="text-muted small">Không tìm thấy sản phẩm.</p>';
-      noteWrap.style.display = 'none';
-      submitWrap.style.display = 'none';
+      syncCarried([]);
       return;
     }
-    itemsList.innerHTML = items.map(function(it){
+    itemsList.innerHTML = items.map(function(it, i){
       var val = enteredQty[it.id] || '';
       var lowStock = parseFloat(it.qty_on_hand) < parseFloat(it.low_stock_threshold);
       return '<div class="d-flex align-items-center gap-2 py-2 border-bottom">'+
+        '<span class="stock-seq">'+(i + 1)+'</span>'+
         imageHtml(it)+
         '<div class="flex-grow-1">'+
           '<div class="fw-semibold">'+it.name+'</div>'+
@@ -73,13 +76,35 @@
         '<input type="number" step="0.01" min="0" name="qty['+it.id+']" data-id="'+it.id+'" class="form-control" style="width:110px;" placeholder="0" value="'+val+'">'+
       '</div>';
     }).join('');
+    syncCarried(items.map(function(it){ return String(it.id); }));
     noteWrap.style.display = '';
-    submitWrap.style.display = '';
+    submitWrap.style.display = 'grid';
+  }
+
+  // Input ẩn cho số đã nhập ở các danh mục đang không hiện; nút xác nhận vẫn hiện khi còn số đã nhập.
+  function syncCarried(shownIds){
+    var box = document.getElementById('carriedInputs'), note = document.getElementById('carriedNote'), html = '', n = 0;
+    Object.keys(enteredQty).forEach(function(id){
+      if (shownIds.indexOf(String(id)) !== -1) return;
+      html += '<input type="hidden" name="qty['+id+']" value="'+String(enteredQty[id]).replace(/"/g, '')+'">';
+      n++;
+    });
+    box.innerHTML = html;
+    note.style.display = n ? '' : 'none';
+    note.innerHTML = n ? '<i class="bi bi-info-circle"></i> Đã nhập '+n+' sản phẩm ở danh mục khác — vẫn được lưu khi xác nhận.' : '';
+    var any = shownIds.length > 0 || n > 0;
+    noteWrap.style.display = any ? '' : 'none';
+    submitWrap.style.display = any ? 'grid' : 'none';
   }
 
   function loadItems(){
     var categoryId = categorySelect.value;
     var keyword = searchInput.value.trim();
+    if ( ! categoryId){
+      itemsList.innerHTML = '<div class="stock-pick-hint"><i class="bi bi-funnel"></i> Chọn <b>Danh mục</b> để hiện danh sách sản phẩm.</div>';
+      syncCarried([]);
+      return;
+    }
     itemsList.innerHTML = '<p class="text-muted small">Đang tải...</p>';
     fetch('<?php echo site_url('me/inventory/items/by-category'); ?>?category_id=' + encodeURIComponent(categoryId) + '&q=' + encodeURIComponent(keyword))
       .then(function(r){ return r.json(); })
@@ -109,7 +134,7 @@
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
   });
 
-  loadItems(); // tải sẵn "Tất cả danh mục" khi vào trang
+  loadItems(); // chưa chọn danh mục -> hiện hướng dẫn chọn
 })();
 </script>
 <script src="<?php echo asset_url('assets/js/image-lightbox.js'); ?>"></script>

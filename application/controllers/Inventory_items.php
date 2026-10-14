@@ -40,7 +40,8 @@ class Inventory_items extends MY_Controller
         $data = array(
             'page_title'    => 'Sản phẩm kho',
             'current_user'  => $this->current_user,
-            'items'         => $this->Inventory_item_model->get_all($category_id ?: NULL, $stock_status ?: NULL, $keyword ?: NULL, $status),
+            // Giống Nhập / Xuất / Kiểm kho: phải chọn Danh mục mới hiện danh sách (tìm / lọc trong danh mục đó).
+            'items'         => $category_id ? $this->Inventory_item_model->get_all($category_id, $stock_status ?: NULL, $keyword ?: NULL, $status) : array(),
             'categories'    => $this->Inventory_category_model->get_active(),
             'category_id'   => $category_id,
             'stock_status'  => $stock_status,

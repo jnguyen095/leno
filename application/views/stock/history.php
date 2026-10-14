@@ -5,8 +5,61 @@
       <a href="<?php echo site_url('me/stock/in'); ?>" class="btn btn-sm btn-outline-success"><i class="bi bi-box-arrow-in-down"></i> Nhập kho</a>
       <a href="<?php echo site_url('me/stock/out'); ?>" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-up"></i> Xuất kho</a>
       <a href="<?php echo site_url('me/stock/adjust'); ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-clipboard-check"></i> Kiểm kho</a>
+      <?php if ($current_user['role'] === 'ADMIN'): ?>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#purgePanel" aria-expanded="false">
+          <i class="bi bi-trash3"></i> Dọn dẹp lịch sử cũ
+        </button>
+      <?php endif; ?>
     </div>
   </div>
+
+  <?php if ($this->session->flashdata('success')): ?>
+    <div class="alert alert-success py-2 small"><i class="bi bi-check-circle-fill"></i> <?php echo htmlspecialchars($this->session->flashdata('success')); ?></div>
+  <?php endif; ?>
+  <?php if ($this->session->flashdata('error')): ?>
+    <div class="alert alert-danger py-2 small"><?php echo htmlspecialchars($this->session->flashdata('error')); ?></div>
+  <?php endif; ?>
+
+  <?php if ($current_user['role'] === 'ADMIN' && $purge_options): ?>
+  <?php // Dọn dẹp (giống Nhật ký hệ thống): xoá lịch sử cũ hơn N tháng; tồn kho hiện tại không đổi. ?>
+  <div class="collapse" id="purgePanel">
+    <div class="purge-card mb-3">
+      <div class="fw-semibold mb-1"><i class="bi bi-trash3 text-danger"></i> Xoá lịch sử nhập/xuất kho cũ</div>
+      <div class="small text-muted mb-3">Xoá vĩnh viễn các phiếu nhập / xuất / kiểm kho trước mốc đã chọn để nhẹ dữ liệu. <b>Tồn kho hiện tại không thay đổi.</b></div>
+      <?php echo form_open('me/stock/history/purge', array('id' => 'purgeForm', 'data-confirm' => 'Xoá lịch sử cũ?', 'data-confirm-ok' => 'Xoá vĩnh viễn')); ?>
+        <div class="purge-options">
+          <?php foreach ($purge_options as $o): ?>
+            <input type="radio" class="btn-check" name="months" value="<?php echo $o['months']; ?>" id="purge<?php echo $o['months']; ?>"
+                   data-count="<?php echo $o['batches']; ?>" data-lines="<?php echo $o['lines']; ?>" data-before="<?php echo date('d/m/Y', strtotime($o['before'])); ?>" <?php echo $o['months'] === 3 ? 'checked' : ''; ?>>
+            <label class="purge-option" for="purge<?php echo $o['months']; ?>">
+              <b>Cũ hơn <?php echo $o['months'] === 12 ? '1 năm' : $o['months'].' tháng'; ?></b>
+              <small>trước <?php echo date('d/m/Y', strtotime($o['before'])); ?></small>
+              <span class="purge-count <?php echo $o['batches'] ? '' : 'is-zero'; ?>"><?php echo number_format($o['batches'], 0, ',', '.'); ?> phiếu</span>
+            </label>
+          <?php endforeach; ?>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <button class="btn btn-danger" id="purgeBtn"><i class="bi bi-trash3"></i> <span>Xoá</span></button>
+        </div>
+      <?php echo form_close(); ?>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var form = document.getElementById('purgeForm'), btn = document.getElementById('purgeBtn');
+    var fmt = function(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
+    function sync(){
+      var r = form.querySelector('input[name="months"]:checked'), n = parseInt(r.dataset.count, 10), lines = parseInt(r.dataset.lines, 10);
+      btn.querySelector('span').textContent = n ? 'Xoá ' + fmt(n) + ' phiếu' : 'Không có gì để xoá';
+      btn.disabled = n === 0;
+      form.dataset.confirm = 'Xoá vĩnh viễn ' + fmt(n) + ' phiếu (' + fmt(lines) + ' dòng) trước ngày ' + r.dataset.before + '?';
+      form.dataset.confirmMessage = 'Không khôi phục được. Tồn kho hiện tại không thay đổi.';
+    }
+    form.querySelectorAll('input[name="months"]').forEach(function(r){ r.addEventListener('change', sync); });
+    sync();
+  })();
+  </script>
+  <?php endif; ?>
   <?php echo form_open('me/stock/history', array('method' => 'get', 'class' => 'row g-2 align-items-center mb-3')); ?>
     <div class="col-auto">
       <label class="small text-muted mb-0 me-1">Từ ngày</label>

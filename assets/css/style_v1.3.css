@@ -701,3 +701,19 @@ body.pos-focus .app-footer, body:has(.pos-topbar) .app-footer{ display:none; }
 @media (max-width: 1199.98px){ .dash-activity{ position:static; max-height:420px; } }
 .dash-tooltip{ position:fixed; z-index:1090; display:none; pointer-events:none; padding:.4rem .6rem; border-radius:.5rem; background:#212529; color:#fff; font-size:.78rem; line-height:1.4; box-shadow:0 4px 14px rgba(0,0,0,.2); max-width:240px; }
 @media (max-width: 575.98px){ .dash-tile-value{ font-size:1.15rem; } .dash-chart-plot{ height:170px; } }
+
+/* Màn hình khách: mỗi ảnh trình chiếu. Điện thoại: ảnh 16:9 rộng hết, form dưới, nút thao tác 1 hàng ngang.
+   Từ 576px: ảnh 160×90 | form | cột nút như cũ. */
+.cd-slide{ display:flex; flex-direction:column; gap:.5rem; }
+.cd-slide-img{ width:100%; aspect-ratio:16 / 9; height:auto; object-fit:cover; background:#eee; }
+.cd-slide-form{ flex:1 1 auto; min-width:0; }
+.cd-slide-actions{ display:flex; flex-direction:row; gap:.35rem; }
+.cd-slide-actions form{ flex:1 1 0; }
+.cd-slide-actions .btn{ width:100%; min-height:38px; }
+@media (min-width: 576px){
+  .cd-slide{ flex-direction:row; align-items:flex-start; }
+  .cd-slide-img{ flex:0 0 160px; width:160px; height:90px; aspect-ratio:auto; }
+  .cd-slide-actions{ flex-direction:column; flex:0 0 auto; }
+  .cd-slide-actions form{ flex:0 0 auto; }
+  .cd-slide-actions .btn{ width:auto; min-height:0; }
+}

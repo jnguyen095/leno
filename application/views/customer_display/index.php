@@ -45,10 +45,10 @@
             $upcoming = $s['start_date'] && $s['start_date'] > $today;
           ?>
           <div class="border rounded-3 p-2 mb-2 <?php echo $active ? '' : 'opacity-50'; ?>">
-            <div class="d-flex gap-2 align-items-start">
-              <img src="<?php echo base_url('assets/'.$s['image']); ?>" alt="" class="rounded-2 flex-shrink-0"
-                   style="width:160px;height:90px;object-fit:cover;background:#eee;">
-              <div class="flex-grow-1 min-w-0">
+            <?php // Điện thoại: ảnh 16:9 rộng hết ở trên, form bên dưới, nút thao tác thành 1 hàng ngang; máy lớn: 3 cột như cũ. ?>
+            <div class="cd-slide">
+              <img src="<?php echo base_url('assets/'.$s['image']); ?>" alt="" class="rounded-2 cd-slide-img">
+              <div class="cd-slide-form">
                 <?php echo form_open('me/customer-display/'.$s['id'].'/update'); ?>
                   <div class="d-flex gap-2 mb-1">
                     <span class="badge rounded-pill text-bg-secondary align-self-center"><?php echo $i + 1; ?></span>
@@ -79,7 +79,7 @@
                   </div>
                 <?php echo form_close(); ?>
               </div>
-              <div class="d-flex flex-column gap-1">
+              <div class="cd-slide-actions">
                 <?php echo form_open('me/customer-display/'.$s['id'].'/move/up', array('class' => 'm-0')); ?>
                   <button class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Lên trước" <?php echo $i === 0 ? 'disabled' : ''; ?>><i class="bi bi-arrow-up"></i></button>
                 <?php echo form_close(); ?>

@@ -116,6 +116,28 @@ class Cashbook_model extends CI_Model
         return $this->db->order_by('ce.entry_date', 'DESC')->order_by('ce.id', 'DESC')->limit((int) $limit)->get()->result_array();
     }
 
+    /**
+     * Báo cáo cuối ngày: phiếu thu nhân viên này thu (handled_by) trong [$from, $to], theo hình thức:
+     * method => array(count, total).
+     */
+    public function shift_receipts($user_id, $from, $to)
+    {
+        $rows = $this->db->select('payment_method, COUNT(*) AS cnt, COALESCE(SUM(amount), 0) AS total', FALSE)
+            ->from('cashbook_entries')
+            ->where('type', 'IN')
+            ->where('handled_by', (int) $user_id)
+            ->where('entry_date >=', $from)
+            ->where('entry_date <=', $to)
+            ->group_by('payment_method')
+            ->get()->result_array();
+        $out = array();
+        foreach ($rows as $r)
+        {
+            $out[$r['payment_method']] = array('count' => (int) $r['cnt'], 'total' => (float) $r['total']);
+        }
+        return $out;
+    }
+
     // ---------- Danh sách + tổng (gộp phiếu nhập tay + tiền bán hàng) ----------
 
     /**

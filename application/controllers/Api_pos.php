@@ -313,7 +313,7 @@ class Api_pos extends MY_Api_Controller
     /**
      * GET /api/v1/reports/shift[?from=YYYY-MM-DD HH:MM] — báo cáo cuối ngày của người đang đăng nhập, từ đầu ngày
      * (00:00 hôm nay, hoặc ?from=...) tới bây giờ:
-     * số đơn đã tạo (đã thanh toán / đang mở / đã huỷ) và tiền đã thu theo hình thức (Tiền mặt, Chuyển khoản).
+     * số đơn đã tạo (đã thanh toán / đang mở / đã huỷ), tiền bán hàng và phiếu thu (sổ quỹ) theo hình thức.
      */
     public function shift_report()
     {
@@ -333,17 +333,24 @@ class Api_pos extends MY_Api_Controller
 
         $orders = $this->Order_model->shift_order_counts($this->current_user['id'], $from, $to);
         $orders['open_total'] = api_money($orders['open_total']);
-        $paid = $this->Order_model->shift_payments($this->current_user['id'], $from, $to);
-        $by_method = array();
-        $total = 0.0;
-        $count = 0;
-        foreach (payment_methods() as $code => $label)
-        {
-            $m = isset($paid[$code]) ? $paid[$code] : array('count' => 0, 'total' => 0.0);
-            $by_method[] = array('method' => $code, 'label' => $label, 'count' => $m['count'], 'total' => api_money($m['total']));
-            $total += $m['total'];
-            $count += $m['count'];
-        }
+        // Theo hình thức (Tiền mặt, Chuyển khoản luôn có): array(count, total, by_method).
+        $summarize = function (array $rows) {
+            $by_method = array();
+            $total = 0.0;
+            $count = 0;
+            foreach (payment_methods() as $code => $label)
+            {
+                $m = isset($rows[$code]) ? $rows[$code] : array('count' => 0, 'total' => 0.0);
+                $by_method[] = array('method' => $code, 'label' => $label, 'count' => $m['count'], 'total' => api_money($m['total']));
+                $total += $m['total'];
+                $count += $m['count'];
+            }
+            return array('count' => $count, 'total' => api_money($total), 'by_method' => $by_method);
+        };
+        // Tiền bán hàng (thanh toán người này xác nhận) + phiếu thu sổ quỹ người này thu.
+        $payments = $summarize($this->Order_model->shift_payments($this->current_user['id'], $from, $to));
+        $this->load->model('Cashbook_model');
+        $receipts = $summarize($this->Cashbook_model->shift_receipts($this->current_user['id'], $from, $to));
 
         json_response(array(
             'success'     => TRUE,
@@ -354,7 +361,8 @@ class Api_pos extends MY_Api_Controller
             'from'        => $from,
             'to'          => $to,
             'orders'      => $orders,
-            'payments'    => array('count' => $count, 'total' => api_money($total), 'by_method' => $by_method),
+            'payments'    => $payments,
+            'receipts'    => $receipts,
         ));
     }
 

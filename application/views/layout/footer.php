@@ -3,6 +3,15 @@
 </div>
 <?php endif; ?>
 </main>
+<?php // Chân trang các trang sau đăng nhập (ẩn ở màn hình POS Bàn / Thực đơn — chúng vừa khít chiều cao màn hình). ?>
+<footer class="app-footer">
+  <div>© <?php echo date('Y'); ?> Leno. All rights reserved.</div>
+  <div>
+    <a href="mailto:nguyennhukhangvn@gmail.com"><i class="bi bi-envelope"></i> nguyennhukhangvn@gmail.com</a>
+    <span class="mx-1">-</span>
+    <a href="tel:0367139698"><i class="bi bi-telephone"></i> 0367139698</a>
+  </div>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <?php // Hộp xác nhận trong trang (thay confirm() của trình duyệt). Form có data-confirm="..." tự hỏi trước khi gửi. ?>

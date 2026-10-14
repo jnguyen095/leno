@@ -607,3 +607,8 @@ span#orderItemCountBadge {
 .modal-dialog-scrollable .modal-content > form > .modal-body{ overflow-y:auto; }
 .modal-dialog-scrollable .modal-content > form > .modal-header,
 .modal-dialog-scrollable .modal-content > form > .modal-footer{ flex-shrink:0; }
+/* Chân trang (sau đăng nhập). Ẩn ở màn hình POS (có thanh tab Bàn | Thực đơn) và khi chạy toàn màn hình. */
+.app-footer{ padding:1rem 1rem 1.25rem; text-align:center; font-size:.8rem; color:#868e96; line-height:1.6; border-top:1px solid #eef0f2; margin-top:1rem; }
+.app-footer a{ color:#6c757d; text-decoration:none; }
+.app-footer a:hover{ color:var(--brand); }
+body.pos-focus .app-footer, body:has(.pos-topbar) .app-footer{ display:none; }

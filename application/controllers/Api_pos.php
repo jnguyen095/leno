@@ -124,6 +124,92 @@ class Api_pos extends MY_Api_Controller
         json_response(array('success' => TRUE, 'message' => 'Đã đổi mật khẩu. Các thiết bị khác cần đăng nhập lại.'));
     }
 
+    // ---- Sổ quỹ: lập phiếu thu (ứng dụng chỉ lập phiếu thu; xem / sửa / xoá / phiếu chi làm trên web) ----
+
+    /**
+     * GET /api/v1/cashbook/receipts — dữ liệu cho màn hình "Lập phiếu thu": loại thu đang dùng, tên người nộp đã dùng
+     * (gợi ý), và các phiếu thu người này đã lập hôm nay.
+     */
+    public function cashbook_receipts()
+    {
+        $this->_method('get');
+        $this->require_menu('orders', self::POS_ROLES);
+        $this->load->model('Cashbook_model');
+
+        $categories = array();
+        foreach ($this->Cashbook_model->get_categories('IN') as $c)
+        {
+            $categories[] = array('id' => (int) $c['id'], 'name' => $c['name']);
+        }
+        $entries = $this->Cashbook_model->get_entries_detailed(
+            array('type' => 'IN', 'created_by' => $this->current_user['id'], 'date' => date('Y-m-d')));
+        json_response(array(
+            'success'        => TRUE,
+            'categories'     => $categories,
+            'counterparties' => array_slice($this->Cashbook_model->get_counterparties(), 0, 50),
+            'receipts'       => array_map(array($this, '_cashbook_entry_json'), $entries),
+        ));
+    }
+
+    /**
+     * POST /api/v1/cashbook/receipts {"category_id": 1, "payment_method": "CASH|TRANSFER", "amount": 200000,
+     * "counterparty": "Anh Nam", "note": "..."} — lập phiếu thu ngay bây giờ, nhân viên thu = người đang đăng nhập.
+     * Kiểm tra giống web (Cashbook::save). Trả về phiếu vừa lập (mã PT000001...).
+     */
+    public function create_cashbook_receipt()
+    {
+        $this->_method('post');
+        $this->require_menu('orders', self::POS_ROLES);
+        $this->load->model(array('Cashbook_model', 'Audit_log_model'));
+        $body = $this->input_json();
+
+        $method = isset($body['payment_method']) ? (string) $body['payment_method'] : '';
+        $category = ! empty($body['category_id']) ? $this->Cashbook_model->get_category((int) $body['category_id']) : NULL;
+        $amount = isset($body['amount']) && is_numeric($body['amount']) ? round((float) $body['amount']) : 0;
+        $clean = function ($key, $max) use ($body) {
+            $v = isset($body[$key]) ? (string) $body[$key] : '';
+            return mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags($v))), 0, $max, 'UTF-8');
+        };
+
+        if ( ! array_key_exists($method, payment_methods())) $this->fail(422, 'Chọn hình thức (Tiền mặt / Chuyển khoản).');
+        if ( ! $category || $category['type'] !== 'IN' || $category['status'] !== 'ACTIVE') $this->fail(422, 'Chọn loại thu.');
+        if ($amount <= 0) $this->fail(422, 'Nhập số tiền thu (lớn hơn 0).');
+        if ($amount > 999999999999) $this->fail(422, 'Số tiền quá lớn.');
+
+        $row = array(
+            'type'           => 'IN',
+            'entry_date'     => date('Y-m-d H:i:s'),
+            'payment_method' => $method,
+            'category_id'    => (int) $category['id'],
+            'counterparty'   => $clean('counterparty', 150) ?: NULL,
+            'handled_by'     => (int) $this->current_user['id'],
+            'amount'         => $amount,
+            'note'           => $clean('note', 255) ?: NULL,
+        );
+        $id = $this->Cashbook_model->create_entry($row, $this->current_user['id']);
+        if ( ! $id) $this->fail(500, 'Không lưu được phiếu thu, vui lòng thử lại.');
+
+        $entry = $this->Cashbook_model->get_entries_detailed(array('id' => $id), 1);
+        $this->Audit_log_model->log('cashbook', 'CREATE', NULL, $entry[0] + array('via' => 'app'), $this->current_user['id']);
+        json_response(array('success' => TRUE, 'receipt' => $this->_cashbook_entry_json($entry[0])));
+    }
+
+    private function _cashbook_entry_json(array $e)
+    {
+        return array(
+            'id'             => (int) $e['id'],
+            'entry_no'       => $e['entry_no'],
+            'entry_date'     => $e['entry_date'],
+            'payment_method' => $e['payment_method'],
+            'method_label'   => payment_method_label($e['payment_method']),
+            'category_name'  => $e['category_name'],
+            'counterparty'   => $e['counterparty'],
+            'handled_name'   => $e['handled_name'],
+            'amount'         => api_money($e['amount']),
+            'note'           => $e['note'],
+        );
+    }
+
     // ---- Sơ đồ bàn --------------------------------------------------------------
 
     /** GET /api/v1/tables */

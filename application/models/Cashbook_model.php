@@ -96,6 +96,26 @@ class Cashbook_model extends CI_Model
         )->result_array(), 'counterparty');
     }
 
+    /**
+     * Phiếu nhập tay kèm tên loại / nhân viên — cho ứng dụng POS (in phiếu thu, danh sách phiếu đã lập trong ngày).
+     * $filters: id, type, created_by, date (Y-m-d, theo entry_date).
+     */
+    public function get_entries_detailed(array $filters, $limit = 100)
+    {
+        $this->db->select('ce.*, cc.name AS category_name, hu.fullname AS handled_name')
+            ->from('cashbook_entries ce')
+            ->join('cashbook_categories cc', 'cc.id = ce.category_id', 'left')
+            ->join('users hu', 'hu.id = ce.handled_by', 'left');
+        if ( ! empty($filters['id'])) $this->db->where('ce.id', (int) $filters['id']);
+        if ( ! empty($filters['type'])) $this->db->where('ce.type', $filters['type']);
+        if ( ! empty($filters['created_by'])) $this->db->where('ce.created_by', (int) $filters['created_by']);
+        if ( ! empty($filters['date']))
+        {
+            $this->db->where('ce.entry_date >=', $filters['date'].' 00:00:00')->where('ce.entry_date <=', $filters['date'].' 23:59:59');
+        }
+        return $this->db->order_by('ce.entry_date', 'DESC')->order_by('ce.id', 'DESC')->limit((int) $limit)->get()->result_array();
+    }
+
     // ---------- Danh sách + tổng (gộp phiếu nhập tay + tiền bán hàng) ----------
 
     /**

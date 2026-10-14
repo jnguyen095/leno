@@ -35,6 +35,7 @@ $route['me/payroll/hours/(:num)'] = 'payroll/hours/$1';
 
 // Staff / Cashier / Barista / Admin screens
 $route['me/dashboard'] = 'dashboard/index';
+$route['me/dashboard/activity'] = 'dashboard/activity';
 $route['me/tables'] = 'tables/index';
 $route['me/tables/manage'] = 'tables/manage';
 $route['me/tables/manage/create'] = 'tables/manage_create';

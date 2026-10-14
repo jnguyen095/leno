@@ -124,6 +124,9 @@
                     <?php else: ?>
                       <div class="pos-product-img pos-product-img-empty"><i class="bi bi-cup-straw"></i></div>
                     <?php endif; ?>
+                    <?php // Số lượng món này đang có trong đơn (×N, góc phải ảnh) — JS cập nhật sau mỗi thao tác (renderProductQty). ?>
+                    <?php $in_order = isset($product_qty[(int) $p['id']]) ? (int) $product_qty[(int) $p['id']] : 0; ?>
+                    <span class="pos-product-qty <?php echo $in_order ? '' : 'd-none'; ?>">×<?php echo $in_order; ?></span>
                     <?php // Theo bảng giá đơn đang dùng: giá mới, kèm giá gốc gạch ngang. Đổi bảng giá -> JS cập nhật (renderMenuPrices). ?>
                     <span class="pos-product-price"><?php if (isset($book_prices[(int) $p['id']]) && (float) $book_prices[(int) $p['id']] !== (float) $p['price']): ?><s><?php echo money_format_vnd($p['price']); ?></s> <?php echo money_format_vnd($book_prices[(int) $p['id']]); ?><?php else: ?><?php echo money_format_vnd($p['price']); ?><?php endif; ?></span>
                   </div>
@@ -254,6 +257,8 @@ var ORDER_URL = '<?php echo base_url('me/orders/'.$order['id']); ?>';
 var CSRF_NAME = '<?php echo $this->security->get_csrf_token_name(); ?>';
 var CSRF_HASH = '<?php echo $this->security->get_csrf_hash(); ?>';
 var ORDER_TOTAL = <?php echo (float) $order['total_amount']; ?>;
+// Viền nổi bật cho món đã có trong đơn (×N đã vẽ sẵn từ server) khi trang tải xong.
+document.addEventListener('DOMContentLoaded', function(){ renderProductQty(<?php echo json_encode((object) $product_qty); ?>); });
 var pending = Promise.resolve();   // xếp hàng các request để bấm nhanh liên tiếp không bị lệch số lượng
 var inFlight = 0;
 
@@ -286,6 +291,7 @@ function applyPanel(res){
     document.getElementById('payPendingWarn').classList.toggle('d-none', ! res.pending_count);
   }
   if (res.book_prices !== undefined) renderMenuPrices(res.book_prices);
+  if (res.product_qty !== undefined) renderProductQty(res.product_qty);
   showAjaxError(res.success === false ? (res.message || 'Không thực hiện được.') : null);
 }
 
@@ -294,6 +300,21 @@ function applyPanel(res){
 function removeOffer(kind){
   var msg = kind === 'discount' ? 'Bỏ khuyến mãi cho đơn này?' : 'Bỏ bảng giá — đơn này tính theo giá gốc?';
   posConfirm(msg, 'Bỏ').then(function(ok){ if (ok) postOrder(kind === 'discount' ? '/discount' : '/price-book', {}); });
+}
+// ↻ Áp lại bảng giá / khuyến mãi đang chọn ở Sơ đồ bàn cho đơn đã bỏ (giống ứng dụng).
+function reapplyOffer(kind, id){
+  if (kind === 'discount') postOrder('/discount', {discount_id: id});
+  else postOrder('/price-book', {price_book_id: id});
+}
+// ×N trên ảnh món = số lượng món đó đang có trong đơn.
+function renderProductQty(qty){
+  document.querySelectorAll('.menu-product').forEach(function(el){
+    var badge = el.querySelector('.pos-product-qty'), n = qty[el.dataset.id] || 0;
+    if ( ! badge) return;
+    badge.textContent = '×' + n;
+    badge.classList.toggle('d-none', ! n);
+    el.querySelector('.pos-product-card').classList.toggle('in-order', n > 0);
+  });
 }
 function renderMenuPrices(prices){
   var fmt = function(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };

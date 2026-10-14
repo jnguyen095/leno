@@ -242,24 +242,40 @@ class Orders extends MY_Controller
         $this->_respond($order_id);
     }
 
-    /** Bỏ bảng giá cho riêng đơn này (AJAX) — mọi món về giá gốc. Chọn bảng giá làm ở Sơ đồ bàn (Tables::offers). */
+    /** Bỏ bảng giá cho riêng đơn này, hoặc áp lại bảng giá đang chọn ở Sơ đồ bàn (price_book_id) — AJAX. */
     public function price_book($id)
     {
         $order = $this->_active_order_or_respond($id);
         if ( ! $order) return;
 
-        $error = $this->pos_service->set_price_book($order, 0, $this->current_user['id']);
+        $book_id = $this->_reapply_id('price_book_id', 'price_book');
+        $error = $book_id === FALSE ? self::REAPPLY_STALE : $this->pos_service->set_price_book($order, $book_id, $this->current_user['id']);
         $this->_respond($id, $error);
     }
 
-    /** Bỏ khuyến mãi cho riêng đơn này (AJAX). Chọn khuyến mãi làm ở Sơ đồ bàn (Tables::offers). */
+    const REAPPLY_STALE = 'Chỉ áp lại được bảng giá / khuyến mãi đang chọn ở Sơ đồ bàn (có thể vừa đổi — tải lại trang để xem).';
+
+    /** Bỏ khuyến mãi cho riêng đơn này, hoặc áp lại khuyến mãi đang chọn ở Sơ đồ bàn (discount_id) — AJAX. */
     public function discount($id)
     {
         $order = $this->_active_order_or_respond($id);
         if ( ! $order) return;
 
-        $error = $this->pos_service->set_discount($order, 0, $this->current_user['id']);
+        $discount_id = $this->_reapply_id('discount_id', 'discount');
+        $error = $discount_id === FALSE ? self::REAPPLY_STALE : $this->pos_service->set_discount($order, $discount_id, $this->current_user['id']);
         $this->_respond($id, $error);
+    }
+
+    /**
+     * id gửi lên khi bấm ↻ (áp lại): 0 = không gửi -> bỏ; đúng lựa chọn đang có ở Sơ đồ bàn -> id đó;
+     * khác (Sơ đồ bàn vừa đổi) -> FALSE, không thay đổi gì. Giống PATCH /api/v1/orders/{id} của ứng dụng.
+     */
+    private function _reapply_id($field, $offer_key)
+    {
+        $id = (int) $this->input->post($field);
+        if ( ! $id) return 0;
+        $shop = $this->pos_service->shop_offers();
+        return $shop[$offer_key] && (int) $shop[$offer_key]['id'] === $id ? $id : FALSE;
     }
 
     /** Ghi chú cho cả đơn (AJAX từ tab Thực đơn). */
@@ -318,6 +334,8 @@ class Orders extends MY_Controller
             'pending_count' => $panel['pending_count'],
             // Giá theo bảng giá đơn đang dùng (product_id => giá) — cập nhật giá trên lưới thực đơn.
             'book_prices'   => (object) $panel['book_prices'],
+            // Số lượng từng món trong đơn — cập nhật ×N trên ảnh món.
+            'product_qty'   => (object) $panel['product_qty'],
         ));
     }
 

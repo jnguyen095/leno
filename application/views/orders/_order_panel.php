@@ -9,23 +9,29 @@
     <?php if ($is_active && $pending_count): ?><span class="badge bg-warning text-dark"><?php echo $pending_count; ?> món chưa báo bếp</span><?php endif; ?>
   </div>
   <?php
-    // Bảng giá + khuyến mãi của đơn: chọn ở Sơ đồ bàn (áp cho mọi đơn đang mở). Ở đây người bán chỉ xem,
-    // hoặc bấm ✕ để bỏ cho riêng đơn này (về giá gốc / không giảm).
+    // Bảng giá + khuyến mãi của đơn: chọn ở Sơ đồ bàn (áp cho mọi đơn đang mở). Ở đây người bán xem, bấm ✕ để bỏ cho
+    // riêng đơn này (về giá gốc / không giảm), hoặc ↻ để áp lại lựa chọn đang có ở Sơ đồ bàn sau khi đã bỏ (giống ứng dụng).
     $has_book = ! empty($order['price_book_id']);
     $has_disc = $order['discount_type'] !== NULL;
+    $shop_offers = isset($shop_offers) ? $shop_offers : array('price_book' => NULL, 'discount' => NULL);
+    $re_book = $is_active && ! $has_book ? $shop_offers['price_book'] : NULL;   // đã bỏ mà Sơ đồ bàn đang chọn
+    $re_disc = $is_active && ! $has_disc ? $shop_offers['discount'] : NULL;
     // Khuyến mãi đã áp nhưng đơn chưa đủ giá trị tối thiểu.
     $disc_short_of = $has_disc && (float) $order['discount_amount'] <= 0 ? max(0, (float) $order['discount_min_order'] - (float) $order['subtotal']) : 0;
   ?>
-  <?php if ($has_book || $has_disc): ?>
+  <?php if ($has_book || $has_disc || $re_book || $re_disc): ?>
     <div class="px-3 py-2 border-bottom pos-offers">
       <div class="pos-offer-chip <?php echo $has_book ? 'is-on' : 'is-none'; ?>">
         <i class="bi bi-tags"></i>
         <div class="pos-offer-text">
           <small>Bảng giá</small>
           <span><?php echo $has_book ? htmlspecialchars($order['price_book_name']) : 'Giá gốc'; ?></span>
+          <?php if ($re_book): ?><em>Đã bỏ: <?php echo htmlspecialchars($re_book['name']); ?></em><?php endif; ?>
         </div>
         <?php if ($has_book && $is_active): ?>
-          <button type="button" class="pos-offer-remove" onclick="removeOffer('price-book')" title="Bỏ bảng giá — đơn này về giá gốc"><i class="bi bi-x-lg"></i></button>
+          <button type="button" class="pos-offer-remove" onclick="removeOffer('price-book')" data-bs-toggle="tooltip" title="Bỏ bảng giá — đơn này về giá gốc"><i class="bi bi-x-lg"></i></button>
+        <?php elseif ($re_book): ?>
+          <button type="button" class="pos-offer-reapply" onclick="reapplyOffer('price-book', <?php echo (int) $re_book['id']; ?>)" data-bs-toggle="tooltip" title="Áp lại bảng giá &quot;<?php echo htmlspecialchars($re_book['name']); ?>&quot;"><i class="bi bi-arrow-counterclockwise"></i></button>
         <?php endif; ?>
       </div>
       <div class="pos-offer-chip <?php echo $has_disc ? ($disc_short_of > 0 ? 'is-wait' : 'is-disc') : 'is-none'; ?>">
@@ -35,10 +41,14 @@
           <span><?php echo $has_disc ? htmlspecialchars($order['discount_name']) : 'Không áp dụng'; ?></span>
           <?php if ($has_disc): ?>
             <em><?php echo $disc_short_of > 0 ? 'Mua thêm '.money_format_vnd($disc_short_of).' để được giảm' : 'Đã giảm '.money_format_vnd($order['discount_amount']); ?></em>
+          <?php elseif ($re_disc): ?>
+            <em>Đã bỏ: <?php echo htmlspecialchars($re_disc['name']); ?></em>
           <?php endif; ?>
         </div>
         <?php if ($has_disc && $is_active): ?>
-          <button type="button" class="pos-offer-remove" onclick="removeOffer('discount')" title="Bỏ khuyến mãi cho đơn này"><i class="bi bi-x-lg"></i></button>
+          <button type="button" class="pos-offer-remove" onclick="removeOffer('discount')" data-bs-toggle="tooltip" title="Bỏ khuyến mãi cho đơn này"><i class="bi bi-x-lg"></i></button>
+        <?php elseif ($re_disc): ?>
+          <button type="button" class="pos-offer-reapply" onclick="reapplyOffer('discount', <?php echo (int) $re_disc['id']; ?>)" data-bs-toggle="tooltip" title="Áp lại khuyến mãi &quot;<?php echo htmlspecialchars($re_disc['name']); ?>&quot;"><i class="bi bi-arrow-counterclockwise"></i></button>
         <?php endif; ?>
       </div>
     </div>

@@ -42,9 +42,8 @@ window.appConfirm = function(opts){
 };
 // Chú thích khi rê chuột: phần tử có data-bs-toggle="tooltip" title="...". Chỉ hiện khi rê chuột (không dính lại
 // sau khi bấm / mở hộp xác nhận); máy cảm ứng không có rê chuột nên không hiện.
-document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el){
-  new bootstrap.Tooltip(el, {trigger: 'hover', container: 'body'});
-});
+// Gắn ở body (selector) nên phần tử thêm sau (vd khối "Món đã gọi" render lại qua AJAX) cũng có chú thích.
+new bootstrap.Tooltip(document.body, {selector: '[data-bs-toggle="tooltip"]', trigger: 'hover', container: 'body'});
 document.addEventListener('click', function(e){
   var el = e.target.closest && e.target.closest('[data-bs-toggle="tooltip"]');
   if (el) { var t = bootstrap.Tooltip.getInstance(el); if (t) t.hide(); }

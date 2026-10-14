@@ -560,8 +560,24 @@ class Pos_service
             'pending_count' => $pending_count,
             // Tài khoản nhận chuyển khoản: phiếu tạm tính in mã VietQR (giống ứng dụng POS).
             'bank_qr'       => $this->CI->Setting_model->get_bank_qr(),
-            // Giá mới theo bảng giá đơn đang dùng (bảng giá + khuyến mãi chọn ở Sơ đồ bàn; trang đơn chỉ bỏ được).
+            // Giá mới theo bảng giá đơn đang dùng (bảng giá + khuyến mãi chọn ở Sơ đồ bàn; trang đơn bỏ / áp lại được).
             'book_prices'   => $order['price_book_id'] ? $this->CI->Price_book_model->get_prices($order['price_book_id']) : array(),
+            // Lựa chọn ở Sơ đồ bàn — đơn đã bỏ thì trang đơn cho áp lại (nút ↻), giống ứng dụng.
+            'shop_offers'   => $is_active ? $this->shop_offers() : array('price_book' => NULL, 'discount' => NULL),
+            // product_id => số lượng đang có trong đơn — hiện ×N trên ảnh món ở lưới thực đơn.
+            'product_qty'   => self::product_qty($active_items),
         );
+    }
+
+    /** product_id => tổng số lượng các dòng món còn hiệu lực. */
+    public static function product_qty(array $active_items)
+    {
+        $qty = array();
+        foreach ($active_items as $it)
+        {
+            $pid = (int) $it['product_id'];
+            $qty[$pid] = (isset($qty[$pid]) ? $qty[$pid] : 0) + (int) $it['qty'];
+        }
+        return $qty;
     }
 }

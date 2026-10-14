@@ -73,40 +73,6 @@ class Customer_display extends MY_Controller
         redirect('me/customer-display');
     }
 
-    /** Sửa tiêu đề, thời gian hiển thị riêng, khoảng ngày hiển thị. */
-    public function update($id)
-    {
-        $this->_require_post();
-        $slide = $this->_slide_or_404($id);
-
-        $duration = trim((string) $this->input->post('duration_seconds'));
-        $start = trim((string) $this->input->post('start_date'));
-        $end = trim((string) $this->input->post('end_date'));
-        $valid_date = function ($d) { return $d === '' || (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', $d); };
-
-        if ($duration !== '' && ( ! ctype_digit($duration) || (int) $duration < 3 || (int) $duration > 120))
-        {
-            $this->session->set_flashdata('error', 'Thời gian hiển thị phải từ 3 đến 120 giây (để trống = mặc định).');
-        }
-        elseif ( ! $valid_date($start) || ! $valid_date($end) || ($start !== '' && $end !== '' && $start > $end))
-        {
-            $this->session->set_flashdata('error', 'Khoảng ngày hiển thị không hợp lệ.');
-        }
-        else
-        {
-            $new = array(
-                'title'            => $this->_clean_title($this->input->post('title', TRUE)),
-                'duration_seconds' => $duration === '' ? NULL : (int) $duration,
-                'start_date'       => $start === '' ? NULL : $start,
-                'end_date'         => $end === '' ? NULL : $end,
-            );
-            $this->Display_slide_model->update($id, $new);
-            $this->audit('customer_display', 'UPDATE_SLIDE', $slide, $new + array('id' => (int) $id));
-            $this->session->set_flashdata('success', 'Đã lưu ảnh.');
-        }
-        redirect('me/customer-display');
-    }
-
     public function toggle($id)
     {
         $this->_require_post();

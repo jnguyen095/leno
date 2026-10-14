@@ -61,7 +61,9 @@ class Api_pos extends MY_Api_Controller
                 'id'               => (int) $s['id'],
                 'image'            => api_image($s['image']),
                 'title'            => $s['title'],
-                'duration_seconds' => $s['duration_seconds'] !== NULL ? (int) $s['duration_seconds'] : NULL,
+                // Thời gian riêng từng ảnh đã bỏ — luôn NULL để ứng dụng dùng chung config.slide_seconds
+                // ("Thời gian mỗi ảnh" ở Tuỳ chọn hiển thị). Giữ khoá để ứng dụng cũ không lỗi.
+                'duration_seconds' => NULL,
                 'updated_at'       => $s['updated_at'],
             );
         }

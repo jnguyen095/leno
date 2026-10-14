@@ -41,43 +41,18 @@
 
           <?php foreach ($slides as $i => $s):
             $active = $s['status'] === 'ACTIVE';
-            $expired = $s['end_date'] && $s['end_date'] < $today;
-            $upcoming = $s['start_date'] && $s['start_date'] > $today;
           ?>
           <div class="border rounded-3 p-2 mb-2 <?php echo $active ? '' : 'opacity-50'; ?>">
             <?php // Điện thoại: ảnh 16:9 rộng hết ở trên, form bên dưới, nút thao tác thành 1 hàng ngang; máy lớn: 3 cột như cũ. ?>
             <div class="cd-slide">
               <img src="<?php echo base_url('assets/'.$s['image']); ?>" alt="" class="rounded-2 cd-slide-img">
+              <?php // Chỉ hiện ảnh + tiêu đề (nhập lúc tải ảnh) + trạng thái; thời gian mỗi ảnh dùng chung ở "Tuỳ chọn hiển thị". ?>
               <div class="cd-slide-form">
-                <?php echo form_open('me/customer-display/'.$s['id'].'/update'); ?>
-                  <div class="d-flex gap-2 mb-1">
-                    <span class="badge rounded-pill text-bg-secondary align-self-center"><?php echo $i + 1; ?></span>
-                    <input type="text" name="title" maxlength="150" class="form-control form-control-sm"
-                           value="<?php echo htmlspecialchars((string) $s['title']); ?>" placeholder="Tiêu đề">
-                    <div class="input-group input-group-sm flex-shrink-0" style="width:110px;" title="Thời gian hiện ảnh này (để trống = mặc định)">
-                      <input type="number" name="duration_seconds" min="3" max="120" class="form-control"
-                             value="<?php echo $s['duration_seconds']; ?>" placeholder="<?php echo $config['slide_seconds']; ?>">
-                      <span class="input-group-text">giây</span>
-                    </div>
-                  </div>
-                  <div class="row g-1 small">
-                    <div class="col-6">
-                      <label class="text-muted mb-0">Hiện từ ngày</label>
-                      <input type="date" name="start_date" class="form-control form-control-sm" value="<?php echo $s['start_date']; ?>">
-                    </div>
-                    <div class="col-6">
-                      <label class="text-muted mb-0">Đến ngày</label>
-                      <input type="date" name="end_date" class="form-control form-control-sm" value="<?php echo $s['end_date']; ?>">
-                    </div>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mt-1 small">
-                    <button class="btn btn-sm btn-outline-brand">Lưu</button>
-                    <?php if ( ! $active): ?><span class="text-muted">Đang ẩn</span>
-                    <?php elseif ($expired): ?><span class="text-danger">Đã hết hạn</span>
-                    <?php elseif ($upcoming): ?><span class="text-warning">Chưa tới ngày</span>
-                    <?php else: ?><span class="text-success">Đang trình chiếu</span><?php endif; ?>
-                  </div>
-                <?php echo form_close(); ?>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge rounded-pill text-bg-secondary"><?php echo $i + 1; ?></span>
+                  <span class="fw-semibold text-truncate"><?php echo $s['title'] !== NULL && $s['title'] !== '' ? htmlspecialchars($s['title']) : '<span class="text-muted fw-normal">Không có tiêu đề</span>'; ?></span>
+                </div>
+                <div class="small mt-1"><?php echo $active ? '<span class="text-success"><i class="bi bi-play-circle"></i> Đang trình chiếu</span>' : '<span class="text-muted"><i class="bi bi-eye-slash"></i> Đang ẩn</span>'; ?></div>
               </div>
               <div class="cd-slide-actions">
                 <?php echo form_open('me/customer-display/'.$s['id'].'/move/up', array('class' => 'm-0')); ?>

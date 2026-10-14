@@ -123,7 +123,6 @@ $route['me/audit-logs'] = 'audit_logs/index';
 $route['me/audit-logs/purge'] = 'audit_logs/purge';
 $route['me/customer-display'] = 'customer_display/index';
 $route['me/customer-display/upload'] = 'customer_display/upload';
-$route['me/customer-display/(:num)/update'] = 'customer_display/update/$1';
 $route['me/customer-display/(:num)/toggle'] = 'customer_display/toggle/$1';
 $route['me/customer-display/(:num)/move/(up|down)'] = 'customer_display/move/$1/$2';
 $route['me/customer-display/(:num)/delete'] = 'customer_display/delete/$1';

@@ -713,7 +713,8 @@ body.pos-focus .app-footer, body:has(.pos-topbar) .app-footer{ display:none; }
 @media (min-width: 576px){
   .cd-slide{ flex-direction:row; align-items:flex-start; }
   .cd-slide-img{ flex:0 0 160px; width:160px; height:90px; aspect-ratio:auto; }
-  .cd-slide-actions{ flex-direction:column; flex:0 0 auto; }
+  .cd-slide{ align-items:center; }
+  .cd-slide-actions{ flex-direction:row; flex:0 0 auto; } /* 4 nút 1 hàng để mỗi ảnh gọn bằng chiều cao ảnh */
   .cd-slide-actions form{ flex:0 0 auto; }
   .cd-slide-actions .btn{ width:auto; min-height:0; }
 }

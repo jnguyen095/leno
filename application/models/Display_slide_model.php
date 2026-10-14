@@ -11,13 +11,13 @@ class Display_slide_model extends CI_Model
         return $this->db->order_by('sort_order', 'ASC')->order_by('id', 'ASC')->get($this->table)->result_array();
     }
 
-    /** Ảnh đang bật và nằm trong khoảng ngày hiển thị (nếu có đặt), theo thứ tự trình chiếu. */
-    public function get_showing($today = NULL)
+    /**
+     * Ảnh đang bật (hiện), theo thứ tự trình chiếu. Trang quản trị không còn đặt khoảng ngày cho từng ảnh nên chỉ
+     * xét bật / tắt (cột start_date / end_date cũ không còn dùng).
+     */
+    public function get_showing()
     {
-        $today = $today ?: date('Y-m-d');
         return $this->db->where('status', 'ACTIVE')
-            ->group_start()->where('start_date IS NULL', NULL, FALSE)->or_where('start_date <=', $today)->group_end()
-            ->group_start()->where('end_date IS NULL', NULL, FALSE)->or_where('end_date >=', $today)->group_end()
             ->order_by('sort_order', 'ASC')->order_by('id', 'ASC')
             ->get($this->table)->result_array();
     }

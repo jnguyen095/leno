@@ -157,3 +157,4 @@ application/controllers/Migrate_runner.php
 /application/sessions/*
 !/application/sessions/.htaccess
 !/application/sessions/index.html
+assets/uploads/display/*

@@ -323,10 +323,22 @@ class Order_model extends CI_Model
             ->join('table_sessions', 'table_sessions.id = order_sessions.table_session_id', 'left')
             ->join('cafe_tables', 'cafe_tables.id = table_sessions.table_id', 'left')
             ->where('order_sessions.created_by', (int) $user_id)
-            ->where('order_sessions.created_at >=', $date.' 00:00:00')
-            ->where('order_sessions.created_at <=', $date.' 23:59:59')
+            // Đơn đã thanh toán tính theo giờ thanh toán (khớp Sổ quỹ / doanh thu: đơn mở hôm trước, trả hôm nay thì
+            // thuộc hôm nay); đơn chưa thanh toán / đã huỷ tính theo giờ mở.
+            ->group_start()
+                ->group_start()
+                    ->where('order_sessions.status', 'PAID')
+                    ->where('order_sessions.paid_at >=', $date.' 00:00:00')
+                    ->where('order_sessions.paid_at <=', $date.' 23:59:59')
+                ->group_end()
+                ->or_group_start()
+                    ->where('order_sessions.status !=', 'PAID')
+                    ->where('order_sessions.created_at >=', $date.' 00:00:00')
+                    ->where('order_sessions.created_at <=', $date.' 23:59:59')
+                ->group_end()
+            ->group_end()
             ->having('item_count >', 0)
-            ->order_by('order_sessions.created_at', 'DESC')
+            ->order_by('COALESCE(order_sessions.paid_at, order_sessions.created_at)', 'DESC', FALSE)
             ->order_by('order_sessions.id', 'DESC')
             ->get()->result_array();
     }

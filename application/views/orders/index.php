@@ -164,7 +164,8 @@
           <tr class="orders-row" data-href="<?php echo site_url('me/orders/'.$o['id']); ?>">
             <td>
               <a href="<?php echo site_url('me/orders/'.$o['id']); ?>" class="fw-semibold text-body text-decoration-none"><?php echo htmlspecialchars($o['order_no']); ?></a>
-              <div class="small text-muted"><?php echo date('d/m/Y H:i', strtotime($o['created_at'])); ?></div>
+              <?php // Đơn đã đóng: hiện giờ đóng (thanh toán) — danh sách xếp theo giờ này; đơn đang mở: giờ mở. ?>
+              <div class="small text-muted"><?php echo $o['paid_at'] ? '<i class="bi bi-check2-circle"></i> '.date('d/m/Y H:i', strtotime($o['paid_at'])) : '<i class="bi bi-clock"></i> '.date('d/m/Y H:i', strtotime($o['created_at'])); ?></div>
             </td>
             <td><?php echo $o['table_name'] ? htmlspecialchars($o['table_name']) : '<span class="orders-takeaway"><i class="bi bi-bag-check"></i> Mang đi</span>'; ?></td>
             <?php if ($is_admin): ?><td><?php echo $o['created_by_name'] ? htmlspecialchars($o['created_by_name']) : '<span class="text-muted">—</span>'; ?></td><?php endif; ?>
@@ -202,7 +203,7 @@
               <div class="fw-semibold"><?php echo $o['table_name'] ? htmlspecialchars($o['table_name']) : '<i class="bi bi-bag-check"></i> Mang đi'; ?></div>
               <div class="fw-bold text-nowrap"><?php echo money_format_vnd($o['total_amount']); ?></div>
             </div>
-            <div class="small text-muted"><?php echo htmlspecialchars($o['order_no']); ?> · <?php echo date('d/m H:i', strtotime($o['created_at'])); ?></div>
+            <div class="small text-muted"><?php echo htmlspecialchars($o['order_no']); ?> · <?php echo date('d/m H:i', strtotime($o['paid_at'] ?: $o['created_at'])); ?></div>
             <div class="d-flex flex-wrap align-items-center gap-2 mt-1 small">
               <span class="orders-status orders-status-<?php echo $sm[1]; ?>"><?php echo $sm[0]; ?></span>
               <?php if ($o['payment_method']): ?><span class="text-muted"><i class="bi <?php echo isset($payment_icons[$o['payment_method']]) ? $payment_icons[$o['payment_method']] : 'bi-wallet2'; ?>"></i> <?php echo htmlspecialchars(payment_method_label($o['payment_method'])); ?></span><?php endif; ?>

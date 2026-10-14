@@ -225,7 +225,9 @@ class Order_model extends CI_Model
             ->join('users creator', 'creator.id = order_sessions.created_by', 'left');
 
         $this->_apply_list_filters($filters);
-        $this->db->order_by('order_sessions.id', 'DESC');
+        // Đơn vừa đóng (thanh toán) gần nhất lên đầu; đơn đang mở (chưa có giờ đóng) xếp theo giờ mở.
+        $this->db->order_by('COALESCE(order_sessions.paid_at, order_sessions.created_at)', 'DESC', FALSE)
+            ->order_by('order_sessions.id', 'DESC');
 
         if ($limit !== NULL)
         {
@@ -274,17 +276,18 @@ class Order_model extends CI_Model
         {
             $this->db->where('order_sessions.status', $filters['status']);
         }
+        // Ngày của đơn: đã thanh toán -> ngày thanh toán (doanh thu tính vào ngày đóng đơn, khớp Sổ quỹ);
+        // chưa thanh toán / đã huỷ -> ngày mở. Vd mở 13/10, thanh toán 14/10 -> thuộc 14/10.
         if ( ! empty($filters['date']))
         {
-            $this->db->where('DATE(order_sessions.created_at)', $filters['date']);
+            $this->_where_order_day($filters['date'].' 00:00:00', $filters['date'].' 23:59:59');
         }
-        if ( ! empty($filters['date_from']))
+        if ( ! empty($filters['date_from']) || ! empty($filters['date_to']))
         {
-            $this->db->where('order_sessions.created_at >=', $filters['date_from'].' 00:00:00');
-        }
-        if ( ! empty($filters['date_to']))
-        {
-            $this->db->where('order_sessions.created_at <=', $filters['date_to'].' 23:59:59');
+            $this->_where_order_day(
+                ! empty($filters['date_from']) ? $filters['date_from'].' 00:00:00' : NULL,
+                ! empty($filters['date_to']) ? $filters['date_to'].' 23:59:59' : NULL
+            );
         }
         if ( ! empty($filters['table_id']))
         {
@@ -306,6 +309,24 @@ class Order_model extends CI_Model
                 $this->db->where('EXISTS (SELECT 1 FROM payments p WHERE p.order_session_id = order_sessions.id AND p.payment_method = '.$this->db->escape($filters['payment_method']).')', NULL, FALSE);
             }
         }
+    }
+
+    /**
+     * Lọc đơn theo "ngày của đơn" trong [$from, $to] (NULL = không giới hạn đầu đó): đơn đã thanh toán theo
+     * paid_at, đơn chưa thanh toán / đã huỷ theo created_at. Dùng chung cho danh sách Đơn hàng và báo cáo ca.
+     */
+    private function _where_order_day($from, $to)
+    {
+        $this->db->group_start()
+            ->group_start()->where('order_sessions.status', 'PAID');
+        if ($from !== NULL) $this->db->where('order_sessions.paid_at >=', $from);
+        if ($to !== NULL) $this->db->where('order_sessions.paid_at <=', $to);
+        $this->db->group_end()
+            ->or_group_start()->where('order_sessions.status !=', 'PAID');
+        if ($from !== NULL) $this->db->where('order_sessions.created_at >=', $from);
+        if ($to !== NULL) $this->db->where('order_sessions.created_at <=', $to);
+        $this->db->group_end()
+            ->group_end();
     }
 
     /**
@@ -350,13 +371,13 @@ class Order_model extends CI_Model
      */
     public function shift_order_counts($user_id, $from, $to)
     {
-        $rows = $this->db->select('order_sessions.status, order_sessions.total_amount,
+        $this->db->select('order_sessions.status, order_sessions.total_amount,
                 (SELECT COUNT(*) FROM order_items oi WHERE oi.order_session_id = order_sessions.id) AS line_count', FALSE)
             ->from($this->table)
-            ->where('order_sessions.created_by', (int) $user_id)
-            ->where('order_sessions.created_at >=', $from)
-            ->where('order_sessions.created_at <=', $to)
-            ->get()->result_array();
+            ->where('order_sessions.created_by', (int) $user_id);
+        // Đơn đã thanh toán tính theo giờ thanh toán, đơn khác theo giờ mở (giống danh sách Đơn hàng / lịch sử).
+        $this->_where_order_day($from, $to);
+        $rows = $this->db->get()->result_array();
 
         $out = array('count' => 0, 'paid_count' => 0, 'open_count' => 0, 'open_total' => 0.0, 'cancelled_count' => 0);
         foreach ($rows as $r)

@@ -21,6 +21,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <?php if (isset($page)): // kiểu chữ / ảnh / bảng của nội dung soạn bằng CKEditor (Trang nội dung) ?>
 <link href="https://cdn.jsdelivr.net/npm/ckeditor5@43.3.1/dist/browser/ckeditor5-content.css" rel="stylesheet">
+<link href="<?php echo htmlspecialchars(Page_model::FONTS_URL); ?>" rel="stylesheet">
 <?php endif; ?>
 <link href="<?php echo base_url('assets/public/css/public.css'); ?>" rel="stylesheet">
 
@@ -62,7 +63,6 @@
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/photobooth.html');  ?>">Photobooth</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/pickleball.html');  ?>">Pickleball</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khuyen-mai.html') ; ?>">Khuyến mãi</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/lien-he.html') ; ?>">Liên hệ</a></li>
           <li class="nav-item">
             <?php if ( ! empty($current_user)): ?>
               <?php
@@ -75,7 +75,7 @@
             <?php endif; ?>
           </li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-            <a class="btn pap-btn-primary w-100" href="<?php echo isset($page) ? base_url() : ''; ?>#location" onclick="papTrack('click_contact')">Liên hệ</a>
+            <a class="btn pap-btn-primary w-100" href="<?php echo base_url('/page/lien-he.html') ?>">Liên hệ</a>
           </li>
         </ul>
       </div>

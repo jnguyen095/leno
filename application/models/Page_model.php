@@ -64,6 +64,14 @@ class Page_model extends CI_Model
         ));
     }
 
+    /** +1 lượt xem (không đổi ngày sửa / người sửa). */
+    public function add_view($id)
+    {
+        $this->db->set('view_count', 'view_count + 1', FALSE)
+            ->set('last_viewed_at', date('Y-m-d H:i:s'))
+            ->where('id', (int) $id)->update($this->table);
+    }
+
     public function delete($id)
     {
         return $this->db->where('id', (int) $id)->delete($this->table);

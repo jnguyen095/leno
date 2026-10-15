@@ -30,6 +30,11 @@ class Site_page extends CI_Controller
             show_404();
         }
 
+        if ((int) $page['status'] && ! $current_user)
+        {
+            $this->_count_view($page);
+        }
+
         $content = Page_model::render($page['description']);
         // Mô tả SEO: đoạn chữ đầu của nội dung.
         $plain = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($content), ENT_QUOTES, 'UTF-8')));
@@ -59,5 +64,25 @@ class Site_page extends CI_Controller
         $this->load->view('public/layouts/header', $data);
         $this->load->view('public/page', $data);
         $this->load->view('public/layouts/footer', $data);
+    }
+
+    /**
+     * Tính 1 lượt xem cho khách (nhân viên đã đăng nhập không tính — xử lý ở show()). Bỏ qua bot tìm kiếm / xem trước
+     * link (Facebook, Zalo...) và lần tải lại của cùng trình duyệt trong 30 phút (cookie theo từng trang).
+     */
+    private function _count_view($page)
+    {
+        $ua = (string) $this->input->user_agent();
+        if ($ua === '' || preg_match('/bot|crawl|spider|slurp|preview|facebookexternalhit|headless|curl|wget|python|httpclient|lighthouse/i', $ua))
+        {
+            return;
+        }
+        $cookie = 'pv_'.(int) $page['id'];
+        if ($this->input->cookie($cookie))
+        {
+            return;
+        }
+        $this->input->set_cookie(array('name' => $cookie, 'value' => '1', 'expire' => 1800, 'httponly' => TRUE));
+        $this->Page_model->add_view($page['id']);
     }
 }

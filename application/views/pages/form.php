@@ -15,7 +15,7 @@
     <div class="alert alert-success py-2 small"><?php echo htmlspecialchars($success); ?></div>
   <?php endif; ?>
 
-  <?php echo form_open(current_url(), array('id' => 'pgForm')); ?>
+  <?php echo form_open_multipart(current_url(), array('id' => 'pgForm')); ?>
   <div class="row g-3">
     <div class="col-lg-8">
       <section class="settings-card">
@@ -36,6 +36,24 @@
                 <span class="input-group-text">.html</span>
               </div>
               <div class="form-text">Chữ thường không dấu, số và dấu gạch ngang. Tự gợi ý theo tiêu đề khi thêm trang mới.</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Ảnh banner <span class="text-muted fw-normal small">(không bắt buộc — hiện tràn ngang ở đầu trang)</span></label>
+              <?php $has_banner = $values['banner'] !== ''; ?>
+              <input type="hidden" name="banner" id="pgBanner" value="<?php echo htmlspecialchars($values['banner']); ?>">
+              <div class="pg-banner <?php echo $has_banner ? '' : 'is-empty'; ?>" id="pgBannerBox">
+                <img id="pgBannerImg" alt="" <?php echo $has_banner ? 'src="'.htmlspecialchars(base_url('assets/'.$values['banner'])).'"' : ''; ?>>
+                <div class="pg-banner-empty"><i class="bi bi-image"></i><span>Chưa có banner</span></div>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <label class="btn btn-sm btn-outline-primary mb-0"><i class="bi bi-upload"></i> Tải ảnh lên
+                  <input type="file" name="banner_file" id="pgBannerFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                </label>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="pgBannerPick"><i class="bi bi-images"></i> Chọn từ thư viện</button>
+                <button type="button" class="btn btn-sm btn-outline-danger <?php echo $has_banner ? '' : 'd-none'; ?>" id="pgBannerRemove"><i class="bi bi-x-lg"></i> Bỏ banner</button>
+                <span class="small text-muted align-self-center" id="pgBannerStatus"></span>
+              </div>
+              <div class="form-text">Nên dùng ảnh ngang, khoảng 1920×600 px. Ảnh lớn hơn <?php echo round($shrink_kb / 1024); ?> MB được tự thu nhỏ.</div>
             </div>
             <div class="col-12">
               <label class="form-label">Nội dung</label>
@@ -178,7 +196,7 @@ class ImageLibrary extends Plugin {
     this.editor.ui.componentFactory.add('imageLibrary', locale => {
       const btn = new ButtonView(locale);
       btn.set({ label: 'Thư viện ảnh', icon: icons.image, tooltip: true, withText: true });
-      btn.on('execute', () => openLibrary(this.editor));
+      btn.on('execute', () => openLibrary(img => { this.editor.execute('insertImage', { source: img.url }); this.editor.editing.view.focus(); }));
       return btn;
     });
   }
@@ -187,7 +205,7 @@ class ImageLibrary extends Plugin {
 const modalEl = document.getElementById('pgImgModal');
 const grid = document.getElementById('pgImgGrid');
 const msg = document.getElementById('pgImgMsg');
-let libraryEditor = null;
+let libraryPick = null; // việc làm khi bấm 1 ảnh: chèn vào nội dung, hoặc đặt làm banner
 
 function showMsg(text) { msg.textContent = text || ''; msg.classList.toggle('d-none', ! text); }
 
@@ -206,9 +224,8 @@ function loadLibrary() {
         b.innerHTML = '<img loading="lazy" alt="">';
         b.querySelector('img').src = img.url;
         b.addEventListener('click', () => {
-          libraryEditor.execute('insertImage', { source: img.url });
           bootstrap.Modal.getInstance(modalEl).hide();
-          libraryEditor.editing.view.focus();
+          libraryPick(img);
         });
         grid.appendChild(b);
       });
@@ -216,8 +233,8 @@ function loadLibrary() {
     .catch(() => { grid.innerHTML = '<div class="text-danger small">Không tải được danh sách ảnh.</div>'; });
 }
 
-function openLibrary(editor) {
-  libraryEditor = editor;
+function openLibrary(onPick) {
+  libraryPick = onPick;
   showMsg('');
   bootstrap.Modal.getOrCreateInstance(modalEl).show();
   loadLibrary();
@@ -231,6 +248,46 @@ document.getElementById('pgImgFile').addEventListener('change', async e => {
     try { await uploadImage(f); } catch (err) { showMsg(err); }
   }
   loadLibrary();
+});
+
+// ---- Ảnh banner: tải lên (gửi kèm form khi lưu), chọn từ thư viện, hoặc bỏ ----
+const bannerInput = document.getElementById('pgBanner');
+const bannerFile = document.getElementById('pgBannerFile');
+const bannerBox = document.getElementById('pgBannerBox');
+const bannerImg = document.getElementById('pgBannerImg');
+const bannerRemove = document.getElementById('pgBannerRemove');
+const bannerStatus = document.getElementById('pgBannerStatus');
+const UPLOAD_DIR = <?php echo json_encode(Pages::UPLOAD_DIR); ?>;
+
+function showBanner(src) {
+  if (src) bannerImg.src = src; else bannerImg.removeAttribute('src');
+  bannerBox.classList.toggle('is-empty', ! src);
+  bannerRemove.classList.toggle('d-none', ! src);
+  document.getElementById('pgForm').dispatchEvent(new Event('input'));
+}
+
+bannerFile.addEventListener('change', async () => {
+  const file = bannerFile.files && bannerFile.files[0];
+  if ( ! file) return;
+  showBanner(URL.createObjectURL(file));
+  if (file.size > SHRINK_BYTES) {
+    bannerStatus.textContent = 'Đang thu nhỏ ảnh...';
+    const small = await shrink(file);
+    if (small !== file) { const dt = new DataTransfer(); dt.items.add(small); bannerFile.files = dt.files; }
+  }
+  bannerStatus.textContent = 'Ảnh mới — bấm Lưu để áp dụng.';
+});
+document.getElementById('pgBannerPick').addEventListener('click', () => openLibrary(img => {
+  bannerFile.value = '';
+  bannerInput.value = UPLOAD_DIR + img.name;
+  bannerStatus.textContent = '';
+  showBanner(img.url);
+}));
+bannerRemove.addEventListener('click', () => {
+  bannerFile.value = '';
+  bannerInput.value = '';
+  bannerStatus.textContent = '';
+  showBanner('');
 });
 
 ClassicEditor.create(document.getElementById('pgDescription'), {

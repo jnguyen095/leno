@@ -5,7 +5,12 @@
     <a href="<?php echo site_url('me/pages/'.$page['id'].'/edit'); ?>">Sửa trang</a>
   </div>
 <?php endif; ?>
-<section class="pap-section">
+<?php if ($banner): ?>
+  <div class="pap-page-banner">
+    <img src="<?php echo htmlspecialchars($banner); ?>" alt="<?php echo htmlspecialchars($page['title']); ?>" fetchpriority="high">
+  </div>
+<?php endif; ?>
+<section class="pap-section<?php echo $banner ? ' pap-page-has-banner' : ''; ?>">
   <div class="container pap-page-wrap">
     <h1 class="pap-page-title"><?php echo htmlspecialchars($page['title']); ?></h1>
     <article class="pap-page-content ck-content">

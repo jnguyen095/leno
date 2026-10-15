@@ -77,10 +77,12 @@ class Page_model extends CI_Model
         return $this->db->where('id', (int) $id)->delete($this->table);
     }
 
-    /** Trang nào đang dùng tệp ảnh này: [code => title]. */
+    /** Trang nào đang dùng tệp ảnh này (trong nội dung hoặc làm banner): [code => title]. */
     public function pages_using($file_name)
     {
-        $rows = $this->db->select('code, title')->like('description', $file_name)->get($this->table)->result_array();
+        $rows = $this->db->select('code, title')
+            ->group_start()->like('description', $file_name)->or_like('banner', $file_name)->group_end()
+            ->get($this->table)->result_array();
         return array_column($rows, 'title', 'code');
     }
 

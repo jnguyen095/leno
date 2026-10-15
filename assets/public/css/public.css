@@ -251,3 +251,7 @@ img{ max-width:100%; height:auto; }
   .pap-page-content .image-style-side, .pap-page-content .image-style-align-left, .pap-page-content .image-style-align-right{ float:none; max-width:100%; margin:1rem 0; }
 }
 .pap-page-preview{ background:#fff3cd; color:#664d03; text-align:center; padding:.5rem 1rem; font-size:.9rem; }
+/* Ảnh banner đầu trang nội dung: tràn ngang, cao vừa phải, cắt giữa ảnh. */
+.pap-page-banner{ width:100%; background: var(--pap-light); line-height:0; }
+.pap-page-banner img{ width:100%; height:clamp(180px, 38vw, 460px); max-height: 250px; object-fit:cover; object-position:center; }
+.pap-page-has-banner{ padding-top:2rem; }

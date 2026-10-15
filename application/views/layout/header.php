@@ -23,7 +23,7 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
       if ($current_user['role'] === 'STOCKTAKER') $brand_home = 'stock/adjust';
     ?>
     <a class="navbar-brand" href="<?php echo site_url('me/'.$brand_home); ?>">
-      <img src="<?=base_url("/assets/img/nang-nghieng-icon-white.png")?>" width="130px"/>
+      <img src="<?=base_url("/assets/img/logo-white.png")?>" style="height: 40px;"/>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
       <span class="navbar-toggler-icon"></span>

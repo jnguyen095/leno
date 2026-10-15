@@ -30,7 +30,7 @@ $suffix = (string) config_item('url_suffix');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Không tìm thấy trang – Nắng Nghiêng</title>
+<title>Không tìm thấy trang – Pick Angel Park</title>
 <link rel="icon" href="<?php echo $h($base.'assets/img/logo_sm-removebg.png'); ?>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
@@ -68,9 +68,12 @@ $suffix = (string) config_item('url_suffix');
 </style>
 </head>
 <body>
-  <a href="<?php echo $h($base); ?>"><img class="nf-logo" src="<?php echo $h($base.'assets/img/nang-nghieng-icon.png'); ?>" alt="Nắng Nghiêng"></a>
+  
   <main class="nf-card">
-    <span class="nf-icon" aria-hidden="true"><i class="bi bi-signpost-split"></i></span>
+    <span class="nf-icon" aria-hidden="true">
+      <a href="<?php echo $h($base); ?>"><img class="nf-logo" src="<?php echo $h($base.'assets/img/logo_sm-removebg_header.png'); ?>" alt="Pick Angel Park"></a>
+      <i class="bi bi-signpost-split"></i>
+    </span>
     <p class="nf-code" aria-hidden="true">404</p>
     <h1>Ôi, không tìm thấy trang này</h1>
     <p>
@@ -96,7 +99,7 @@ $suffix = (string) config_item('url_suffix');
       <?php endif; ?>
     </div>
   </main>
-  <div class="nf-foot">© <?php echo date('Y'); ?> Nắng Nghiêng</div>
+  <div class="nf-foot">© <?php echo date('Y'); ?> Pick Angel Park</div>
 <script>
   // "Quay lại" chỉ hiện khi có trang trước trong cùng website.
   (function(){

@@ -2,7 +2,9 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 $route['default_controller'] = 'public/public_site';
-$route['404_override'] = 'errors/page_missing';
+// Không dùng controller riêng: mọi lỗi 404 (URL lạ lẫn show_404()) hiện chung trang thân thiện
+// application/views/errors/html/error_404.php.
+$route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
 // Website public (khách hàng, không đăng nhập) — controller/view/asset đều tách

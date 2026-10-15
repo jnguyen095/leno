@@ -30,7 +30,7 @@
               <li>Combo</li>
               <li>Menu</li>
             </ul>
-            <a href="<?php echo base_url('/page/cafe-anvat.html'); ?>" class="pap-card-link" onclick="papTrack('click_cafe')">Khám phá <i class="bi bi-arrow-right"></i></a>
+            <a href="<?php echo base_url('/page/ca-phe-va-an-vat.html'); ?>" class="pap-card-link" onclick="papTrack('click_cafe')">Khám phá <i class="bi bi-arrow-right"></i></a>
           </div>
         </article>
       </div>

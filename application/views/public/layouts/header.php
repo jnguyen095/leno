@@ -59,7 +59,7 @@
         <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
           <li class="nav-item"><a class="nav-link" href="<?php echo site_url(); ?>">Trang chủ</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khu-vui-choi.html'); ?>">Khu vui chơi</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/cafe-anvat.html');  ?>">Cà phê &amp; Ăn vặt</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/ca-phe-va-an-vat.html');  ?>">Cà phê &amp; Ăn vặt</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/photobooth.html');  ?>">Photobooth</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/pickleball.html');  ?>">Pickleball</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khuyen-mai.html') ; ?>">Khuyến mãi</a></li>

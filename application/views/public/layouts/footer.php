@@ -16,7 +16,7 @@
         <div class="pap-footer-heading">Khám phá</div>
         <ul class="pap-footer-links">
           <li><a href="<?php echo base_url('/page/khu-vui-choi.html'); ?>">Khu vui chơi</a></li>
-          <li><a href="<?php echo base_url('/page/cafe-anvat.html'); ?>">Cà phê</a></li>
+          <li><a href="<?php echo base_url('/page/ca-phe-va-an-vat.html'); ?>">Cà phê</a></li>
           <li><a href="<?php echo base_url('/page/photobooth.html'); ?>">Photobooth</a></li>
           <li><a href="<?php echo base_url('/page/khuyen-mai.html'); ?>">Khuyến mãi</a></li>
           <li><a href="<?php echo base_url('/page/lien-he.html'); ?>">Liên hệ</a></li>

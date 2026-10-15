@@ -77,6 +77,8 @@
               <dt>Người tạo</dt><dd><?php echo htmlspecialchars($page['created_by_name']); ?></dd>
               <dt>Ngày sửa</dt><dd><?php echo $dt($page['updated_at']); ?></dd>
               <dt>Người sửa</dt><dd><?php echo htmlspecialchars($page['updated_by_name']); ?></dd>
+              <dt>Lượt xem</dt><dd><i class="bi bi-eye text-muted"></i> <?php echo number_format((int) $page['view_count'], 0, ',', '.'); ?></dd>
+              <dt>Xem gần nhất</dt><dd><?php echo $dt($page['last_viewed_at']); ?></dd>
             </dl>
           <?php else: ?>
             <div class="small text-muted mt-3"><i class="bi bi-info-circle"></i> Ngày tạo, người tạo được ghi khi lưu.</div>

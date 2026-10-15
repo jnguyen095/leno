@@ -5,6 +5,11 @@
     return (int) $p['status'] ? '<span class="pb-state pb-state-on">Đang bật</span>' : '<span class="pb-state pb-state-off">Đang tắt</span>';
   };
   $link = function ($p) { return '/page/'.$p['code'].'.html'; };
+  $views = function ($p) {
+    $n = number_format((int) $p['view_count'], 0, ',', '.');
+    $title = $p['last_viewed_at'] ? 'Xem gần nhất: '.date('d/m/Y H:i', strtotime($p['last_viewed_at'])) : 'Chưa có lượt xem';
+    return '<span class="fw-semibold" data-bs-toggle="tooltip" title="'.$title.'"><i class="bi bi-eye text-muted"></i> '.$n.'</span>';
+  };
 ?>
 <div class="container-xl py-3 py-md-4">
   <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
@@ -31,13 +36,14 @@
   <div class="orders-card">
     <div class="table-responsive d-none d-md-block">
       <table class="table table-hover align-middle mb-0 orders-table">
-        <thead><tr><th>Tiêu đề</th><th>Link</th><th>Trạng thái</th><th>Tạo</th><th>Sửa gần nhất</th><th></th></tr></thead>
+        <thead><tr><th>Tiêu đề</th><th>Link</th><th>Trạng thái</th><th class="text-end">Lượt xem</th><th>Tạo</th><th>Sửa gần nhất</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($pages as $p): ?>
           <tr>
             <td><a href="<?php echo site_url('me/pages/'.$p['id'].'/edit'); ?>" class="fw-semibold text-body text-decoration-none"><?php echo htmlspecialchars($p['title']); ?></a></td>
             <td class="small"><code class="user-select-all"><?php echo htmlspecialchars($link($p)); ?></code></td>
             <td><?php echo $state($p); ?></td>
+            <td class="text-end text-nowrap"><?php echo $views($p); ?></td>
             <td class="small text-nowrap"><?php echo $dt($p['created_at']); ?><div class="text-muted"><?php echo htmlspecialchars($p['created_by_name'] ?: '—'); ?></div></td>
             <td class="small text-nowrap"><?php echo $dt($p['updated_at']); ?><div class="text-muted"><?php echo htmlspecialchars($p['updated_by_name'] ?: '—'); ?></div></td>
             <td class="text-end text-nowrap"><?php $this->load->view('pages/_actions', array('p' => $p)); ?></td>
@@ -52,7 +58,7 @@
           <a href="<?php echo site_url('me/pages/'.$p['id'].'/edit'); ?>" class="orders-item-main">
             <div class="fw-semibold"><?php echo htmlspecialchars($p['title']); ?></div>
             <div class="small"><code><?php echo htmlspecialchars($link($p)); ?></code></div>
-            <div class="small text-muted">Sửa <?php echo $dt($p['updated_at']); ?> · <?php echo htmlspecialchars($p['updated_by_name'] ?: '—'); ?></div>
+            <div class="small text-muted"><?php echo $views($p); ?> · Sửa <?php echo $dt($p['updated_at']); ?> · <?php echo htmlspecialchars($p['updated_by_name'] ?: '—'); ?></div>
             <div class="mt-1"><?php echo $state($p); ?></div>
           </a>
           <div class="text-nowrap"><?php $this->load->view('pages/_actions', array('p' => $p)); ?></div>

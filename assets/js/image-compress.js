@@ -31,7 +31,8 @@
 
   /** Trả về File đã nén, hoặc chính $file gốc nếu không nén được / nén không nhỏ hơn. */
   function compressFile(file, maxBytes, maxDim) {
-    if (!file.type || file.type.indexOf('image/') !== 0) {
+    // GIF giữ nguyên (nén thành JPEG làm mất ảnh động).
+    if (!file.type || file.type.indexOf('image/') !== 0 || file.type === 'image/gif') {
       return Promise.resolve(file);
     }
 
@@ -44,7 +45,9 @@
       canvas.width = Math.max(1, Math.round(w * scale));
       canvas.height = Math.max(1, Math.round(h * scale));
       var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Nền trắng: ảnh PNG trong suốt đổi sang JPEG không bị nền đen.
+      var paint = function () { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+      paint();
       URL.revokeObjectURL(loaded.url);
 
       var quality = 0.85;
@@ -59,8 +62,7 @@
           } else {
             canvas.width = Math.max(1, Math.round(canvas.width * 0.85));
             canvas.height = Math.max(1, Math.round(canvas.height * 0.85));
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            paint();
           }
           return attempt(n + 1);
         });
@@ -75,6 +77,9 @@
       return file;
     });
   }
+
+  /** Dùng ở nơi khác (vd trình soạn thảo Trang nội dung): papCompressImage(file, maxBytes, maxDim) → Promise<File>. */
+  window.papCompressImage = compressFile;
 
   window.papHandleImageInput = function (input, previewImgId, statusElId) {
     if (!input.files || !input.files[0]) return;

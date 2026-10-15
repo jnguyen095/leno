@@ -15,7 +15,7 @@
               <li>Vui nhộn</li>
               <li>Phù hợp cho bé</li>
             </ul>
-            <a href="#kids" class="pap-card-link" onclick="papTrack('click_kids')">Xem khu vui chơi <i class="bi bi-arrow-right"></i></a>
+            <a href="<?php echo base_url('/page/khu-vui-choi.html'); ?>" class="pap-card-link" onclick="papTrack('click_kids')">Xem khu vui chơi <i class="bi bi-arrow-right"></i></a>
           </div>
         </article>
       </div>
@@ -24,13 +24,13 @@
           <h3 class="pap-card-title">Cà phê &amp; Ăn vặt</h3>
           <img src="<?php echo base_url('assets/img/public/drinks.jpg'); ?>" alt="Đồ uống và cà phê" class="pap-card-img" loading="lazy" width="800" height="450">
           <div class="pap-card-content">
-            <p class="pap-card-desc">Thư giãn, trò chuyện và lưu lại những khoảnh khắc đáng nhớ cùng gia đình và bạn bè.</p>
+            <p class="pap-card-desc">Thư giãn, thưởng thức nước uống và đồ ăn vặt.</p>
             <ul class="pap-card-tags">
               <li>Đồ uống</li>
               <li>Combo</li>
               <li>Menu</li>
             </ul>
-            <a href="#cafe" class="pap-card-link" onclick="papTrack('click_cafe')">Khám phá <i class="bi bi-arrow-right"></i></a>
+            <a href="<?php echo base_url('/page/cafe-anvat.html'); ?>" class="pap-card-link" onclick="papTrack('click_cafe')">Khám phá <i class="bi bi-arrow-right"></i></a>
           </div>
         </article>
       </div>
@@ -48,7 +48,7 @@
               <li>Đa dạng</li>
               <li>Tự làm nhiếp ảnh gia</li>
             </ul>
-            <a href="#kids" class="pap-card-link" onclick="papTrack('click_kids')">Khám phá <i class="bi bi-arrow-right"></i></a>
+            <a href="<?php echo base_url('/page/photobooth.html'); ?>" class="pap-card-link" onclick="papTrack('click_photobooth')">Khám phá <i class="bi bi-arrow-right"></i></a>
           </div>
         </article>
       </div>
@@ -63,7 +63,7 @@
               <li>Đặt sân</li>
               <li>Nhóm cộng đồng</li>
             </ul>
-            <a href="#cafe" class="pap-card-link" onclick="papTrack('click_cafe')">Khám phá <i class="bi bi-arrow-right"></i></a>
+            <a href="<?php echo base_url('/page/pickleball.html'); ?>" class="pap-card-link" onclick="papTrack('click_pickleball')">Khám phá <i class="bi bi-arrow-right"></i></a>
           </div>
         </article>
       </div>

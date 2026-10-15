@@ -44,6 +44,10 @@ if ( ! function_exists('admin_menu_groups'))
                 array($is_admin, 'me/menu-permissions', 'bi-shield-lock', 'Gán quyền menu', 'Quyền theo vai trò'),
                 array($can('admin.payroll'), 'me/payroll/admin', 'bi-wallet2', 'Quản lý lương', 'Chấm công, bảng lương'),
             )),
+            array('Website', 'bi-globe2', array(
+                array($is_admin, 'me/pages', 'bi-file-earmark-richtext', 'Trang nội dung', 'Giới thiệu, khuyến mãi... trên website'),
+                array($is_admin, 'me/pages/images', 'bi-images', 'Thư viện ảnh', 'Ảnh dùng trong trang nội dung'),
+            )),
             array('Hệ thống', 'bi-sliders', array(
                 array($can('admin.customer_display'), 'me/customer-display', 'bi-display', 'Màn hình khách', 'Màn hình phụ, trình chiếu'),
                 array($can('admin.audit_logs'), 'me/audit-logs', 'bi-journal-text', 'Nhật ký hệ thống', 'Ai làm gì, lúc nào'),

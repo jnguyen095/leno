@@ -158,4 +158,5 @@ application/controllers/Migrate_runner.php
 !/application/sessions/.htaccess
 !/application/sessions/index.html
 assets/uploads/display/*
+assets/uploads/pages/*
 docs/port-to-coffeeshop-prompt.md

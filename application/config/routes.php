@@ -118,6 +118,18 @@ $route['me/cashbook/categories'] = 'cashbook/categories';
 $route['me/cashbook/categories/save'] = 'cashbook/category_save';
 $route['me/cashbook/categories/(:num)/toggle'] = 'cashbook/category_toggle/$1';
 $route['me/admin'] = 'admin/index';
+
+// Trang nội dung website (chỉ ADMIN) + thư viện ảnh của trình soạn thảo. Khách xem ở /page/<code>.html.
+$route['me/pages'] = 'pages/index';
+$route['me/pages/create'] = 'pages/create';
+$route['me/pages/images'] = 'pages/images';
+$route['me/pages/images/list'] = 'pages/image_list';
+$route['me/pages/images/upload'] = 'pages/upload_image';
+$route['me/pages/images/delete'] = 'pages/image_delete';
+$route['me/pages/(:num)/edit'] = 'pages/edit/$1';
+$route['me/pages/(:num)/toggle'] = 'pages/toggle/$1';
+$route['me/pages/(:num)/delete'] = 'pages/delete/$1';
+$route['page/([a-z0-9-]+)'] = 'public/site_page/show/$1';
 $route['me/settings'] = 'settings/index';
 $route['me/audit-logs'] = 'audit_logs/index';
 $route['me/audit-logs/purge'] = 'audit_logs/purge';

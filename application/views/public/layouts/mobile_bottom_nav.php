@@ -14,7 +14,7 @@
       <span>Zalo</span>
     </a>
   <?php endif; ?>
-  <a href="#location" class="pap-bottom-nav-item pap-bottom-nav-highlight" onclick="papTrack('click_directions')">
+  <a href="<?php echo isset($page) ? base_url() : ''; ?>#location" class="pap-bottom-nav-item pap-bottom-nav-highlight" onclick="papTrack('click_directions')">
     <i class="bi bi-geo-alt-fill"></i>
     <span>Chỉ đường</span>
   </a>

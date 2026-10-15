@@ -12,13 +12,16 @@
 <meta property="og:title" content="<?php echo htmlspecialchars($seo['title']); ?>">
 <meta property="og:description" content="<?php echo htmlspecialchars($seo['description']); ?>">
 <meta property="og:url" content="<?php echo htmlspecialchars($seo['canonical']); ?>">
-<meta property="og:image" content="<?php echo base_url('assets/public/images/hero.svg'); ?>">
+<meta property="og:image" content="<?php echo htmlspecialchars( ! empty($seo['image']) ? $seo['image'] : base_url('assets/public/images/hero.svg')); ?>">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="<?php echo base_url('assets/img/logo_sm-removebg.png'); ?>">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<?php if (isset($page)): // kiểu chữ / ảnh / bảng của nội dung soạn bằng CKEditor (Trang nội dung) ?>
+<link href="https://cdn.jsdelivr.net/npm/ckeditor5@43.3.1/dist/browser/ckeditor5-content.css" rel="stylesheet">
+<?php endif; ?>
 <link href="<?php echo base_url('assets/public/css/public.css'); ?>" rel="stylesheet">
 
 <script type="application/ld+json">
@@ -54,10 +57,12 @@
       <div class="collapse navbar-collapse" id="papNav">
         <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
           <li class="nav-item"><a class="nav-link" href="<?php echo site_url(); ?>">Trang chủ</a></li>
-          <li class="nav-item"><a class="nav-link" href="#kids">Khu vui chơi</a></li>
-          <li class="nav-item"><a class="nav-link" href="#cafe">Cà phê &amp; Photobooth</a></li>
-          <li class="nav-item"><a class="nav-link" href="#today">Khuyến mãi</a></li>
-          <li class="nav-item"><a class="nav-link" href="#location">Liên hệ</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khu-vui-choi.html'); ?>">Khu vui chơi</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/cafe-anvat.html');  ?>">Cà phê &amp; Ăn vặt</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/photobooth.html');  ?>">Photobooth</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/pickleball.html');  ?>">Pickleball</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khuyen-mai.html') ; ?>">Khuyến mãi</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/lien-he.html') ; ?>">Liên hệ</a></li>
           <li class="nav-item">
             <?php if ( ! empty($current_user)): ?>
               <?php
@@ -70,7 +75,7 @@
             <?php endif; ?>
           </li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-            <a class="btn pap-btn-primary w-100" href="#location" onclick="papTrack('click_contact')">Liên hệ</a>
+            <a class="btn pap-btn-primary w-100" href="<?php echo isset($page) ? base_url() : ''; ?>#location" onclick="papTrack('click_contact')">Liên hệ</a>
           </li>
         </ul>
       </div>

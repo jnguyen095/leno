@@ -15,11 +15,11 @@
       <div class="col-6 col-md-4">
         <div class="pap-footer-heading">Khám phá</div>
         <ul class="pap-footer-links">
-          <li><a href="#kids">Khu vui chơi</a></li>
-          <li><a href="#cafe">Cà phê</a></li>
-          <li><a href="#photobooth">Photobooth</a></li>
-          <li><a href="#today">Khuyến mãi</a></li>
-          <li><a href="#location">Liên hệ</a></li>
+          <li><a href="<?php echo base_url('/page/khu-vui-choi.html'); ?>">Khu vui chơi</a></li>
+          <li><a href="<?php echo base_url('/page/cafe-anvat.html'); ?>">Cà phê</a></li>
+          <li><a href="<?php echo base_url('/page/photobooth.html'); ?>">Photobooth</a></li>
+          <li><a href="<?php echo base_url('/page/khuyen-mai.html'); ?>">Khuyến mãi</a></li>
+          <li><a href="<?php echo base_url('/page/lien-he.html'); ?>">Liên hệ</a></li>
         </ul>
       </div>
       <div class="col-6 col-md-4">

@@ -5,6 +5,7 @@
   $ck = 'https://cdn.jsdelivr.net/npm/ckeditor5@43.3.1/dist';
 ?>
 <link rel="stylesheet" href="<?php echo $ck; ?>/browser/ckeditor5.css">
+<link rel="stylesheet" href="<?php echo htmlspecialchars(Page_model::FONTS_URL); ?>">
 <div class="container-xl py-3 py-md-4 settings-page" style="max-width:1200px">
   <a href="<?php echo site_url('me/pages'); ?>" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Trang nội dung</a>
   <h4 class="fw-bold mb-3"><?php echo $page ? 'Sửa trang' : 'Thêm trang'; ?></h4>
@@ -142,7 +143,7 @@
 </script>
 <script type="module">
 import {
-  ClassicEditor, Essentials, Paragraph, Heading, Bold, Italic, Underline, Strikethrough, FontColor, FontSize, Alignment,
+  ClassicEditor, Essentials, Paragraph, Heading, Bold, Italic, Underline, Strikethrough, FontColor, FontBackgroundColor, FontFamily, FontSize, Alignment,
   Link, List, Indent, IndentBlock, BlockQuote, HorizontalLine, Table, TableToolbar, TableProperties, TableCellProperties,
   Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, ImageUpload, ImageInsert, ImageInsertViaUrl, LinkImage, AutoImage,
   MediaEmbed, PasteFromOffice, Autoformat, SourceEditing, Plugin, ButtonView, icons
@@ -295,14 +296,14 @@ ClassicEditor.create(document.getElementById('pgDescription'), {
   language: 'vi',
   translations: [viTranslations],
   plugins: [
-    Essentials, Paragraph, Heading, Bold, Italic, Underline, Strikethrough, FontColor, FontSize, Alignment,
+    Essentials, Paragraph, Heading, Bold, Italic, Underline, Strikethrough, FontColor, FontBackgroundColor, FontFamily, FontSize, Alignment,
     Link, List, Indent, IndentBlock, BlockQuote, HorizontalLine, Table, TableToolbar, TableProperties, TableCellProperties,
     Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, ImageUpload, ImageInsert, ImageInsertViaUrl, LinkImage, AutoImage,
     MediaEmbed, PasteFromOffice, Autoformat, SourceEditing, UploadAdapter, ImageLibrary
   ],
   toolbar: {
     items: [
-      'undo', 'redo', '|', 'heading', '|', 'bold', 'italic', 'underline', 'strikethrough', 'fontColor', 'fontSize', '|',
+      'undo', 'redo', '|', 'heading', '|', 'bold', 'italic', 'underline', 'strikethrough', 'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
       'alignment', 'bulletedList', 'numberedList', 'outdent', 'indent', '|',
       'link', 'insertImage', 'imageLibrary', 'mediaEmbed', 'insertTable', 'blockQuote', 'horizontalLine', '|', 'sourceEditing'
     ],
@@ -314,7 +315,29 @@ ClassicEditor.create(document.getElementById('pgDescription'), {
   },
   table: { contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'] },
   link: { defaultProtocol: 'https://', decorators: { openInNewTab: { mode: 'manual', label: 'Mở ở tab mới', attributes: { target: '_blank', rel: 'noopener' } } } },
-  mediaEmbed: { previewsInData: true }
+  mediaEmbed: { previewsInData: true },
+  // Phông chữ: phông có sẵn trên máy + Google Fonts hỗ trợ tiếng Việt (nạp ở trang này và trang website, xem Page_model::FONTS_URL).
+  fontFamily: {
+    options: [
+      'default',
+      'Be Vietnam Pro, sans-serif',
+      'Roboto, sans-serif',
+      'Montserrat, sans-serif',
+      'Playfair Display, serif',
+      'Dancing Script, cursive',
+      'Arial, Helvetica, sans-serif',
+      'Tahoma, Geneva, sans-serif',
+      'Verdana, Geneva, sans-serif',
+      'Georgia, serif',
+      'Times New Roman, Times, serif',
+      'Courier New, Courier, monospace'
+    ],
+    supportAllValues: true
+  },
+  fontSize: {
+    options: [12, 14, 'default', 18, 20, 24, 28, 32, 40, 48],
+    supportAllValues: true
+  }
 }).then(editor => {
   window.pgEditor = editor;
   // Nhắc khi rời trang mà chưa lưu.

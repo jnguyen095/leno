@@ -12,6 +12,9 @@ class Page_model extends CI_Model
     const BASE_TOKEN = '{{base_url}}';
     const CODE_PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
+    /** Google Fonts có thể chọn trong trình soạn thảo (bảng phông ở views/pages/form.php) — nạp ở cả trang soạn và trang website. */
+    const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,700;1,400&family=Roboto:ital,wght@0,400;0,700;1,400&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@400;700&display=swap&subset=vietnamese';
+
     public function get_all()
     {
         return $this->db->select('p.*, cu.fullname AS created_by_name, uu.fullname AS updated_by_name')

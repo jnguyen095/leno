@@ -39,7 +39,10 @@ class Site_page extends CI_Controller
         // Mô tả SEO: đoạn chữ đầu của nội dung.
         $plain = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($content), ENT_QUOTES, 'UTF-8')));
         $site_name = $this->Setting_model->get_site_name();
-        if (preg_match('/<img[^>]+src="([^"]+)"/i', $content, $m)) $og_image = $m[1];
+        // Ảnh chia sẻ (Facebook, Zalo...): banner, không có thì ảnh đầu tiên trong nội dung.
+        $banner = $page['banner'] ? base_url('assets/'.$page['banner']) : NULL;
+        if ($banner) $og_image = $banner;
+        elseif (preg_match('/<img[^>]+src="([^"]+)"/i', $content, $m)) $og_image = $m[1];
 
         $data = array(
             'current_user'     => $current_user,
@@ -52,6 +55,7 @@ class Site_page extends CI_Controller
             'site_google_maps' => $this->Setting_model->get_site_google_maps(),
             'page'             => $page,
             'content'          => $content,
+            'banner'           => $banner,
             'is_preview'       => ! (int) $page['status'],
             'seo' => array(
                 'title'       => $page['title'].' – '.$site_name,

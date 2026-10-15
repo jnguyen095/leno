@@ -149,18 +149,43 @@ class Pages extends MY_Controller
             'title'       => $page ? $page['title'] : '',
             'description' => $page ? Page_model::render($page['description']) : '',
             'status'      => $page ? (int) $page['status'] : 1,
+            'banner'      => $page ? (string) $page['banner'] : '',
         );
 
         if ($this->input->method() === 'post')
         {
+            // Banner: ảnh đang chọn (ảnh cũ / chọn từ thư viện, rỗng = không có banner) — chỉ nhận ảnh trong thư mục của Thư viện ảnh.
+            $banner = trim((string) $this->input->post('banner'));
+            if ($banner !== '' && ( ! preg_match('#^'.preg_quote(self::UPLOAD_DIR, '#').'[A-Za-z0-9_.-]+$#', $banner) || ! is_file(FCPATH.'assets/'.$banner)))
+            {
+                $banner = $page ? (string) $page['banner'] : '';
+            }
             $values = array(
                 'code'        => strtolower(trim((string) $this->input->post('code'))),
                 'title'       => trim(preg_replace('/\s+/u', ' ', (string) $this->input->post('title', TRUE))),
                 'description' => (string) $this->input->post('description'),
                 'status'      => $this->input->post('status') ? 1 : 0,
+                'banner'      => $banner,
             );
 
-            if ($values['code'] === '')                                     $error = 'Nhập mã trang.';
+            // Ảnh banner mới tải lên (thay ảnh đang chọn).
+            if ( ! empty($_FILES['banner_file']['name']))
+            {
+                $upload_error = NULL;
+                $name = $this->_handle_upload('banner_file', $upload_error);
+                if ($name === NULL)
+                {
+                    $error = 'Ảnh banner: '.$upload_error;
+                }
+                else
+                {
+                    $values['banner'] = self::UPLOAD_DIR.$name;
+                    $this->audit('page', 'UPLOAD_IMAGE', NULL, array('file' => $values['banner']));
+                }
+            }
+
+            if ($error !== NULL)                                            { /* lỗi tải ảnh banner, đã có thông báo */ }
+            elseif ($values['code'] === '')                                 $error = 'Nhập mã trang.';
             elseif (strlen($values['code']) > 100)                          $error = 'Mã trang tối đa 100 ký tự.';
             elseif ( ! preg_match(Page_model::CODE_PATTERN, $values['code'])) $error = 'Mã trang chỉ gồm chữ thường không dấu, số và dấu gạch ngang (vd: gioi-thieu).';
             elseif ($this->Page_model->code_exists($values['code'], $page ? $page['id'] : NULL)) $error = 'Mã "'.$values['code'].'" đã có trang khác dùng.';
@@ -173,6 +198,7 @@ class Pages extends MY_Controller
                     'title'       => $values['title'],
                     'description' => $values['description'],
                     'status'      => $values['status'],
+                    'banner'      => $values['banner'] !== '' ? $values['banner'] : NULL,
                 );
                 $id = $this->Page_model->save($page ? $page['id'] : NULL, $row, $this->current_user['id']);
                 $this->audit('page', $page ? 'UPDATE' : 'CREATE',

@@ -1,6 +1,6 @@
 <section class="pap-section" id="experience" aria-labelledby="experience-title">
   <div class="container">
-    <h2 id="experience-title" class="pap-section-title text-center">Khám phá Nắng Nghiêng</h2>
+    <h2 id="experience-title" class="pap-section-title text-center">Khám phá Pick Angel Park</h2>
     <p class="pap-section-subtitle text-center">Một nơi – nhiều trải nghiệm cho cả gia đình</p>
 
     <div class="row g-4 mt-2">

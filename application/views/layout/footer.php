@@ -5,7 +5,7 @@
 </main>
 <?php // Chân trang các trang sau đăng nhập (ẩn ở màn hình POS Bàn / Thực đơn — chúng vừa khít chiều cao màn hình). ?>
 <footer class="app-footer">
-  <div>© <?php echo date('Y'); ?> Nắng Nghiêng. All rights reserved.</div>
+  <div>© <?php echo date('Y'); ?> Pick Angel Park. All rights reserved.</div>
   <div>
     <a href="mailto:nguyennhukhangvn@gmail.com"><i class="bi bi-envelope"></i> nguyennhukhangvn@gmail.com</a>
     <span class="mx-1">-</span>

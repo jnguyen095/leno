@@ -26,8 +26,8 @@
           <div class="pap-card-content">
             <p class="pap-card-desc">Thư giãn, trò chuyện và lưu lại những khoảnh khắc đáng nhớ cùng gia đình và bạn bè.</p>
             <ul class="pap-card-tags">
-              <li>Cà phê</li>
               <li>Đồ uống</li>
+              <li>Combo</li>
               <li>Menu</li>
             </ul>
             <a href="#cafe" class="pap-card-link" onclick="papTrack('click_cafe')">Khám phá <i class="bi bi-arrow-right"></i></a>

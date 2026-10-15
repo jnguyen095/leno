@@ -88,6 +88,13 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         <?php endif; ?>
       </ul>
       <ul class="navbar-nav">
+        <?php // Mở trang web công khai (trang chủ cửa hàng) ở tab mới. ?>
+        <li class="nav-item">
+          <a class="nav-link" href="<?php echo base_url(); ?>" target="_blank" rel="noopener"
+             data-bs-toggle="tooltip" data-bs-placement="bottom" title="Xem trang web" aria-label="Xem trang web">
+            <i class="bi bi-globe2"></i><span class="d-lg-none ms-1">Xem trang web</span>
+          </a>
+        </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user['fullname']); ?>

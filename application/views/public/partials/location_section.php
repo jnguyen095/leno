@@ -5,7 +5,7 @@
 ?>
 <section class="pap-section" id="location" aria-labelledby="location-title">
   <div class="container">
-    <h2 id="location-title" class="pap-section-title text-center">Tìm Leno</h2>
+    <h2 id="location-title" class="pap-section-title text-center">Tìm Nắng Nghiêng</h2>
     <div class="row g-4 align-items-stretch mt-2">
       <div class="col-lg-5">
         <div class="pap-location-card">

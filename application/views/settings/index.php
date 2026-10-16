@@ -233,6 +233,12 @@
               <input type="url" name="site_google_maps" id="stMaps" class="form-control" maxlength="300" placeholder="https://maps.app.goo.gl/..." value="<?php echo htmlspecialchars($site['google_maps']); ?>">
               <div class="form-text">Mở Google Maps → tìm quán → Chia sẻ → Sao chép đường liên kết. Nút "Chỉ đường" sẽ mở đúng vị trí này; để trống thì tìm theo địa chỉ.</div>
             </div>
+            <div class="col-md-6">
+              <label class="form-label" for="stGa4">Google Analytics <span class="text-muted small">(không bắt buộc)</span></label>
+              <input type="text" name="site_ga4_id" id="stGa4" class="form-control text-uppercase" maxlength="20" placeholder="G-XXXXXXXXXX"
+                     autocapitalize="characters" autocomplete="off" spellcheck="false" value="<?php echo htmlspecialchars($site['ga4_id']); ?>">
+              <div class="form-text">Mã đo lường GA4: analytics.google.com → Quản trị → Luồng dữ liệu → Web. Để trống thì tắt. Không tính lượt xem của nhân viên đang đăng nhập.</div>
+            </div>
           </div>
         </div>
         <footer class="settings-card-foot gap-2">

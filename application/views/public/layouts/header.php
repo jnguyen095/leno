@@ -2,6 +2,15 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<?php if ( ! empty($site_ga4_id) && empty($current_user)): // Google Analytics 4 (Cài đặt → Website) — nhân viên đang đăng nhập không tính ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo rawurlencode($site_ga4_id); ?>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', <?php echo json_encode($site_ga4_id); ?>);
+</script>
+<?php endif; ?>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title><?php echo htmlspecialchars($seo['title']); ?></title>
 <meta name="description" content="<?php echo htmlspecialchars($seo['description']); ?>">

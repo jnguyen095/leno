@@ -86,6 +86,52 @@ class Settings extends MY_Controller
             }
         }
 
+        if ($this->input->method() === 'post' && $this->input->post('form') === 'website')
+        {
+            $clean = function ($field, $max) {
+                return mb_substr(trim(preg_replace('/\s+/u', ' ', (string) $this->input->post('site_'.$field, TRUE))), 0, $max, 'UTF-8');
+            };
+            $new = array(
+                'name'        => $clean('name', 80),
+                'phone'       => $clean('phone', 30),
+                'address'     => $clean('address', 160),
+                'hours'       => $clean('hours', 80),
+                'zalo'        => $clean('zalo', 200),
+                'facebook'    => $clean('facebook', 200),
+                'tiktok'      => $clean('tiktok', 200),
+                'google_maps' => $clean('google_maps', 300),
+            );
+            $is_url = function ($v) { return $v === '' || (bool) preg_match('#^https?://[^\s]+$#i', $v); };
+
+            if ($new['name'] === '' || $new['phone'] === '' || $new['address'] === '')
+            {
+                $error = 'Nhập tên hiển thị, số điện thoại và địa chỉ.';
+            }
+            elseif ( ! preg_match('/^[0-9+ .()-]{8,30}$/', $new['phone']))
+            {
+                $error = 'Số điện thoại không hợp lệ.';
+            }
+            elseif ($new['zalo'] !== '' && ! $is_url($new['zalo']) && ! preg_match('/^[0-9+ .]{8,20}$/', $new['zalo']))
+            {
+                $error = 'Zalo: nhập số điện thoại hoặc link bắt đầu bằng https://';
+            }
+            elseif ( ! $is_url($new['facebook']) || ! $is_url($new['tiktok']) || ! $is_url($new['google_maps']))
+            {
+                $error = 'Link Facebook / TikTok / Google Maps phải bắt đầu bằng https://';
+            }
+            else
+            {
+                $old = $this->Setting_model->get_site_info();
+                foreach ($new as $key => $value)
+                {
+                    $this->Setting_model->set('site_'.$key, $value);
+                }
+                $this->audit('settings', 'UPDATE_WEBSITE', $old, $new);
+                $this->_saved('website', 'Đã lưu thông tin website.');
+                return;
+            }
+        }
+
         // Form VAT (không có trường 'form').
         if ($this->input->method() === 'post' && ! $this->input->post('form'))
         {
@@ -114,6 +160,7 @@ class Settings extends MY_Controller
             'bank_qr_on'          => $this->Setting_model->get('bank_qr_enabled', '0') === '1',
             'vietqr_banks'        => Setting_model::VIETQR_BANKS,
             'receipt'             => $this->Setting_model->get_receipt_info(),
+            'site'                => $this->_site_form_values($error),
             'error'               => $error,
             // Lỗi hiện ngay trong mục vừa gửi (form VAT không có trường 'form').
             'error_section'       => self::FORM_SECTIONS[(string) $this->input->post('form')] ?? 'sales',
@@ -126,7 +173,23 @@ class Settings extends MY_Controller
     }
 
     /** Trường 'form' của từng form -> id mục trên trang (#sales, #receipt, #bank). */
-    const FORM_SECTIONS = array('' => 'sales', 'takeaway' => 'sales', 'receipt' => 'receipt', 'bank_qr' => 'bank');
+    const FORM_SECTIONS = array('' => 'sales', 'takeaway' => 'sales', 'receipt' => 'receipt', 'bank_qr' => 'bank', 'website' => 'website');
+
+    /** Giá trị form Website: vừa gửi bị lỗi thì giữ chữ đã nhập, không thì giá trị đã lưu (tên / SĐT / địa chỉ có mặc định). */
+    private function _site_form_values($error)
+    {
+        if ($error && $this->input->post('form') === 'website')
+        {
+            $values = array();
+            foreach (Setting_model::SITE_FIELDS as $key) $values[$key] = (string) $this->input->post('site_'.$key, TRUE);
+            return $values;
+        }
+        $values = $this->Setting_model->get_site_info();
+        if ($values['name'] === '')    $values['name'] = $this->Setting_model->get_site_name();
+        if ($values['phone'] === '')   $values['phone'] = $this->Setting_model->get_site_phone();
+        if ($values['address'] === '') $values['address'] = $this->Setting_model->get_site_address();
+        return $values;
+    }
 
     /** Lưu xong: báo thành công ngay trong mục đó và cuộn về đúng mục. */
     private function _saved($section, $message)

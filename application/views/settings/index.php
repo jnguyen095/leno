@@ -5,6 +5,7 @@
     'sales'   => array('bi-shop', 'Bán hàng', 'Thuế VAT, bán mang đi'),
     'receipt' => array('bi-receipt', 'Thông tin in phiếu', 'Tên quán, địa chỉ, lời cảm ơn'),
     'bank'    => array('bi-bank', 'Chuyển khoản', 'Mã VietQR trên phiếu tạm tính'),
+    'website' => array('bi-globe2', 'Website', 'Liên hệ, giờ mở cửa, mạng xã hội'),
   );
   // Thông báo (lỗi / đã lưu) hiện ngay trong mục liên quan.
   $alert = function ($section) use ($error, $error_section, $success, $success_section) {
@@ -180,6 +181,62 @@
           </div>
         </div>
         <footer class="settings-card-foot">
+          <button class="btn btn-brand px-4"><i class="bi bi-check2"></i> Lưu thay đổi</button>
+        </footer>
+        <?php echo form_close(); ?>
+      </section>
+
+      <?php // ---------- Website (trang chủ, chân trang, nút Gọi / Zalo / Chỉ đường) ---------- ?>
+      <section class="settings-card" id="website">
+        <header class="settings-card-head">
+          <span class="settings-card-icon"><i class="bi bi-globe2"></i></span>
+          <div><h5>Website</h5><p>Hiện trên trang chủ, chân trang và các nút Gọi / Zalo / Chỉ đường của website.</p></div>
+        </header>
+        <?php echo form_open(current_url()); ?>
+        <input type="hidden" name="form" value="website">
+        <div class="settings-card-body">
+          <?php echo $alert('website'); ?>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="stName">Tên hiển thị</label>
+              <input type="text" name="site_name" id="stName" class="form-control" maxlength="80" required value="<?php echo htmlspecialchars($site['name']); ?>">
+              <div class="form-text">Dùng ở tiêu đề tab trình duyệt và khi chia sẻ link.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="stPhone">Số điện thoại</label>
+              <input type="text" name="site_phone" id="stPhone" class="form-control" maxlength="30" inputmode="tel" required value="<?php echo htmlspecialchars($site['phone']); ?>">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="stAddress">Địa chỉ</label>
+              <input type="text" name="site_address" id="stAddress" class="form-control" maxlength="160" required value="<?php echo htmlspecialchars($site['address']); ?>">
+              <div class="form-text">Bản đồ trên trang chủ tìm theo địa chỉ này.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="stHours">Giờ mở cửa <span class="text-muted small">(không bắt buộc)</span></label>
+              <input type="text" name="site_hours" id="stHours" class="form-control" maxlength="80" placeholder="VD: 7:00 – 22:00 hằng ngày" value="<?php echo htmlspecialchars($site['hours']); ?>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="stZalo">Zalo <span class="text-muted small">(không bắt buộc)</span></label>
+              <input type="text" name="site_zalo" id="stZalo" class="form-control" maxlength="200" placeholder="Số điện thoại Zalo hoặc link https://zalo.me/..." value="<?php echo htmlspecialchars($site['zalo']); ?>">
+              <div class="form-text">Để trống thì ẩn nút "Nhắn Zalo".</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="stFacebook">Facebook <span class="text-muted small">(không bắt buộc)</span></label>
+              <input type="url" name="site_facebook" id="stFacebook" class="form-control" maxlength="200" placeholder="https://facebook.com/..." value="<?php echo htmlspecialchars($site['facebook']); ?>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="stTiktok">TikTok <span class="text-muted small">(không bắt buộc)</span></label>
+              <input type="url" name="site_tiktok" id="stTiktok" class="form-control" maxlength="200" placeholder="https://tiktok.com/@..." value="<?php echo htmlspecialchars($site['tiktok']); ?>">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="stMaps">Link Google Maps <span class="text-muted small">(không bắt buộc)</span></label>
+              <input type="url" name="site_google_maps" id="stMaps" class="form-control" maxlength="300" placeholder="https://maps.app.goo.gl/..." value="<?php echo htmlspecialchars($site['google_maps']); ?>">
+              <div class="form-text">Mở Google Maps → tìm quán → Chia sẻ → Sao chép đường liên kết. Nút "Chỉ đường" sẽ mở đúng vị trí này; để trống thì tìm theo địa chỉ.</div>
+            </div>
+          </div>
+        </div>
+        <footer class="settings-card-foot gap-2">
+          <a href="<?php echo base_url(); ?>" target="_blank" rel="noopener" class="btn btn-outline-secondary"><i class="bi bi-box-arrow-up-right"></i> Xem website</a>
           <button class="btn btn-brand px-4"><i class="bi bi-check2"></i> Lưu thay đổi</button>
         </footer>
         <?php echo form_close(); ?>

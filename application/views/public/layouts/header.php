@@ -23,7 +23,7 @@
 <link href="https://cdn.jsdelivr.net/npm/ckeditor5@43.3.1/dist/browser/ckeditor5-content.css" rel="stylesheet">
 <link href="<?php echo htmlspecialchars(Page_model::FONTS_URL); ?>" rel="stylesheet">
 <?php endif; ?>
-<link href="<?php echo base_url('assets/public/css/public.css'); ?>" rel="stylesheet">
+<link href="<?php echo asset_url('assets/public/css/public.css'); ?>" rel="stylesheet">
 
 <script type="application/ld+json">
 <?php echo json_encode(array(
@@ -53,16 +53,23 @@
         <img src="<?php echo base_url('assets/img/logo_sm-removebg_header.png'); ?>" alt="<?php echo htmlspecialchars($site_name); ?>" style="height: 40px;">
         <span class="pap-brand-name">PICK ANGEL PARK</span>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#papNav" aria-controls="papNav" aria-expanded="false" aria-label="Mở menu">
-        <i class="bi bi-list"></i>
+      <?php
+        // Menu dùng chung (layouts/nav_items.php); mục đang xem được tô màu.
+        $pap_nav = include APPPATH.'views/public/layouts/nav_items.php';
+        $pap_current = isset($page['code']) ? 'page/'.$page['code'] : '';
+      ?>
+      <?php // Điện thoại: chữ "Menu" cạnh biểu tượng — dễ hiểu hơn biểu tượng ba gạch đứng một mình. ?>
+      <button class="navbar-toggler pap-menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#papNav" aria-controls="papNav" aria-expanded="false" aria-label="Mở menu">
+        <i class="bi bi-list"></i><span>Menu</span>
       </button>
       <div class="collapse navbar-collapse" id="papNav">
         <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khu-vui-choi.html'); ?>">Khu vui chơi</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/ca-phe-va-an-vat.html');  ?>">Cà phê &amp; Ăn vặt</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/cafe-anvat.html');  ?>">Cà phê &amp; Ăn vặt</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/photobooth.html');  ?>">Photobooth</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/pickleball.html');  ?>">Pickleball</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khuyen-mai.html') ; ?>">Khuyến mãi</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/lien-he.html') ; ?>">Liên hệ</a></li>
           <li class="nav-item">
             <?php if ( ! empty($current_user)): ?>
               <?php
@@ -75,7 +82,7 @@
             <?php endif; ?>
           </li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-            <a class="btn pap-btn-primary w-100" href="<?php echo base_url('/page/lien-he.html') ?>">Liên hệ</a>
+            <a class="btn pap-btn-primary w-100" href="<?php echo isset($page) ? base_url() : ''; ?>#location" onclick="papTrack('click_contact')">Liên hệ</a>
           </li>
         </ul>
       </div>

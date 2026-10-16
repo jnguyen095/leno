@@ -44,15 +44,8 @@ class Site_page extends CI_Controller
         if ($banner) $og_image = $banner;
         elseif (preg_match('/<img[^>]+src="([^"]+)"/i', $content, $m)) $og_image = $m[1];
 
-        $data = array(
+        $data = $this->Setting_model->get_public_site_data() + array(
             'current_user'     => $current_user,
-            'site_name'        => $site_name,
-            'site_phone'       => $this->Setting_model->get_site_phone(),
-            'site_address'     => $this->Setting_model->get_site_address(),
-            'site_zalo'        => $this->Setting_model->get_site_zalo(),
-            'site_facebook'    => $this->Setting_model->get_site_facebook(),
-            'site_tiktok'      => $this->Setting_model->get_site_tiktok(),
-            'site_google_maps' => $this->Setting_model->get_site_google_maps(),
             'page'             => $page,
             'content'          => $content,
             'banner'           => $banner,

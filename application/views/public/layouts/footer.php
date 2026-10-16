@@ -30,7 +30,7 @@
       </div>
     </div>
     <hr class="pap-footer-divider">
-    <div class="pap-footer-bottom">&copy; <?php echo date('Y'); ?> Nắng Nghiêng. Tất cả các quyền được bảo lưu.</div>
+    <div class="pap-footer-bottom">&copy; <?php echo date('Y'); ?> Pick Angel Park. Tất cả các quyền được bảo lưu.</div>
   </div>
 </footer>
 

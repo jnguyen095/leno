@@ -8,7 +8,7 @@
   <div class="container">
     <div class="pap-hero-card">
       <div class="pap-hero-text">
-        <h1 id="hero-title" class="pap-hero-title">Nắng Nghiêng</h1>
+        <h1 id="hero-title" class="pap-hero-title">Pick Angle Park</h1>
         <p class="pap-hero-tagline">Khu vui chơi trẻ em · Cà phê &amp; ăn vặt · Photobooth · Pickleball</p>
         <ul class="pap-hero-info">
           <?php if ($site_hours): ?>

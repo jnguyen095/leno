@@ -5,28 +5,12 @@
   'use strict';
 
   /* ---------- Analytics (GA4) ----------
-     Để trống GA_MEASUREMENT_ID = tắt hẳn analytics, không ảnh hưởng website. */
-  var GA_MEASUREMENT_ID = '';
-
-  window.papInitAnalytics = function(){
-    if ( ! GA_MEASUREMENT_ID) return;
-    var s1 = document.createElement('script');
-    s1.async = true;
-    s1.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
-    document.head.appendChild(s1);
-
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ window.dataLayer.push(arguments); }
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', GA_MEASUREMENT_ID);
-  };
-
+     Thẻ GA4 gắn ở <head> (views/public/layouts/header.php) khi đã nhập mã ở Cài đặt → Website.
+     papTrack('click_call') gửi sự kiện khi khách bấm các nút chính; chưa có GA thì không làm gì. */
   window.papTrack = function(eventName, params){
     if (typeof window.gtag === 'function'){
       window.gtag('event', eventName, params || {});
     }
-    // console.debug('[papTrack]', eventName, params || {});
   };
 
   /* ---------- Mobile menu: tự đóng khi bấm 1 link ---------- */

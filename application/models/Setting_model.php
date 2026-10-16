@@ -113,7 +113,7 @@ class Setting_model extends CI_Model
     }
 
     /** Các khóa site_* sửa được ở Cài đặt → Website. */
-    const SITE_FIELDS = array('name', 'phone', 'address', 'hours', 'zalo', 'facebook', 'tiktok', 'google_maps');
+    const SITE_FIELDS = array('name', 'phone', 'address', 'hours', 'zalo', 'facebook', 'tiktok', 'google_maps', 'ga4_id');
 
     /**
      * Dữ liệu chung cho mọi trang website public (header / footer / liên hệ) — dùng ở Public_site, Site_page.
@@ -142,6 +142,8 @@ class Setting_model extends CI_Model
             // (link chia sẻ maps.app.goo.gl không nhúng được vào iframe).
             'site_directions_url' => $maps ?: 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($address),
             'site_map_embed_url'  => 'https://www.google.com/maps?q='.rawurlencode($address).'&output=embed',
+            // Mã đo lường Google Analytics 4 (G-XXXXXXX) — rỗng thì không gắn GA (xem views/public/layouts/header.php).
+            'site_ga4_id'         => $this->get('site_ga4_id', '') ?: NULL,
         );
     }
 

@@ -100,6 +100,7 @@ class Settings extends MY_Controller
                 'facebook'    => $clean('facebook', 200),
                 'tiktok'      => $clean('tiktok', 200),
                 'google_maps' => $clean('google_maps', 300),
+                'ga4_id'      => strtoupper($clean('ga4_id', 20)),
             );
             $is_url = function ($v) { return $v === '' || (bool) preg_match('#^https?://[^\s]+$#i', $v); };
 
@@ -118,6 +119,10 @@ class Settings extends MY_Controller
             elseif ( ! $is_url($new['facebook']) || ! $is_url($new['tiktok']) || ! $is_url($new['google_maps']))
             {
                 $error = 'Link Facebook / TikTok / Google Maps phải bắt đầu bằng https://';
+            }
+            elseif ($new['ga4_id'] !== '' && ! preg_match('/^G-[A-Z0-9]{4,16}$/', $new['ga4_id']))
+            {
+                $error = 'Mã Google Analytics có dạng G-XXXXXXXXXX (mã đo lường GA4).';
             }
             else
             {

@@ -43,9 +43,5 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo asset_url('assets/public/js/public.js'); ?>"></script>
-<script>
-  // GA4 — chỉ tải nếu có cấu hình PAP_GA4_ID (đặt trong public.js hoặc để trống để tắt hẳn).
-  papInitAnalytics();
-</script>
 </body>
 </html>

@@ -1,72 +1,30 @@
-<section class="pap-section" id="experience" aria-labelledby="experience-title">
+<?php
+  // Các dịch vụ: điện thoại — mỗi dịch vụ một hàng (ảnh nhỏ bên trái, chữ bên phải) cho gọn, cả thẻ bấm được;
+  // máy tính — 4 thẻ một hàng. Mỗi thẻ mở trang nội dung tương ứng (Quản trị → Trang nội dung).
+  $services = array(
+    array('page/khu-vui-choi', 'playground01.jpg', 'bi-balloon', 'Khu vui chơi trẻ em', 'Không gian vui chơi năng động, an toàn cho bé.', 'Giá vé · Ưu đãi', 'click_kids'),
+    array('page/cafe-anvat', 'drinks.jpg', 'bi-cup-hot', 'Cà phê & Ăn vặt', 'Thư giãn với nước uống và đồ ăn vặt.', 'Menu · Combo', 'click_cafe'),
+    array('page/photobooth', 'photobooth.jpg', 'bi-camera', 'Photobooth', 'Lưu lại khoảnh khắc đáng nhớ cùng gia đình, bạn bè.', 'Khung ảnh · Bảng giá', 'click_photobooth'),
+    array('page/pickleball', 'pickleball.jpg', 'bi-trophy', 'Pickleball', 'Môn thể thao vui nhộn, kết nối cộng đồng.', 'Giá sân · Đặt sân', 'click_pickleball'),
+  );
+?>
+<section class="pap-section" id="dich-vu" aria-labelledby="services-title">
   <div class="container">
-    <h2 id="experience-title" class="pap-section-title text-center">Khám phá Nắng Nghiêng</h2>
-    <p class="pap-section-subtitle text-center">Một nơi – nhiều trải nghiệm cho cả gia đình</p>
+    <h2 id="services-title" class="pap-section-title text-center">Bạn muốn làm gì hôm nay?</h2>
+    <p class="pap-section-subtitle text-center">Bấm vào từng mục để xem giá, hình ảnh và ưu đãi.</p>
 
-    <div class="row g-4 mt-2">
-      <div class="col-md-6">
-        <article class="pap-card">
-          <h3 class="pap-card-title">Khu vui chơi trẻ em</h3>
-          <img src="<?php echo base_url('assets/img/public/playground01.jpg'); ?>" alt="Khu vui chơi trẻ em nhiều màu sắc" class="pap-card-img" loading="lazy" width="800" height="450">
-          <div class="pap-card-content">
-            <p class="pap-card-desc">Không gian vui chơi năng động, nhiều hoạt động thú vị dành cho các bé.</p>
-            <ul class="pap-card-tags">
-              <li>An toàn</li>
-              <li>Vui nhộn</li>
-              <li>Phù hợp cho bé</li>
-            </ul>
-            <a href="<?php echo base_url('/page/khu-vui-choi.html'); ?>" class="pap-card-link" onclick="papTrack('click_kids')">Xem khu vui chơi <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </article>
-      </div>
-      <div class="col-md-6">
-        <article class="pap-card">
-          <h3 class="pap-card-title">Cà phê &amp; Ăn vặt</h3>
-          <img src="<?php echo base_url('assets/img/public/drinks.jpg'); ?>" alt="Đồ uống và cà phê" class="pap-card-img" loading="lazy" width="800" height="450">
-          <div class="pap-card-content">
-            <p class="pap-card-desc">Thư giãn, thưởng thức nước uống và đồ ăn vặt.</p>
-            <ul class="pap-card-tags">
-              <li>Đồ uống</li>
-              <li>Combo</li>
-              <li>Menu</li>
-            </ul>
-            <a href="<?php echo base_url('/page/cafe-anvat.html'); ?>" class="pap-card-link" onclick="papTrack('click_cafe')">Khám phá <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </article>
-      </div>
-    </div>
-
-    <div class="row g-4 mt-2">
-      <div class="col-md-6">
-        <article class="pap-card">
-          <h3 class="pap-card-title">Photobooth</h3>
-          <img src="<?php echo base_url('assets/img/public/photobooth.jpg'); ?>" alt="Photobooth để lưu lại khoảnh khắc" class="pap-card-img" loading="lazy" width="800" height="450">
-          <div class="pap-card-content">
-            <p class="pap-card-desc">Lưu lại những khoảnh khắc đáng nhớ cùng gia đình và bạn bè.</p>
-            <ul class="pap-card-tags">
-              <li>Khoảnh khắc</li>
-              <li>Đa dạng</li>
-              <li>Tự làm nhiếp ảnh gia</li>
-            </ul>
-            <a href="<?php echo base_url('/page/photobooth.html'); ?>" class="pap-card-link" onclick="papTrack('click_photobooth')">Khám phá <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </article>
-      </div>
-      <div class="col-md-6">
-        <article class="pap-card">
-          <h3 class="pap-card-title">Pickleball</h3>
-          <img src="<?php echo base_url('assets/img/public/pickleball.jpg'); ?>" alt="Sân pickleball" class="pap-card-img" loading="lazy" width="800" height="450">
-          <div class="pap-card-content">
-            <p class="pap-card-desc">Trải nghiệm môn thể thao vui nhộn và kết nối cộng đồng.</p>
-            <ul class="pap-card-tags">
-              <li>Giá cả hợp lý</li>
-              <li>Đặt sân</li>
-              <li>Nhóm cộng đồng</li>
-            </ul>
-            <a href="<?php echo base_url('/page/pickleball.html'); ?>" class="pap-card-link" onclick="papTrack('click_pickleball')">Khám phá <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </article>
-      </div>
+    <div class="pap-services">
+      <?php foreach ($services as $s): ?>
+        <a class="pap-service" href="<?php echo site_url($s[0]); ?>" onclick="papTrack('<?php echo $s[6]; ?>')">
+          <img src="<?php echo base_url('assets/img/public/'.$s[1]); ?>" alt="" class="pap-service-img" loading="lazy" width="800" height="600">
+          <span class="pap-service-body">
+            <span class="pap-service-title"><i class="bi <?php echo $s[2]; ?>" aria-hidden="true"></i> <?php echo htmlspecialchars($s[3]); ?></span>
+            <span class="pap-service-desc"><?php echo htmlspecialchars($s[4]); ?></span>
+            <span class="pap-service-meta"><?php echo htmlspecialchars($s[5]); ?></span>
+            <span class="pap-service-more">Xem chi tiết <i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+          </span>
+        </a>
+      <?php endforeach; ?>
     </div>
   </div>
 </section>

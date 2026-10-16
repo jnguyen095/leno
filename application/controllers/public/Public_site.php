@@ -40,24 +40,16 @@ class Public_site extends CI_Controller
             array(
                 'current_user' => $current_user,
             ),
-            array(
-                'site_name'        => $this->Setting_model->get_site_name(),
-                'site_phone'       => $this->Setting_model->get_site_phone(),
-                'site_address'     => $this->Setting_model->get_site_address(),
-                'site_zalo'        => $this->Setting_model->get_site_zalo(),
-                'site_facebook'    => $this->Setting_model->get_site_facebook(),
-                'site_tiktok'      => $this->Setting_model->get_site_tiktok(),
-                'site_google_maps' => $this->Setting_model->get_site_google_maps(),
-            ),
+            $site = $this->Setting_model->get_public_site_data(),
             array(
                 'promotions' => $this->Promotion_model->get_active(),
                 'gallery'    => $this->Gallery_model->get_active(),
             ),
             array(
                 'seo' => array(
-                    'title'       => 'Leno – Khu vui chơi, Cà phê & Photobooth tại Buôn Ma Thuột',
-                    'description' => 'Leno – điểm đến vui chơi, cà phê và photobooth dành cho gia đình và bạn bè tại Buôn Ma Thuột.',
-                    'canonical'   => current_url(),
+                    'title'       => $site['site_name'].' – Khu vui chơi, Cà phê, Photobooth & Pickleball tại Buôn Ma Thuột',
+                    'description' => $site['site_name'].' – điểm đến vui chơi cho bé, cà phê & ăn vặt, photobooth và sân pickleball dành cho gia đình, bạn bè tại Buôn Ma Thuột.',
+                    'canonical'   => base_url(),
                 ),
             )
         );

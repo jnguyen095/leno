@@ -23,7 +23,7 @@
 <link href="https://cdn.jsdelivr.net/npm/ckeditor5@43.3.1/dist/browser/ckeditor5-content.css" rel="stylesheet">
 <link href="<?php echo htmlspecialchars(Page_model::FONTS_URL); ?>" rel="stylesheet">
 <?php endif; ?>
-<link href="<?php echo base_url('assets/public/css/public.css'); ?>" rel="stylesheet">
+<link href="<?php echo asset_url('assets/public/css/public.css'); ?>" rel="stylesheet">
 
 <script type="application/ld+json">
 <?php echo json_encode(array(
@@ -52,29 +52,33 @@
       <a class="navbar-brand pap-brand" href="<?php echo site_url(); ?>">
         <img src="<?php echo base_url('assets/img/nang-nghieng-icon.png'); ?>" alt="<?php echo htmlspecialchars($site_name); ?>" width="150px">
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#papNav" aria-controls="papNav" aria-expanded="false" aria-label="Mở menu">
-        <i class="bi bi-list"></i>
+      <?php
+        // Menu dùng chung (layouts/nav_items.php); mục đang xem được tô màu.
+        $pap_nav = include APPPATH.'views/public/layouts/nav_items.php';
+        $pap_current = isset($page['code']) ? 'page/'.$page['code'] : '';
+      ?>
+      <?php // Điện thoại: chữ "Menu" cạnh biểu tượng — dễ hiểu hơn biểu tượng ba gạch đứng một mình. ?>
+      <button class="navbar-toggler pap-menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#papNav" aria-controls="papNav" aria-expanded="false" aria-label="Mở menu">
+        <i class="bi bi-list"></i><span>Menu</span>
       </button>
       <div class="collapse navbar-collapse" id="papNav">
         <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khu-vui-choi.html'); ?>">Khu vui chơi</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/cafe-anvat.html');  ?>">Cà phê &amp; Ăn vặt</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/photobooth.html');  ?>">Photobooth</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/pickleball.html');  ?>">Pickleball</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khuyen-mai.html') ; ?>">Khuyến mãi</a></li>
-          <li class="nav-item">
-            <?php if ( ! empty($current_user)): ?>
-              <?php
-                $pap_home = 'dashboard';
-                if ($current_user['role'] === 'STOCKTAKER') $pap_home = 'stock/adjust';
-              ?>
-              <a class="nav-link" href="<?php echo site_url('me/'.$pap_home); ?>" title="Vào hệ thống quản lý"><i class="bi bi-person-circle"></i>&nbsp;<?php echo htmlspecialchars($current_user['fullname']); ?></a>
-            <?php else: ?>
-              <a class="nav-link" href="<?php echo site_url('login'); ?>" title="Đăng nhập nhân viên"><i class="bi bi-box-arrow-in-right"></i>&nbsp;Đăng nhập</a>
-            <?php endif; ?>
-          </li>
+          <?php foreach ($pap_nav as $item): $active = $item[0] === $pap_current; ?>
+            <li class="nav-item<?php echo $item[0] === '' ? ' d-lg-none' : ''; ?>">
+              <a class="nav-link<?php echo $active ? ' active' : ''; ?>" href="<?php echo $item[0] === '' ? base_url() : site_url($item[0]); ?>"<?php echo $active ? ' aria-current="page"' : ''; ?>>
+                <i class="bi <?php echo $item[1]; ?> d-lg-none"></i><?php echo htmlspecialchars($item[2]); ?>
+              </a>
+            </li>
+          <?php endforeach; ?>
+          <?php if ( ! empty($current_user)): // nhân viên đã đăng nhập: lối tắt vào hệ thống (khách không thấy) ?>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo site_url('me/'.($current_user['role'] === 'STOCKTAKER' ? 'stock/adjust' : 'dashboard')); ?>" title="Vào hệ thống quản lý">
+                <i class="bi bi-person-circle"></i><?php echo htmlspecialchars($current_user['fullname']); ?>
+              </a>
+            </li>
+          <?php endif; ?>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-            <a class="btn pap-btn-primary w-100" href="<?php echo base_url('/page/lien-he.html') ?>">Liên hệ</a>
+            <a class="btn pap-btn-primary w-100" href="<?php echo base_url(); ?>#lien-he"><i class="bi bi-telephone-fill"></i> Liên hệ</a>
           </li>
         </ul>
       </div>

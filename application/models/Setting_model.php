@@ -95,6 +95,56 @@ class Setting_model extends CI_Model
         return $this->get('site_tiktok', '') ?: NULL;
     }
 
+    /** Giờ mở cửa hiện trên website (vd "7:00 – 22:00 hằng ngày") — rỗng thì ẩn. */
+    public function get_site_hours()
+    {
+        return $this->get('site_hours', '') ?: NULL;
+    }
+
+    /** Mọi thông tin website (Cài đặt → Website), giá trị thô — rỗng là chưa đặt. */
+    public function get_site_info()
+    {
+        $info = array();
+        foreach (self::SITE_FIELDS as $key)
+        {
+            $info[$key] = (string) $this->get('site_'.$key, '');
+        }
+        return $info;
+    }
+
+    /** Các khóa site_* sửa được ở Cài đặt → Website. */
+    const SITE_FIELDS = array('name', 'phone', 'address', 'hours', 'zalo', 'facebook', 'tiktok', 'google_maps');
+
+    /**
+     * Dữ liệu chung cho mọi trang website public (header / footer / liên hệ) — dùng ở Public_site, Site_page.
+     * zalo: nhập số điện thoại cũng được, tự đổi thành link https://zalo.me/<số>.
+     */
+    public function get_public_site_data()
+    {
+        $zalo = $this->get_site_zalo();
+        if ($zalo && preg_match('/^[0-9+ .]+$/', $zalo))
+        {
+            $zalo = 'https://zalo.me/'.preg_replace('/[^0-9]/', '', $zalo);
+        }
+        $address = $this->get_site_address();
+        $maps = $this->get_site_google_maps();
+        return array(
+            'site_name'        => $this->get_site_name(),
+            'site_phone'       => $this->get_site_phone(),
+            'site_phone_link'  => 'tel:'.preg_replace('/[^0-9+]/', '', $this->get_site_phone()),
+            'site_address'     => $address,
+            'site_hours'       => $this->get_site_hours(),
+            'site_zalo'        => $zalo,
+            'site_facebook'    => $this->get_site_facebook(),
+            'site_tiktok'      => $this->get_site_tiktok(),
+            'site_google_maps' => $maps,
+            // "Chỉ đường": link Google Maps của quán nếu có, không thì tìm theo địa chỉ. Bản đồ nhúng luôn tìm theo địa chỉ
+            // (link chia sẻ maps.app.goo.gl không nhúng được vào iframe).
+            'site_directions_url' => $maps ?: 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($address),
+            'site_map_embed_url'  => 'https://www.google.com/maps?q='.rawurlencode($address).'&output=embed',
+        );
+    }
+
     // ---- Chuyển khoản / VietQR (in mã QR trên phiếu tạm tính của ứng dụng POS) ----
 
     /** Ngân hàng hỗ trợ VietQR: mã BIN NAPAS => tên hiển thị. */
@@ -173,7 +223,7 @@ class Setting_model extends CI_Model
         );
     }
 
-    /** Link nhúng Google Maps tùy chỉnh — rỗng thì site public tự build link tìm theo địa chỉ. */
+    /** Link Google Maps của quán (nút "Chỉ đường") — rỗng thì tự tìm theo địa chỉ. Bản đồ nhúng luôn tìm theo địa chỉ. */
     public function get_site_google_maps()
     {
         return $this->get('site_google_maps', '') ?: NULL;

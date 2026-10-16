@@ -1,16 +1,29 @@
-<section class="pap-hero" aria-label="Giới thiệu Leno">
+<?php
+  // Đầu trang chủ: ảnh banner + thẻ thông tin (tên, dịch vụ, giờ mở cửa, địa chỉ) và 2 nút chính Gọi / Chỉ đường —
+  // khách mở trang là thấy ngay cách liên hệ, không phải cuộn tìm.
+?>
+<section class="pap-hero" aria-labelledby="hero-title">
+  <img src="<?php echo base_url('assets/img/public/pap-banner.png'); ?>" class="pap-hero-banner" width="2048" height="768" fetchpriority="high"
+       alt="Khu vui chơi trẻ em, cà phê và đồ ăn vặt, photobooth và sân pickleball">
   <div class="container">
-    <div class="row align-items-center g-4 flex-column-reverse flex-lg-row">
-      <div class="col-lg-6 pap-hero-text">
-        <h1 class="pap-hero-title">Leno</h1>
-        <p class="pap-hero-tagline">Vui chơi • Cà phê • Check-in</p>
-        <p class="pap-hero-sub">Một điểm đến cho cả gia đình</p>
-        <div class="pap-hero-cta">
-          <a href="#experience" class="btn pap-btn-primary btn-lg">Khám phá ngay</a>
-        </div>
+    <div class="pap-hero-card">
+      <div class="pap-hero-text">
+        <h1 id="hero-title" class="pap-hero-title">Nắng Nghiêng</h1>
+        <p class="pap-hero-tagline">Khu vui chơi trẻ em · Cà phê &amp; ăn vặt · Photobooth · Pickleball</p>
+        <ul class="pap-hero-info">
+          <?php if ($site_hours): ?>
+            <li><i class="bi bi-clock-fill" aria-hidden="true"></i><span><b>Mở cửa:</b> <?php echo htmlspecialchars($site_hours); ?></span></li>
+          <?php endif; ?>
+          <li><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span><?php echo htmlspecialchars($site_address); ?></span></li>
+        </ul>
       </div>
-      <div class="col-lg-6">
-        <img src="<?php echo base_url('assets/public/images/hero.svg'); ?>" alt="Không gian vui chơi và cà phê tại Leno" class="pap-hero-img" width="1600" height="900">
+      <div class="pap-hero-actions">
+        <a href="<?php echo htmlspecialchars($site_phone_link); ?>" class="btn pap-btn-primary pap-btn-lg" onclick="papTrack('click_call')">
+          <i class="bi bi-telephone-fill"></i> Gọi <?php echo htmlspecialchars($site_phone); ?>
+        </a>
+        <a href="<?php echo htmlspecialchars($site_directions_url); ?>" target="_blank" rel="noopener" class="btn pap-btn-outline pap-btn-lg" onclick="papTrack('click_map')">
+          <i class="bi bi-signpost-2-fill"></i> Chỉ đường
+        </a>
       </div>
     </div>
   </div>

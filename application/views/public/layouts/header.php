@@ -79,13 +79,17 @@
               </a>
             </li>
           <?php endforeach; ?>
-          <?php if ( ! empty($current_user)): // nhân viên đã đăng nhập: lối tắt vào hệ thống (khách không thấy) ?>
-            <li class="nav-item">
+          <li class="nav-item">
+            <?php if ( ! empty($current_user)): // nhân viên đã đăng nhập: lối tắt vào hệ thống ?>
               <a class="nav-link" href="<?php echo site_url('me/'.($current_user['role'] === 'STOCKTAKER' ? 'stock/adjust' : 'dashboard')); ?>" title="Vào hệ thống quản lý">
                 <i class="bi bi-person-circle"></i><?php echo htmlspecialchars($current_user['fullname']); ?>
               </a>
-            </li>
-          <?php endif; ?>
+            <?php else: ?>
+              <a class="nav-link" href="<?php echo site_url('login'); ?>" title="Đăng nhập nhân viên">
+                <i class="bi bi-box-arrow-in-right"></i>Đăng nhập
+              </a>
+            <?php endif; ?>
+          </li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
             <a class="btn pap-btn-primary w-100" href="<?php echo base_url(); ?>#lien-he"><i class="bi bi-telephone-fill"></i> Liên hệ</a>
           </li>

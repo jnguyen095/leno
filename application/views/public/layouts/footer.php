@@ -32,9 +32,6 @@
     <hr class="pap-footer-divider">
     <div class="pap-footer-bottom">
       <span>&copy; <?php echo date('Y'); ?> Nắng Nghiêng. Tất cả các quyền được bảo lưu.</span>
-      <?php if (empty($current_user)): // lối vào cho nhân viên — để nhỏ ở cuối trang, không làm khách bối rối ?>
-        <a href="<?php echo site_url('login'); ?>" class="pap-footer-staff"><i class="bi bi-person-lock"></i> Nhân viên</a>
-      <?php endif; ?>
     </div>
   </div>
 </footer>

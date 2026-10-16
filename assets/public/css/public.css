@@ -82,6 +82,13 @@ img{ max-width:100%; height:auto; }
 @media (min-width: 992px){
   .pap-navbar .nav-link.active{ box-shadow: inset 0 -3px 0 var(--pap-primary); }
 }
+/* Máy tính nhỏ (992–1199px): thu khoảng cách menu + logo để menu nằm gọn một hàng. */
+@media (min-width: 992px){ .pap-navbar .nav-link, .pap-navbar .btn{ white-space:nowrap; } }
+@media (min-width: 992px) and (max-width: 1199.98px){
+  .pap-brand img{ width:120px; }
+  .pap-navbar .nav-link{ padding:.6rem .5rem; font-size:.95rem; }
+  .pap-navbar .btn.pap-btn-primary{ padding:.55rem 1rem; }
+}
 
 /* ---------- Hero (đầu trang chủ): banner + thẻ thông tin đè lên mép dưới banner ---------- */
 .pap-hero{ background: linear-gradient(180deg, #eaf6ff 0%, #ffffff 100%); padding-bottom:1rem; }

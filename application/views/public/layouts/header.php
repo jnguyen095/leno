@@ -69,7 +69,6 @@
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/photobooth.html');  ?>">Photobooth</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/pickleball.html');  ?>">Pickleball</a></li>
           <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/khuyen-mai.html') ; ?>">Khuyến mãi</a></li>
-          <li class="nav-item"><a class="nav-link" href="<?php echo base_url('/page/lien-he.html') ; ?>">Liên hệ</a></li>
           <li class="nav-item">
             <?php if ( ! empty($current_user)): ?>
               <?php
@@ -82,7 +81,7 @@
             <?php endif; ?>
           </li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-            <a class="btn pap-btn-primary w-100" href="<?php echo isset($page) ? base_url() : ''; ?>#location" onclick="papTrack('click_contact')">Liên hệ</a>
+            <a class="btn pap-btn-primary w-100" href="<?php echo base_url('/page/lien-he.html'); ?>" onclick="papTrack('click_contact')">Liên hệ</a>
           </li>
         </ul>
       </div>

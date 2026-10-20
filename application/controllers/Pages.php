@@ -5,10 +5,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Quản trị → Trang nội dung (chỉ ADMIN): soạn trang cho website (Giới thiệu, Khuyến mãi...) bằng CKEditor.
  * Khách xem ở /page/<code>.html (controllers/public/Site_page.php).
  * Ảnh chèn vào nội dung: tải lên assets/uploads/pages/, quản lý (xem, chép link, xoá) ở /me/pages/images.
+ * Tin tức (controllers/News.php) kế thừa controller này với $type = NEWS.
  */
 class Pages extends MY_Controller
 {
     protected $allowed_roles = array('ADMIN');
+
+    /** Loại nội dung quản lý ở controller này (News kế thừa và đổi thành NEWS) + đường dẫn quản trị + chữ hiển thị. */
+    protected $type = 'PAGE';
+    protected $base = 'me/pages';
+    protected $labels = array(
+        'title' => 'Trang nội dung', 'icon' => 'bi-file-earmark-richtext', 'noun' => 'trang',
+        'add' => 'Thêm trang', 'edit' => 'Sửa trang', 'public' => 'page/',
+    );
 
     const UPLOAD_DIR = 'uploads/pages/';
     const MAX_KB = 5120;   // giới hạn tệp gửi lên (trình duyệt đã tự thu nhỏ ảnh > SHRINK_KB trước khi gửi)
@@ -31,10 +40,10 @@ class Pages extends MY_Controller
     public function index()
     {
         $data = array(
-            'page_title'   => 'Trang nội dung',
+            'page_title'   => $this->labels['title'],
             'current_user' => $this->current_user,
-            'pages'        => $this->Page_model->get_all(),
-        );
+            'pages'        => $this->Page_model->get_all($this->type),
+        ) + $this->_view_vars();
         $this->load->view('layout/header', $data);
         $this->load->view('pages/index', $data);
         $this->load->view('layout/footer');
@@ -48,7 +57,7 @@ class Pages extends MY_Controller
     public function edit($id)
     {
         $page = $this->Page_model->get_by_id($id);
-        if ( ! $page) show_404();
+        if ( ! $page || $page['type'] !== $this->type) show_404();
         $this->_form($page);
     }
 
@@ -58,8 +67,8 @@ class Pages extends MY_Controller
         $status = (int) $page['status'] ? 0 : 1;
         $this->Page_model->set_status($page['id'], $status, $this->current_user['id']);
         $this->audit('page', 'TOGGLE', array('status' => (int) $page['status']), array('id' => (int) $page['id'], 'status' => $status));
-        $this->session->set_flashdata('success', ($status ? 'Đã bật' : 'Đã tắt').' trang "'.$page['title'].'".');
-        redirect('me/pages');
+        $this->session->set_flashdata('success', ($status ? 'Đã bật' : 'Đã tắt').' '.$this->labels['noun'].' "'.$page['title'].'".');
+        redirect($this->base);
     }
 
     public function delete($id)
@@ -67,8 +76,14 @@ class Pages extends MY_Controller
         $page = $this->_post_page($id);
         $this->Page_model->delete($page['id']);
         $this->audit('page', 'DELETE', $page, NULL);
-        $this->session->set_flashdata('success', 'Đã xoá trang "'.$page['title'].'". Ảnh đã tải lên vẫn còn trong Thư viện ảnh.');
-        redirect('me/pages');
+        $this->session->set_flashdata('success', 'Đã xoá '.$this->labels['noun'].' "'.$page['title'].'". Ảnh đã tải lên vẫn còn trong Thư viện ảnh.');
+        redirect($this->base);
+    }
+
+    /** Biến chung cho view pages/index, pages/form, pages/_actions. */
+    protected function _view_vars()
+    {
+        return array('type' => $this->type, 'base' => $this->base, 'labels' => $this->labels);
     }
 
     // ---- Thư viện ảnh ----
@@ -141,15 +156,20 @@ class Pages extends MY_Controller
 
     // ---- Nội bộ ----
 
-    private function _form($page)
+    protected function _form($page)
     {
         $error = NULL;
+        $is_news = $this->type === 'NEWS';
         $values = array(
-            'code'        => $page ? $page['code'] : '',
-            'title'       => $page ? $page['title'] : '',
-            'description' => $page ? Page_model::render($page['description']) : '',
-            'status'      => $page ? (int) $page['status'] : 1,
-            'banner'      => $page ? (string) $page['banner'] : '',
+            'code'         => $page ? $page['code'] : '',
+            'title'        => $page ? $page['title'] : '',
+            'description'  => $page ? Page_model::render($page['description']) : '',
+            'status'       => $page ? (int) $page['status'] : 1,
+            'banner'       => $page ? (string) $page['banner'] : '',
+            // Tin tức: tóm tắt, ngày đăng (ô datetime-local: Y-m-d\TH:i), ghim.
+            'summary'      => $page ? (string) $page['summary'] : '',
+            'published_at' => $page && $page['published_at'] ? date('Y-m-d\TH:i', strtotime($page['published_at'])) : date('Y-m-d\TH:i'),
+            'is_pinned'    => $page ? (int) $page['is_pinned'] : 0,
         );
 
         if ($this->input->method() === 'post')
@@ -166,7 +186,11 @@ class Pages extends MY_Controller
                 'description' => (string) $this->input->post('description'),
                 'status'      => $this->input->post('status') ? 1 : 0,
                 'banner'      => $banner,
+                'summary'      => trim(preg_replace('/\s+/u', ' ', (string) $this->input->post('summary', TRUE))),
+                'published_at' => trim((string) $this->input->post('published_at')),
+                'is_pinned'    => $this->input->post('is_pinned') ? 1 : 0,
             );
+            $published = DateTime::createFromFormat('Y-m-d\TH:i', $values['published_at']);
 
             // Ảnh banner mới tải lên (thay ảnh đang chọn).
             if ( ! empty($_FILES['banner_file']['name']))
@@ -185,33 +209,42 @@ class Pages extends MY_Controller
             }
 
             if ($error !== NULL)                                            { /* lỗi tải ảnh banner, đã có thông báo */ }
-            elseif ($values['code'] === '')                                 $error = 'Nhập mã trang.';
-            elseif (strlen($values['code']) > 100)                          $error = 'Mã trang tối đa 100 ký tự.';
-            elseif ( ! preg_match(Page_model::CODE_PATTERN, $values['code'])) $error = 'Mã trang chỉ gồm chữ thường không dấu, số và dấu gạch ngang (vd: gioi-thieu).';
-            elseif ($this->Page_model->code_exists($values['code'], $page ? $page['id'] : NULL)) $error = 'Mã "'.$values['code'].'" đã có trang khác dùng.';
+            elseif ($values['code'] === '')                                 $error = 'Nhập mã (đường dẫn).';
+            elseif (strlen($values['code']) > 100)                          $error = 'Mã tối đa 100 ký tự.';
+            elseif ( ! preg_match(Page_model::CODE_PATTERN, $values['code'])) $error = 'Mã chỉ gồm chữ thường không dấu, số và dấu gạch ngang (vd: gioi-thieu).';
+            elseif ($this->Page_model->code_exists($values['code'], $page ? $page['id'] : NULL)) $error = 'Mã "'.$values['code'].'" đã có trang hoặc tin khác dùng.';
             elseif ($values['title'] === '')                                $error = 'Nhập tiêu đề.';
             elseif (mb_strlen($values['title'], 'UTF-8') > 200)             $error = 'Tiêu đề tối đa 200 ký tự.';
+            elseif ($is_news && mb_strlen($values['summary'], 'UTF-8') > 300) $error = 'Tóm tắt tối đa 300 ký tự.';
+            elseif ($is_news && ( ! $published || $published->format('Y-m-d\TH:i') !== $values['published_at'])) $error = 'Ngày đăng không hợp lệ.';
             else
             {
                 $row = array(
+                    'type'        => $this->type,
                     'code'        => $values['code'],
                     'title'       => $values['title'],
                     'description' => $values['description'],
                     'status'      => $values['status'],
                     'banner'      => $values['banner'] !== '' ? $values['banner'] : NULL,
                 );
+                if ($is_news)
+                {
+                    $row['summary'] = $values['summary'] !== '' ? $values['summary'] : NULL;
+                    $row['published_at'] = $published->format('Y-m-d H:i:00');
+                    $row['is_pinned'] = $values['is_pinned'];
+                }
                 $id = $this->Page_model->save($page ? $page['id'] : NULL, $row, $this->current_user['id']);
                 $this->audit('page', $page ? 'UPDATE' : 'CREATE',
                     $page ? array_diff_key($page, array('description' => 1)) : NULL,
                     array('id' => $id) + array_diff_key($row, array('description' => 1)));
-                $this->session->set_flashdata('success', 'Đã lưu trang "'.$values['title'].'".');
-                redirect($this->input->post('stay') ? 'me/pages/'.$id.'/edit' : 'me/pages');
+                $this->session->set_flashdata('success', 'Đã lưu '.$this->labels['noun'].' "'.$values['title'].'".');
+                redirect($this->input->post('stay') ? $this->base.'/'.$id.'/edit' : $this->base);
                 return;
             }
         }
 
         $data = array(
-            'page_title'   => $page ? 'Sửa trang' : 'Thêm trang',
+            'page_title'   => $page ? $this->labels['edit'] : $this->labels['add'],
             'current_user' => $this->current_user,
             'page'         => $page ? $page + $this->_audit_names($page) : NULL,
             'values'       => $values,
@@ -219,14 +252,14 @@ class Pages extends MY_Controller
             'success'      => $this->session->flashdata('success'),
             'max_kb'       => self::MAX_KB,
             'shrink_kb'    => self::SHRINK_KB,
-        );
+        ) + $this->_view_vars();
         $this->load->view('layout/header', $data);
         $this->load->view('pages/form', $data);
         $this->load->view('layout/footer');
     }
 
     /** Tên người tạo / sửa (để hiện trên form sửa). */
-    private function _audit_names($page)
+    protected function _audit_names($page)
     {
         $ids = array_filter(array((int) $page['created_by'], (int) $page['updated_by']));
         $names = $ids ? array_column($this->db->select('id, fullname, username')->where_in('id', $ids)->get('users')->result_array(), NULL, 'id') : array();
@@ -235,7 +268,7 @@ class Pages extends MY_Controller
     }
 
     /** Lưu ảnh tải lên vào assets/uploads/pages/, thu nhỏ nếu quá lớn. Trả về tên tệp hoặc NULL. */
-    private function _handle_upload($field, &$error)
+    protected function _handle_upload($field, &$error)
     {
         if (empty($_FILES[$field]['name']))
         {
@@ -268,7 +301,7 @@ class Pages extends MY_Controller
      * Ảnh lớn hơn 2MB: thu nhỏ dần (cạnh dài 1920 → 1600 → 1280 → 1024px, chất lượng 82) tới khi dưới 2MB.
      * Cần GD; không có thì giữ nguyên (trình duyệt đã thu nhỏ trước khi gửi). Ảnh GIF giữ nguyên (mất ảnh động).
      */
-    private function _shrink($path, $ext)
+    protected function _shrink($path, $ext)
     {
         clearstatcache(TRUE, $path);
         if ( ! extension_loaded('gd') || $ext === '.gif' || filesize($path) <= self::SHRINK_KB * 1024) return;
@@ -296,7 +329,7 @@ class Pages extends MY_Controller
     }
 
     /** Ảnh trong thư mục, mới nhất trước. $with_usage: kèm danh sách trang đang dùng ảnh. */
-    private function _list_images($with_usage)
+    protected function _list_images($with_usage)
     {
         $dir = FCPATH.'assets/'.self::UPLOAD_DIR;
         $files = is_dir($dir) ? glob($dir.'*.{jpg,jpeg,png,webp,gif}', GLOB_BRACE) : array();
@@ -320,15 +353,15 @@ class Pages extends MY_Controller
         return $out;
     }
 
-    private function _post_page($id)
+    protected function _post_page($id)
     {
         if ($this->input->method() !== 'post') show_404();
         $page = $this->Page_model->get_by_id($id);
-        if ( ! $page) show_404();
+        if ( ! $page || $page['type'] !== $this->type) show_404();
         return $page;
     }
 
-    private function _json($data, $status = 200)
+    protected function _json($data, $status = 200)
     {
         $this->output->set_status_header($status)->set_content_type('application/json')
             ->set_output(json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));

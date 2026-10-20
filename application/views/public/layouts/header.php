@@ -64,7 +64,7 @@
       <?php
         // Menu dùng chung (layouts/nav_items.php); mục đang xem được tô màu.
         $pap_nav = include APPPATH.'views/public/layouts/nav_items.php';
-        $pap_current = isset($page['code']) ? 'page/'.$page['code'] : '';
+        $pap_current = isset($nav_current) ? $nav_current : '';
       ?>
       <?php // Điện thoại: chữ "Menu" cạnh biểu tượng — dễ hiểu hơn biểu tượng ba gạch đứng một mình. ?>
       <button class="navbar-toggler pap-menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#papNav" aria-controls="papNav" aria-expanded="false" aria-label="Mở menu">

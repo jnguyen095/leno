@@ -43,7 +43,7 @@
           <div class="small mt-1">
             <?php if ($used): ?>
               <span class="text-success"><i class="bi bi-link-45deg"></i> Dùng ở:</span>
-              <?php $links = array(); foreach ($used as $code => $title) $links[] = '<a href="'.site_url('page/'.$code).'" target="_blank" rel="noopener">'.htmlspecialchars($title).'</a>'; echo implode(', ', $links); ?>
+              <?php $links = array(); foreach ($used as $u) $links[] = '<a href="'.site_url(Page_model::public_path($u)).'" target="_blank" rel="noopener">'.htmlspecialchars($u['title']).'</a>'; echo implode(', ', $links); ?>
             <?php else: ?>
               <span class="text-muted">Chưa dùng ở trang nào</span>
             <?php endif; ?>

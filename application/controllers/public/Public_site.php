@@ -22,7 +22,7 @@ class Public_site extends CI_Controller
     {
         parent::__construct();
         $this->load->helper('kds');
-        $this->load->model(array('Setting_model', 'Promotion_model', 'Gallery_model'));
+        $this->load->model(array('Setting_model', 'Promotion_model', 'Gallery_model', 'Page_model'));
     }
 
     public function index()
@@ -44,6 +44,7 @@ class Public_site extends CI_Controller
             array(
                 'promotions' => $this->Promotion_model->get_active(),
                 'gallery'    => $this->Gallery_model->get_active(),
+                'news'       => $this->Page_model->get_news_published(3), // khối "Tin mới" dưới banner
             ),
             array(
                 'seo' => array(

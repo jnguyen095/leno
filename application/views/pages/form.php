@@ -1,14 +1,17 @@
 <?php
-  // Thêm / sửa trang nội dung website: mã (đường dẫn), tiêu đề, nội dung (CKEditor 5 — ảnh tải lên máy chủ
-  // + chọn ảnh có sẵn từ Thư viện ảnh), bật / tắt. Thông tin tạo / sửa ở cột phải.
+  // Thêm / sửa trang nội dung hoặc tin tức: mã (đường dẫn), tiêu đề, nội dung (CKEditor 5 — ảnh tải lên máy chủ
+  // + chọn ảnh có sẵn từ Thư viện ảnh), bật / tắt. Tin tức thêm: tóm tắt, ngày đăng (hẹn giờ), ghim.
+  // Thông tin tạo / sửa ở cột phải. Biến: $type (PAGE | NEWS), $base, $labels.
+  $is_news = $type === 'NEWS';
+  $noun = $labels['noun'];
   $dt = function ($v) { return $v ? date('d/m/Y H:i', strtotime($v)) : '—'; };
   $ck = 'https://cdn.jsdelivr.net/npm/ckeditor5@43.3.1/dist';
 ?>
 <link rel="stylesheet" href="<?php echo $ck; ?>/browser/ckeditor5.css">
 <link rel="stylesheet" href="<?php echo htmlspecialchars(Page_model::FONTS_URL); ?>">
 <div class="container-xl py-3 py-md-4 settings-page" style="max-width:1200px">
-  <a href="<?php echo site_url('me/pages'); ?>" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Trang nội dung</a>
-  <h4 class="fw-bold mb-3"><?php echo $page ? 'Sửa trang' : 'Thêm trang'; ?></h4>
+  <a href="<?php echo site_url($base); ?>" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> <?php echo $labels['title']; ?></a>
+  <h4 class="fw-bold mb-3"><?php echo $page ? $labels['edit'] : $labels['add']; ?></h4>
 
   <?php if ($error): ?>
     <div class="alert alert-danger d-flex gap-2 align-items-start py-2 small"><i class="bi bi-exclamation-triangle-fill"></i><div><?php echo htmlspecialchars($error); ?></div></div>
@@ -24,37 +27,49 @@
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label" for="pgTitle">Tiêu đề</label>
-              <input type="text" name="title" id="pgTitle" class="form-control form-control-lg" maxlength="200" required placeholder="VD: Giới thiệu Leno"
+              <input type="text" name="title" id="pgTitle" class="form-control form-control-lg" maxlength="200" required
+                     placeholder="<?php echo $is_news ? 'VD: Khai trương khu vui chơi mới' : 'VD: Giới thiệu Leno'; ?>"
                      value="<?php echo htmlspecialchars($values['title']); ?>">
             </div>
             <div class="col-12">
-              <label class="form-label" for="pgCode">Mã trang <span class="text-muted fw-normal small">(dùng làm đường dẫn)</span></label>
+              <label class="form-label" for="pgCode">Mã <?php echo $noun; ?> <span class="text-muted fw-normal small">(dùng làm đường dẫn)</span></label>
               <div class="input-group">
-                <span class="input-group-text small text-muted"><?php echo htmlspecialchars(rtrim(base_url(), '/')); ?>/page/</span>
-                <input type="text" name="code" id="pgCode" class="form-control" maxlength="100" required placeholder="gioi-thieu"
+                <span class="input-group-text small text-muted"><?php echo htmlspecialchars(rtrim(base_url(), '/').'/'.$labels['public']); ?></span>
+                <input type="text" name="code" id="pgCode" class="form-control" maxlength="100" required placeholder="<?php echo $is_news ? 'khai-truong-khu-vui-choi' : 'gioi-thieu'; ?>"
                        pattern="[a-z0-9]+(-[a-z0-9]+)*" autocapitalize="off" autocomplete="off" spellcheck="false"
                        value="<?php echo htmlspecialchars($values['code']); ?>">
                 <span class="input-group-text">.html</span>
               </div>
-              <div class="form-text">Chữ thường không dấu, số và dấu gạch ngang. Tự gợi ý theo tiêu đề khi thêm trang mới.</div>
+              <div class="form-text">Chữ thường không dấu, số và dấu gạch ngang. Tự gợi ý theo tiêu đề khi thêm mới.</div>
             </div>
+            <?php if ($is_news): ?>
+              <div class="col-12">
+                <label class="form-label" for="pgSummary">Tóm tắt <span class="text-muted fw-normal small">(không bắt buộc — hiện trên thẻ tin ở trang chủ)</span></label>
+                <textarea name="summary" id="pgSummary" class="form-control" rows="2" maxlength="300"
+                          placeholder="1–2 câu ngắn. Để trống thì tự lấy đoạn đầu của nội dung."><?php echo htmlspecialchars($values['summary']); ?></textarea>
+                <div class="form-text text-end"><span id="pgSummaryCount">0</span>/300</div>
+              </div>
+            <?php endif; ?>
             <div class="col-12">
-              <label class="form-label">Ảnh banner <span class="text-muted fw-normal small">(không bắt buộc — hiện tràn ngang ở đầu trang)</span></label>
+              <label class="form-label">Ảnh <?php echo $is_news ? 'đại diện' : 'banner'; ?> <span class="text-muted fw-normal small">(không bắt buộc — <?php echo $is_news ? 'hiện trên thẻ tin và đầu trang tin' : 'hiện tràn ngang ở đầu trang'; ?>)</span></label>
               <?php $has_banner = $values['banner'] !== ''; ?>
               <input type="hidden" name="banner" id="pgBanner" value="<?php echo htmlspecialchars($values['banner']); ?>">
               <div class="pg-banner <?php echo $has_banner ? '' : 'is-empty'; ?>" id="pgBannerBox">
                 <img id="pgBannerImg" alt="" <?php echo $has_banner ? 'src="'.htmlspecialchars(base_url('assets/'.$values['banner'])).'"' : ''; ?>>
-                <div class="pg-banner-empty"><i class="bi bi-image"></i><span>Chưa có banner</span></div>
+                <div class="pg-banner-empty"><i class="bi bi-image"></i><span>Chưa có ảnh</span></div>
               </div>
               <div class="d-flex flex-wrap gap-2 mt-2">
                 <label class="btn btn-sm btn-outline-primary mb-0"><i class="bi bi-upload"></i> Tải ảnh lên
                   <input type="file" name="banner_file" id="pgBannerFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
                 </label>
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="pgBannerPick"><i class="bi bi-images"></i> Chọn từ thư viện</button>
-                <button type="button" class="btn btn-sm btn-outline-danger <?php echo $has_banner ? '' : 'd-none'; ?>" id="pgBannerRemove"><i class="bi bi-x-lg"></i> Bỏ banner</button>
+                <button type="button" class="btn btn-sm btn-outline-danger <?php echo $has_banner ? '' : 'd-none'; ?>" id="pgBannerRemove"><i class="bi bi-x-lg"></i> Bỏ ảnh</button>
                 <span class="small text-muted align-self-center" id="pgBannerStatus"></span>
               </div>
-              <div class="form-text">Nên dùng ảnh ngang, khoảng 1920×600 px. Ảnh lớn hơn <?php echo round($shrink_kb / 1024); ?> MB được tự thu nhỏ.</div>
+              <div class="form-text">
+                <?php echo $is_news ? 'Nên dùng ảnh ngang, khoảng 1200×675 px. Không có ảnh thì lấy ảnh đầu tiên trong nội dung.' : 'Nên dùng ảnh ngang, khoảng 1920×600 px.'; ?>
+                Ảnh lớn hơn <?php echo round($shrink_kb / 1024); ?> MB được tự thu nhỏ.
+              </div>
             </div>
             <div class="col-12">
               <label class="form-label">Nội dung</label>
@@ -72,7 +87,7 @@
           <div class="settings-row">
             <div class="settings-row-text">
               <label class="settings-row-label" for="pgStatus">Hiện trên website</label>
-              <div class="settings-row-help">Tắt: khách mở link sẽ báo không tìm thấy trang.</div>
+              <div class="settings-row-help">Tắt: khách mở link sẽ báo không tìm thấy <?php echo $noun; ?>.</div>
             </div>
             <div class="settings-row-control">
               <div class="form-check form-switch settings-switch m-0">
@@ -81,14 +96,33 @@
             </div>
           </div>
 
+          <?php if ($is_news): ?>
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <label class="settings-row-label" for="pgPinned"><i class="bi bi-pin-angle"></i> Ghim lên đầu</label>
+                <div class="settings-row-help">Luôn hiện đầu tiên ở trang chủ và danh sách tin.</div>
+              </div>
+              <div class="settings-row-control">
+                <div class="form-check form-switch settings-switch m-0">
+                  <input class="form-check-input" type="checkbox" role="switch" name="is_pinned" value="1" id="pgPinned" <?php echo $values['is_pinned'] ? 'checked' : ''; ?>>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <label class="form-label" for="pgPublished">Ngày đăng</label>
+              <input type="datetime-local" name="published_at" id="pgPublished" class="form-control" required value="<?php echo htmlspecialchars($values['published_at']); ?>">
+              <div class="form-text" id="pgPublishedHelp">Chọn ngày giờ trong tương lai để hẹn giờ: tin tự hiện cho khách đúng lúc đó.</div>
+            </div>
+          <?php endif; ?>
+
           <?php if ($page): ?>
             <div class="mt-3">
-              <label class="form-label small text-muted mb-1">Link trang</label>
+              <label class="form-label small text-muted mb-1">Link <?php echo $noun; ?></label>
               <div class="input-group input-group-sm">
-                <input type="text" class="form-control" id="pgLink" readonly value="<?php echo htmlspecialchars(site_url('page/'.$page['code'])); ?>">
+                <input type="text" class="form-control" id="pgLink" readonly value="<?php echo htmlspecialchars(site_url(Page_model::public_path($page))); ?>">
                 <button type="button" class="btn btn-outline-secondary" id="pgCopy" data-bs-toggle="tooltip" title="Chép link"><i class="bi bi-clipboard"></i></button>
-                <a class="btn btn-outline-secondary" href="<?php echo site_url('page/'.$page['code']); ?>" target="_blank" rel="noopener" data-bs-toggle="tooltip"
-                   title="<?php echo (int) $page['status'] ? 'Xem trên website' : 'Xem trước (trang đang tắt)'; ?>"><i class="bi bi-box-arrow-up-right"></i></a>
+                <a class="btn btn-outline-secondary" href="<?php echo site_url(Page_model::public_path($page)); ?>" target="_blank" rel="noopener" data-bs-toggle="tooltip"
+                   title="<?php echo (int) $page['status'] && ! Page_model::is_scheduled($page) ? 'Xem trên website' : 'Xem trước (khách chưa xem được)'; ?>"><i class="bi bi-box-arrow-up-right"></i></a>
               </div>
             </div>
             <dl class="pg-meta mt-3 mb-0">
@@ -108,12 +142,29 @@
   </div>
 
   <div class="pb-savebar">
-    <a href="<?php echo site_url('me/pages'); ?>" class="btn btn-outline-secondary">Huỷ</a>
+    <a href="<?php echo site_url($base); ?>" class="btn btn-outline-secondary">Huỷ</a>
     <button class="btn btn-outline-primary" name="stay" value="1"><i class="bi bi-floppy"></i> Lưu &amp; sửa tiếp</button>
-    <button class="btn btn-brand px-4"><i class="bi bi-check2"></i> Lưu trang</button>
+    <button class="btn btn-brand px-4"><i class="bi bi-check2"></i> Lưu <?php echo $noun; ?></button>
   </div>
   <?php echo form_close(); ?>
 </div>
+
+<?php if ($is_news): ?>
+<script>
+(function(){
+  // Đếm ký tự tóm tắt; nhắc khi ngày đăng ở tương lai (hẹn giờ).
+  var s = document.getElementById('pgSummary'), c = document.getElementById('pgSummaryCount');
+  var upd = function(){ c.textContent = s.value.length; }; s.addEventListener('input', upd); upd();
+  var p = document.getElementById('pgPublished'), h = document.getElementById('pgPublishedHelp'), base = h.innerHTML;
+  var chk = function(){
+    var t = p.value ? new Date(p.value) : null;
+    h.innerHTML = t && t > new Date() ? '<span class="text-warning-emphasis"><i class="bi bi-clock"></i> Hẹn giờ: tin tự hiện cho khách lúc ' + t.toLocaleString('vi-VN', {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) + '.</span>' : base;
+  };
+  p.addEventListener('change', chk); p.addEventListener('input', chk); chk();
+})();
+</script>
+<?php endif; ?>
+
 
 <?php // Hộp chọn ảnh có sẵn (nút "Thư viện ảnh" trên thanh công cụ trình soạn thảo). ?>
 <div class="modal fade" id="pgImgModal" tabindex="-1" aria-hidden="true">

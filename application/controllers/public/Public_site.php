@@ -47,8 +47,8 @@ class Public_site extends CI_Controller
             ),
             array(
                 'seo' => array(
-                    'title'       => $site['site_name'].' – Khu vui chơi, Cà phê, Photobooth & Pickleball tại Buôn Ma Thuột',
-                    'description' => $site['site_name'].' – điểm đến vui chơi cho bé, cà phê & ăn vặt, photobooth và sân pickleball dành cho gia đình, bạn bè tại Buôn Ma Thuột.',
+                    'title'       => $site['site_name'].' – Khu vui chơi, Cà phê tại Buôn Ma Thuột',
+                    'description' => $site['site_name'].' – điểm đến vui chơi cho bé, cà phê & ăn vặt dành cho gia đình, bạn bè tại Buôn Ma Thuột.',
                     'canonical'   => base_url(),
                 ),
             )

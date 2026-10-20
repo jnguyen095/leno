@@ -59,7 +59,7 @@
   <nav class="navbar navbar-expand-lg pap-navbar" aria-label="Điều hướng chính">
     <div class="container">
       <a class="navbar-brand pap-brand" href="<?php echo site_url(); ?>">
-        <img src="<?php echo base_url('assets/img/nang-nghieng-icon.png'); ?>" alt="<?php echo htmlspecialchars($site_name); ?>" width="150px">
+        <img src="<?php echo base_url('assets/img/nang-nghieng-brand.png'); ?>" alt="<?php echo htmlspecialchars($site_name); ?>" width="150px">
       </a>
       <?php
         // Menu dùng chung (layouts/nav_items.php); mục đang xem được tô màu.

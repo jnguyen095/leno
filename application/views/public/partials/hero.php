@@ -3,13 +3,13 @@
   // khách mở trang là thấy ngay cách liên hệ, không phải cuộn tìm.
 ?>
 <section class="pap-hero" aria-labelledby="hero-title">
-  <img src="<?php echo base_url('assets/img/public/pap-banner.png'); ?>" class="pap-hero-banner" width="2048" height="768" fetchpriority="high"
+  <img src="<?php echo base_url('assets/img/nang_nghieng_banner.png'); ?>" class="pap-hero-banner" width="2048" height="768" fetchpriority="high"
        alt="Khu vui chơi trẻ em, cà phê và đồ ăn vặt, photobooth và sân pickleball">
   <div class="container">
     <div class="pap-hero-card">
       <div class="pap-hero-text">
         <h1 id="hero-title" class="pap-hero-title">Nắng Nghiêng</h1>
-        <p class="pap-hero-tagline">Khu vui chơi trẻ em · Cà phê &amp; ăn vặt · Photobooth · Pickleball</p>
+        <p class="pap-hero-tagline">Khu vui chơi trẻ em · Cà phê &amp; ăn vặt</p>
         <ul class="pap-hero-info">
           <?php if ($site_hours): ?>
             <li><i class="bi bi-clock-fill" aria-hidden="true"></i><span><b>Mở cửa:</b> <?php echo htmlspecialchars($site_hours); ?></span></li>

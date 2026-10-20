@@ -15,14 +15,70 @@ class Page_model extends CI_Model
     /** Google Fonts có thể chọn trong trình soạn thảo (bảng phông ở views/pages/form.php) — nạp ở cả trang soạn và trang website. */
     const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,700;1,400&family=Roboto:ital,wght@0,400;0,700;1,400&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@400;700&display=swap&subset=vietnamese';
 
-    public function get_all()
+    const TYPES = array('PAGE', 'NEWS');
+
+    /** Danh sách quản trị theo loại: trang nội dung mới sửa trước; tin tức ghim trước rồi mới đăng trước. */
+    public function get_all($type = 'PAGE')
     {
-        return $this->db->select('p.*, cu.fullname AS created_by_name, uu.fullname AS updated_by_name')
+        $this->db->select('p.*, cu.fullname AS created_by_name, uu.fullname AS updated_by_name')
             ->from($this->table.' p')
             ->join('users cu', 'cu.id = p.created_by', 'left')
             ->join('users uu', 'uu.id = p.updated_by', 'left')
-            ->order_by('p.updated_at', 'DESC')->order_by('p.id', 'DESC')
-            ->get()->result_array();
+            ->where('p.type', $type);
+        if ($type === 'NEWS') $this->db->order_by('p.is_pinned', 'DESC')->order_by('p.published_at', 'DESC');
+        return $this->db->order_by('p.updated_at', 'DESC')->order_by('p.id', 'DESC')->get()->result_array();
+    }
+
+    /** Tin khách xem được: đang bật, đã tới ngày đăng. Ghim trước, mới trước. $except_id: bỏ tin đang xem. */
+    public function get_news_published($limit, $offset = 0, $except_id = NULL)
+    {
+        $this->_where_news_published();
+        if ($except_id) $this->db->where('id !=', (int) $except_id);
+        return $this->db->order_by('is_pinned', 'DESC')->order_by('published_at', 'DESC')->order_by('id', 'DESC')
+            ->limit((int) $limit, (int) $offset)->get($this->table)->result_array();
+    }
+
+    public function count_news_published()
+    {
+        $this->_where_news_published();
+        return $this->db->count_all_results($this->table);
+    }
+
+    private function _where_news_published()
+    {
+        $this->db->where('type', 'NEWS')->where('status', 1)
+            ->group_start()->where('published_at IS NULL', NULL, FALSE)->or_where('published_at <=', date('Y-m-d H:i:s'))->group_end();
+    }
+
+    /** Đường dẫn trên website: tin tức /tin-tuc/<code>, trang nội dung /page/<code> (dùng với site_url). */
+    public static function public_path($page)
+    {
+        return (isset($page['type']) && $page['type'] === 'NEWS' ? 'tin-tuc/' : 'page/').$page['code'];
+    }
+
+    /** Tin hẹn giờ (ngày đăng trong tương lai). */
+    public static function is_scheduled($page)
+    {
+        return ! empty($page['published_at']) && $page['published_at'] > date('Y-m-d H:i:s');
+    }
+
+    /** Tóm tắt cho thẻ tin: ô Tóm tắt, rỗng thì lấy đoạn đầu nội dung. */
+    public static function excerpt($page, $max = 160)
+    {
+        $text = trim((string) $page['summary']);
+        if ($text === '')
+        {
+            $text = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags(str_replace('<', ' <', (string) $page['description'])), ENT_QUOTES, 'UTF-8')));
+        }
+        return mb_strlen($text, 'UTF-8') > $max ? rtrim(mb_substr($text, 0, $max - 1, 'UTF-8')).'…' : $text;
+    }
+
+    /** Ảnh đại diện cho thẻ tin: banner, không có thì ảnh đầu tiên trong nội dung; NULL nếu không có ảnh. */
+    public static function thumbnail($page)
+    {
+        if ( ! empty($page['banner'])) return base_url('assets/'.$page['banner']);
+        if (preg_match('/<img[^>]+src="([^"]+)"/i', self::render($page['description']), $m)) return $m[1];
+        return NULL;
     }
 
     public function get_by_id($id)
@@ -80,13 +136,12 @@ class Page_model extends CI_Model
         return $this->db->where('id', (int) $id)->delete($this->table);
     }
 
-    /** Trang nào đang dùng tệp ảnh này (trong nội dung hoặc làm banner): [code => title]. */
+    /** Trang / tin nào đang dùng tệp ảnh này (trong nội dung hoặc làm banner): [[code, type, title], ...]. */
     public function pages_using($file_name)
     {
-        $rows = $this->db->select('code, title')
+        return $this->db->select('code, type, title')
             ->group_start()->like('description', $file_name)->or_like('banner', $file_name)->group_end()
             ->get($this->table)->result_array();
-        return array_column($rows, 'title', 'code');
     }
 
     /** Nội dung để hiện (website / trình soạn thảo): đổi {{base_url}} về địa chỉ thật. */

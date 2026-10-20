@@ -13,4 +13,5 @@ return array(
     array('page/photobooth',    'bi-camera',       'Photobooth'),
     array('page/pickleball',    'bi-trophy',       'Pickleball'),
     array('page/khuyen-mai',    'bi-gift',         'Khuyến mãi'),
+    array('tin-tuc',            'bi-megaphone',    'Tin tức'),
 );

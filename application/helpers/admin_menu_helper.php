@@ -45,6 +45,7 @@ if ( ! function_exists('admin_menu_groups'))
                 array($can('admin.payroll'), 'me/payroll/admin', 'bi-wallet2', 'Quản lý lương', 'Chấm công, bảng lương'),
             )),
             array('Website', 'bi-globe2', array(
+                array($is_admin, 'me/news', 'bi-newspaper', 'Tin tức', 'Tin mới, cập nhật trên trang chủ'),
                 array($is_admin, 'me/pages', 'bi-file-earmark-richtext', 'Trang nội dung', 'Giới thiệu, khuyến mãi... trên website'),
                 array($is_admin, 'me/pages/images', 'bi-images', 'Thư viện ảnh', 'Ảnh dùng trong trang nội dung'),
             )),

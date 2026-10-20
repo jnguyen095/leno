@@ -132,6 +132,15 @@ $route['me/pages/(:num)/edit'] = 'pages/edit/$1';
 $route['me/pages/(:num)/toggle'] = 'pages/toggle/$1';
 $route['me/pages/(:num)/delete'] = 'pages/delete/$1';
 $route['page/([a-z0-9-]+)'] = 'public/site_page/show/$1';
+
+// Tin tức (chỉ ADMIN soạn — controllers/News.php dùng chung Pages). Khách xem ở /tin-tuc.html và /tin-tuc/<code>.html.
+$route['me/news'] = 'news/index';
+$route['me/news/create'] = 'news/create';
+$route['me/news/(:num)/edit'] = 'news/edit/$1';
+$route['me/news/(:num)/toggle'] = 'news/toggle/$1';
+$route['me/news/(:num)/delete'] = 'news/delete/$1';
+$route['tin-tuc'] = 'public/site_page/news_list';
+$route['tin-tuc/([a-z0-9-]+)'] = 'public/site_page/news/$1';
 $route['me/settings'] = 'settings/index';
 $route['me/audit-logs'] = 'audit_logs/index';
 $route['me/audit-logs/purge'] = 'audit_logs/purge';

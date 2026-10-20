@@ -2,10 +2,9 @@
   // Các dịch vụ: điện thoại — mỗi dịch vụ một hàng (ảnh nhỏ bên trái, chữ bên phải) cho gọn, cả thẻ bấm được;
   // máy tính — 4 thẻ một hàng. Mỗi thẻ mở trang nội dung tương ứng (Quản trị → Trang nội dung).
   $services = array(
-    array('page/khu-vui-choi', 'playground01.jpg', 'bi-balloon', 'Khu vui chơi trẻ em', 'Không gian vui chơi năng động, an toàn cho bé.', 'Giá vé · Ưu đãi', 'click_kids'),
-    array('page/cafe-anvat', 'drinks.jpg', 'bi-cup-hot', 'Cà phê & Ăn vặt', 'Thư giãn với nước uống và đồ ăn vặt.', 'Menu · Combo', 'click_cafe'),
-    array('page/photobooth', 'photobooth.jpg', 'bi-camera', 'Photobooth', 'Lưu lại khoảnh khắc đáng nhớ cùng gia đình, bạn bè.', 'Khung ảnh · Bảng giá', 'click_photobooth'),
-    array('page/pickleball', 'pickleball.jpg', 'bi-trophy', 'Pickleball', 'Môn thể thao vui nhộn, kết nối cộng đồng.', 'Giá sân · Đặt sân', 'click_pickleball'),
+    array('page/khu-vui-choi', 'ng-khu-vui-choi.jpg', 'bi-balloon', 'Khu vui chơi trẻ em', 'Không gian vui chơi năng động, an toàn cho bé.', 'Giá vé · Ưu đãi', 'click_kids'),
+    array('page/ca-phe-nuoc-uong', 'nn-ca-phe.jpg', 'bi-cup-hot', 'Cà phê & Nước uống', 'Thư giãn với nước uống và đồ ăn vặt.', 'Menu · Combo', 'click_cafe'),
+    array('page/an-vat', 'nn-fast-food.jpg', 'bi-camera', 'Ăn vặt - Fast food', 'Lưu lại khoảnh khắc đáng nhớ cùng gia đình, bạn bè.', 'Khung ảnh · Bảng giá', 'click_photobooth'),
   );
 ?>
 <section class="pap-section" id="dich-vu" aria-labelledby="services-title">

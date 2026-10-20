@@ -163,7 +163,7 @@ img{ max-width:100%; height:auto; }
 .pap-service-more{ margin-top:auto; padding-top:.25rem; font-weight:700; color: var(--pap-primary); display:inline-flex; align-items:center; gap:.2rem; }
 @media (min-width: 768px){ .pap-services{ grid-template-columns:1fr 1fr; gap:1.25rem; } }
 @media (min-width: 1200px){
-  .pap-services{ grid-template-columns:repeat(4, 1fr); }
+  .pap-services{ grid-template-columns:repeat(3, 1fr); }
   .pap-service{ flex-direction:column; }
   .pap-service-img{ width:100%; max-width:none; aspect-ratio:4/3; }
   .pap-service-body{ padding:1rem 1.1rem 1.15rem; flex:1; }

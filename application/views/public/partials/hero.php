@@ -3,7 +3,7 @@
   // khách mở trang là thấy ngay cách liên hệ, không phải cuộn tìm.
 ?>
 <section class="pap-hero" aria-labelledby="hero-title">
-  <img src="<?php echo base_url('assets/img/nang_nghieng_banner.png'); ?>" class="pap-hero-banner" width="2048" height="768" fetchpriority="high"
+  <img src="<?php echo base_url('assets/img/public/pap-banner.png'); ?>" class="pap-hero-banner" width="2048" height="768" fetchpriority="high"
        alt="Khu vui chơi trẻ em, cà phê và đồ ăn vặt, photobooth và sân pickleball">
   <div class="container">
     <div class="pap-hero-card">

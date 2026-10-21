@@ -338,7 +338,7 @@ span#orderItemCountBadge {
 .orders-stat-value{ font-weight:700; font-size:1.15rem; line-height:1.3; }
 .orders-stat-value small{ font-weight:400; color:#868e96; font-size:.75rem; }
 
-.orders-card{ background:#fff; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; }
+.orders-card{ background:#fff; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; padding:15px 10px }
 .orders-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.5rem 1rem 0; border-bottom:1px solid #eef0f2; }
 .orders-tabs{ display:flex; gap:1.25rem; overflow-x:auto; scrollbar-width:none; }
 .orders-tabs::-webkit-scrollbar{ display:none; }
@@ -767,3 +767,29 @@ body.pos-focus .app-footer, body:has(.pos-topbar) .app-footer{ display:none; }
 .bn-drop:hover{ border-color:var(--bs-primary); background:#f1f7fe; }
 .bn-drop i{ font-size:2rem; color:var(--bs-primary); }
 .bn-drop small{ color:#6c757d; }
+
+/* ===== Báo cáo ===== */
+.rp-card{ display:flex; align-items:center; gap:.85rem; padding:1rem 1.1rem; background:#fff; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06);
+  text-decoration:none; color:inherit; border:1px solid #eef0f2; height:100%; }
+.rp-card:hover{ border-color:var(--bs-primary); box-shadow:0 6px 18px rgba(0,0,0,.08); color:inherit; }
+.rp-card-icon{ flex:0 0 44px; height:44px; border-radius:12px; background:#eef5ff; color:var(--bs-primary); display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+.rp-card b{ display:block; }
+.rp-card small{ display:block; color:#6c757d; }
+.rp-ranges{ display:flex; flex-wrap:wrap; gap:.4rem; }
+.rp-chip{ display:inline-flex; align-items:center; min-height:36px; padding:.3rem .9rem; border-radius:999px; border:1px solid #dee2e6; background:#fff;
+  color:#495057; text-decoration:none; font-weight:600; font-size:.9rem; }
+.rp-chip:hover{ border-color:var(--bs-primary); color:var(--bs-primary); }
+.rp-chip.active{ background:var(--bs-primary); border-color:var(--bs-primary); color:#fff; }
+.rp-sort{ color:inherit; text-decoration:none; white-space:nowrap; }
+.rp-sort:hover{ color:var(--bs-primary); }
+.rp-sort i{ font-size:.75em; }
+.rp-table tfoot td, .rp-total{ font-weight:700; background:#f8f9fa; }
+.rp-item{ border-bottom:1px solid #eef0f2; padding:.75rem .25rem; }
+.rp-item.rp-total{ border-bottom:0; border-radius:.75rem; padding:.75rem; margin-top:.5rem; }
+.rp-item-nums{ display:flex; justify-content:space-between; gap:1rem; margin-top:.5rem; }
+.rp-item-nums small{ display:block; color:#6c757d; font-size:.75rem; }
+.rp-mobile-sort a{ font-weight:600; }
+/* Báo cáo danh mục: thanh tỉ trọng doanh thu. */
+.rp-share{ width:80px; height:6px; border-radius:999px; background:#e9ecef; overflow:hidden; flex-shrink:0; }
+.rp-share span{ display:block; height:100%; background:var(--bs-primary); border-radius:999px; }
+.rp-item .rp-share{ width:100%; margin-top:.5rem; }

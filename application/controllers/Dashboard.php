@@ -50,6 +50,8 @@ class Dashboard extends MY_Controller
             'shop_offers'   => $this->pos_service->shop_offers(),
             'price_books'   => $this->Price_book_model->get_applicable(),
             'discounts'     => $this->Discount_model->get_applicable(),
+            // Lãi gộp (giá vốn là thông tin nội bộ) — chỉ ADMIN thấy.
+            'profit'        => $this->current_user['role'] === 'ADMIN' ? $this->Dashboard_model->profit($from, $to) : NULL,
             'show_activity' => $this->_can_see_activity(),
             'activity'      => $this->_can_see_activity() ? $this->Dashboard_model->activity(25) : array(),
         );

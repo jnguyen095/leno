@@ -66,6 +66,9 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         <?php if ($can('pha_che')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/pha-che'); ?>"><i class="bi bi-cup-straw"></i> Pha chế</a></li>
         <?php endif; ?>
+        <?php $CI->load->model('Report_model'); if (Report_model::allowed($current_user)): // Báo cáo: ADMIN hoặc được gán ít nhất một báo cáo (nhóm "Báo cáo" ở Gán quyền menu). ?>
+        <li class="nav-item"><a class="nav-link <?php echo strpos(uri_string(), 'me/reports') === 0 ? 'active' : ''; ?>" href="<?php echo site_url('me/reports'); ?>"><i class="bi bi-bar-chart-line"></i> Báo cáo</a></li>
+        <?php endif; ?>
         <?php if ($show_inventory_menu):
           $CI->load->model('Inventory_item_model');
           $low_stock_count = $CI->Inventory_item_model->count_low_stock();

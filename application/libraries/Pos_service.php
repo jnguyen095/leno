@@ -270,7 +270,9 @@ class Pos_service
             $qty = max(1, (int) (isset($it['qty']) ? $it['qty'] : 1));
             $note = clean_note(isset($it['note']) ? $it['note'] : NULL);
             list($price, $original) = self::book_price($product['price'], $book_prices, $product['id']);
-            $this->CI->Order_item_model->add_or_merge($order_id, $product['id'], $qty, $price, $note, $original);
+            // Chụp giá vốn lúc bán (sửa giá vốn món về sau không đổi lãi của đơn này).
+            $cost = $product['cost_price'] !== NULL ? (float) $product['cost_price'] : NULL;
+            $this->CI->Order_item_model->add_or_merge($order_id, $product['id'], $qty, $price, $note, $original, $cost);
             $added[] = array('product_id' => $product['id'], 'qty' => $qty, 'note' => $note);
         }
 

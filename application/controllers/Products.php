@@ -52,6 +52,11 @@ class Products extends MY_Controller
 
             if ( ! $error)
             {
+                $error = $this->_validate_cost();
+            }
+
+            if ( ! $error)
+            {
                 $image = $this->_handle_image_upload($error);
             }
 
@@ -96,7 +101,8 @@ class Products extends MY_Controller
 
         if ($this->input->method() === 'post')
         {
-            $image = $this->_handle_image_upload($error, $product['image']);
+            $error = $this->_validate_cost();
+            $image = $error ? NULL : $this->_handle_image_upload($error, $product['image']);
 
             if ( ! $error)
             {
@@ -168,6 +174,8 @@ class Products extends MY_Controller
                         'track_inventory'       => $row['track_inventory'] ? 1 : 0,
                         'status'                => 'ACTIVE',
                     );
+                    // Giá vốn: cột tuỳ chọn — ô trống thì giữ giá vốn đang có (file mẫu cũ không có cột này).
+                    if (isset($row['cost_price']) && $row['cost_price'] !== NULL) $product_data['cost_price'] = (float) $row['cost_price'];
                     if ($existing)
                     {
                         // Import không đụng tới ảnh sản phẩm hiện có (Excel không mang được file ảnh).
@@ -218,15 +226,15 @@ class Products extends MY_Controller
         header('Content-Disposition: attachment; filename="mau_import_san_pham.csv"');
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'w');
-        fputcsv($out, array('SKU', 'Tên sản phẩm', 'Danh mục', 'Giá', 'Mô tả', 'Danh mục kho (tuỳ chọn)', 'Quản lý kho (YES/NO)', 'Trạng thái'));
-        fputcsv($out, array('CF001', 'Cà phê đen đá', 'Cà phê', '25000', 'Cà phê phin truyền thống', 'Pha Chế', 'YES', 'ACTIVE'));
-        fputcsv($out, array('CK001', 'Bánh croissant', 'Bánh ngọt', '25000', 'Bơ Pháp giòn xốp', '', 'NO', 'ACTIVE'));
+        fputcsv($out, array('SKU', 'Tên sản phẩm', 'Danh mục', 'Giá', 'Mô tả', 'Danh mục kho (tuỳ chọn)', 'Quản lý kho (YES/NO)', 'Trạng thái', 'Giá vốn (tuỳ chọn)'));
+        fputcsv($out, array('CF001', 'Cà phê đen đá', 'Cà phê', '25000', 'Cà phê phin truyền thống', 'Pha Chế', 'YES', 'ACTIVE', '9000'));
+        fputcsv($out, array('CK001', 'Bánh croissant', 'Bánh ngọt', '25000', 'Bơ Pháp giòn xốp', '', 'NO', 'ACTIVE', ''));
         fclose($out);
     }
 
     /**
      * Đọc file upload (.xlsx/.csv), trả về mảng ['valid' => [...], 'invalid' => [...]].
-     * Cột: SKU, Tên sản phẩm, Danh mục, Giá, Mô tả, Danh mục kho, Quản lý kho, Trạng thái.
+     * Cột: SKU, Tên sản phẩm, Danh mục, Giá, Mô tả, Danh mục kho, Quản lý kho, Trạng thái, Giá vốn (tuỳ chọn).
      */
     private function _parse_import_file($file, $cat_by_name, $inv_cat_by_name)
     {
@@ -264,6 +272,7 @@ class Products extends MY_Controller
             $inv_cat_name = isset($r[5]) ? trim($r[5]) : '';
             $track_inventory_raw = isset($r[6]) ? strtoupper(trim($r[6])) : 'NO';
             $status = isset($r[7]) ? strtoupper(trim($r[7])) : 'ACTIVE';
+            $cost = isset($r[8]) ? str_replace(array('.', ',', ' '), '', trim($r[8])) : '';
 
             if ($sku === '' && $name === '')
             {
@@ -278,6 +287,7 @@ class Products extends MY_Controller
             if ($name === '') $errors[] = 'Thiếu tên sản phẩm';
             if ( ! $category_id) $errors[] = 'Không tìm thấy danh mục "'.$cat_name.'"';
             if ($price === '' || ! is_numeric($price) || $price < 0) $errors[] = 'Giá không hợp lệ';
+            if ($cost !== '' && ( ! ctype_digit($cost))) $errors[] = 'Giá vốn không hợp lệ';
             if ($inv_cat_name !== '')
             {
                 if (isset($inv_cat_by_name[mb_strtolower($inv_cat_name)]))
@@ -307,6 +317,7 @@ class Products extends MY_Controller
                 'category_id'           => $category_id,
                 'category_name'         => $cat_name,
                 'price'                 => (float) $price,
+                'cost_price'            => $cost !== '' ? (float) $cost : NULL,
                 'description'           => $description,
                 'inventory_category_id' => $inventory_category_id,
                 'inventory_category_name' => $inv_cat_name,
@@ -318,6 +329,20 @@ class Products extends MY_Controller
         return $preview;
     }
 
+    /** Ô giá vốn: "12.000" / "12000" -> 12000; trống -> NULL. Giá trị sai đã bị chặn ở _validate_cost(). */
+    private function _cost_input()
+    {
+        $raw = str_replace(array('.', ',', ' '), '', trim((string) $this->input->post('cost_price')));
+        return $raw === '' ? NULL : (float) $raw;
+    }
+
+    /** Lỗi ô giá vốn (NULL nếu hợp lệ / để trống). */
+    private function _validate_cost()
+    {
+        $raw = str_replace(array('.', ',', ' '), '', trim((string) $this->input->post('cost_price')));
+        return $raw === '' || ctype_digit($raw) ? NULL : 'Giá vốn chỉ gồm chữ số (để trống nếu chưa có).';
+    }
+
     private function _form_data($image)
     {
         $inventory_category_id = (int) $this->input->post('inventory_category_id');
@@ -327,6 +352,8 @@ class Products extends MY_Controller
             'sku'                   => $this->input->post('sku', TRUE),
             'product_name'          => $this->input->post('product_name', TRUE),
             'price'                 => (float) $this->input->post('price'),
+            // Giá vốn không bắt buộc: để trống = chưa có giá vốn (NULL), không phải 0đ.
+            'cost_price'            => $this->_cost_input(),
             'description'           => $this->input->post('description', TRUE),
             'status'                => $this->input->post('status') ?: 'ACTIVE',
             'image'                 => $image,

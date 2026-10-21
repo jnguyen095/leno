@@ -44,7 +44,7 @@
 
   <div class="table-responsive">
     <table class="table bg-white shadow-sm rounded align-middle">
-      <thead class="table-light"><tr><th>Ảnh</th><th>SKU</th><th>Tên món</th><th>Danh mục</th><th>Kho</th><th class="text-end">Giá</th><th>Trạng thái</th><th></th></tr></thead>
+      <thead class="table-light"><tr><th>Ảnh</th><th>SKU</th><th>Tên món</th><th>Danh mục</th><th>Kho</th><th class="text-end">Giá bán</th><th class="text-end">Giá vốn</th><th class="text-end">Lãi / món</th><th>Trạng thái</th><th></th></tr></thead>
       <tbody>
       <?php foreach ($products as $p): ?>
         <tr>
@@ -66,6 +66,14 @@
             <?php endif; ?>
           </td>
           <td class="text-end"><?php echo money_format_vnd($p['price']); ?></td>
+          <?php // Giá vốn không bắt buộc: chưa nhập thì để gạch; lãi âm (bán lỗ) tô đỏ. ?>
+          <?php if ($p['cost_price'] !== NULL): $profit = (float) $p['price'] - (float) $p['cost_price']; ?>
+            <td class="text-end text-muted"><?php echo money_format_vnd($p['cost_price']); ?></td>
+            <td class="text-end text-nowrap fw-semibold <?php echo $profit < 0 ? 'text-danger' : 'text-success'; ?>"><?php echo money_format_vnd($profit); ?>
+              <?php if ((float) $p['price'] > 0): ?><div class="small fw-normal"><?php echo round($profit / (float) $p['price'] * 100); ?>%</div><?php endif; ?></td>
+          <?php else: ?>
+            <td class="text-end text-muted small" colspan="2" data-bs-toggle="tooltip" title="Bấm Sửa để nhập giá vốn">chưa có giá vốn</td>
+          <?php endif; ?>
           <td><span class="badge bg-<?php echo $p['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $p['status']; ?></span></td>
           <td>
             <a href="<?php echo site_url('me/products/'.$p['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa món"><i class="bi bi-pencil"></i></a>
@@ -76,7 +84,7 @@
         </tr>
       <?php endforeach; ?>
       <?php if (empty($products)): ?>
-        <tr><td colspan="8" class="text-center text-muted py-4">Không có sản phẩm nào phù hợp.</td></tr>
+        <tr><td colspan="10" class="text-center text-muted py-4">Không có sản phẩm nào phù hợp.</td></tr>
       <?php endif; ?>
       </tbody>
     </table>

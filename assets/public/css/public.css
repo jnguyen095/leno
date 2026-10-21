@@ -290,6 +290,23 @@ img{ max-width:100%; height:auto; }
 
 /* ---------- Footer ---------- */
 .pap-footer{ background: var(--pap-dark); color:#cfd8e0; padding:3rem 0 1.5rem; }
+/* Linh vật ngó lên từ mép trên chân trang (bên phải): phần thò lên ~40px — ít hơn khoảng đệm dưới của khối phía trên
+   nên không che nội dung; phần còn lại nằm trong khoảng đệm trên của chân trang (tăng thêm khi có linh vật). */
+.pap-footer{ position:relative; }
+.pap-footer-has-mascot{ padding-top:3rem; }
+.pap-footer-mascot-wrap{ position:absolute; top:0; left:0; right:0; height:0; pointer-events:none; }
+.pap-footer-mascot{ position:absolute; right:.75rem; bottom:-48px; height:88px; width:auto; filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));
+  transform-origin:bottom center; animation:pap-mascot-wave 5s ease-in-out infinite; }
+@keyframes pap-mascot-wave{ 0%, 72%, 100%{ transform:rotate(0); } 79%{ transform:rotate(-6deg); } 86%{ transform:rotate(5deg); } 93%{ transform:rotate(-3deg); } }
+@media (prefers-reduced-motion: reduce){ .pap-footer-mascot{ animation:none; } }
+@media (min-width: 768px){
+  .pap-footer-has-mascot{ padding-top:5rem; }
+  .pap-footer-mascot{ height:120px; bottom:-76px; right:1.5rem; }
+}
+@media (min-width: 1200px){
+  .pap-footer-has-mascot{ padding-top:6.25rem; }
+  .pap-footer-mascot{ height:140px; bottom:-96px; }
+}
 .pap-footer-brand{ color:#fff; font-weight:900; font-size:1.3rem; letter-spacing:.5px; }
 .pap-footer-tagline{ margin-top:.4rem; color:#a9b7c3; }
 .pap-footer-social{ display:flex; gap:.75rem; margin-top:1rem; }

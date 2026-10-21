@@ -1,6 +1,13 @@
 </main>
 
-<footer class="pap-footer">
+<?php $pap_mascot = false; ?>
+<footer class="pap-footer<?php echo $pap_mascot ? ' pap-footer-has-mascot' : ''; ?>">
+  <?php // Linh vật "ngó" lên từ mép trên chân trang (trang trí, bên phải). Chưa có tệp ảnh thì không hiện. ?>
+  <?php if ($pap_mascot): ?>
+    <div class="container pap-footer-mascot-wrap" aria-hidden="true">
+      <img src="<?php echo asset_url('assets/img/public/mascot-smile.png'); ?>" alt="" class="pap-footer-mascot" loading="lazy">
+    </div>
+  <?php endif; ?>
   <div class="container">
     <div class="row g-4">
       <div class="col-md-4">

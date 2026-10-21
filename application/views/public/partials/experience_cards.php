@@ -3,7 +3,7 @@
   // máy tính — 4 thẻ một hàng. Mỗi thẻ mở trang nội dung tương ứng (Quản trị → Trang nội dung).
   $services = array(
     array('page/khu-vui-choi', 'playground01.jpg', 'bi-balloon', 'Khu vui chơi trẻ em', 'Không gian vui chơi năng động, an toàn cho bé.', 'Giá vé · Ưu đãi', 'click_kids'),
-    array('page/cafe-anvat', 'drinks.jpg', 'bi-cup-hot', 'Cà phê & Ăn vặt', 'Thư giãn với nước uống và đồ ăn vặt.', 'Menu · Combo', 'click_cafe'),
+    array('page/ca-phe-nuoc-uong', 'drinks.jpg', 'bi-cup-hot', 'Cà phê & Nước uống', 'Thư giãn với nước uống và đồ ăn vặt.', 'Menu · Combo', 'click_cafe'),
     array('page/photobooth', 'photobooth.jpg', 'bi-camera', 'Photobooth', 'Lưu lại khoảnh khắc đáng nhớ cùng gia đình, bạn bè.', 'Khung ảnh · Bảng giá', 'click_photobooth'),
     array('page/pickleball', 'pickleball.jpg', 'bi-trophy', 'Pickleball', 'Môn thể thao vui nhộn, kết nối cộng đồng.', 'Giá sân · Đặt sân', 'click_pickleball'),
   );

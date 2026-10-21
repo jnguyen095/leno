@@ -5,8 +5,8 @@ class Order_item_model extends CI_Model
 {
     protected $table = 'order_items';
 
-    /** $original_price: giá gốc khi bán theo bảng giá (NULL = bán đúng giá gốc). */
-    public function add($order_session_id, $product_id, $qty, $price, $note = NULL, $original_price = NULL)
+    /** $original_price: giá gốc khi bán theo bảng giá (NULL = bán đúng giá gốc). $cost_price: giá vốn lúc bán (NULL = món chưa có giá vốn). */
+    public function add($order_session_id, $product_id, $qty, $price, $note = NULL, $original_price = NULL, $cost_price = NULL)
     {
         $data = array(
             'order_session_id' => $order_session_id,
@@ -14,6 +14,7 @@ class Order_item_model extends CI_Model
             'qty'              => $qty,
             'price'            => $price,
             'original_price'   => $original_price,
+            'cost_price'       => $cost_price,
             'amount'           => $price * $qty,
             'note'             => $note,
             'status'           => 'ACTIVE',
@@ -28,7 +29,7 @@ class Order_item_model extends CI_Model
      * để bấm thêm nhiều lần không sinh nhiều dòng; phần tăng thêm sẽ được báo bếp ở
      * lần "Thông báo" kế tiếp (qty > notified_qty).
      */
-    public function add_or_merge($order_session_id, $product_id, $qty, $price, $note = NULL, $original_price = NULL)
+    public function add_or_merge($order_session_id, $product_id, $qty, $price, $note = NULL, $original_price = NULL, $cost_price = NULL)
     {
         if ($note === NULL || $note === '')
         {
@@ -44,7 +45,7 @@ class Order_item_model extends CI_Model
                 return $existing['id'];
             }
         }
-        return $this->add($order_session_id, $product_id, $qty, $price, $note ?: NULL, $original_price);
+        return $this->add($order_session_id, $product_id, $qty, $price, $note ?: NULL, $original_price, $cost_price);
     }
 
     /** Ghi lại phần bếp đã nhận ở lần "Thông báo": số lượng + ghi chú tại thời điểm đó. */

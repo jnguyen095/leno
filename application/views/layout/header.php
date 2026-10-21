@@ -8,6 +8,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <link href="<?php echo asset_url('assets/css/style_v1.3.css'); ?>" rel="stylesheet">
 <link href="<?php echo asset_url('assets/css/receipt_k80.css'); ?>" rel="stylesheet">
+<link rel="icon" href="<?php echo base_url('assets/img/favicon/favicon.ico'); ?>">
 </head>
 <body>
 <script>
@@ -64,6 +65,9 @@ try { if (window.self !== window.top && window.parent.LenoPosShell) document.bod
         <?php endif; ?>
         <?php if ($can('pha_che')): ?>
         <li class="nav-item"><a class="nav-link" href="<?php echo site_url('me/pha-che'); ?>"><i class="bi bi-cup-straw"></i> Pha chế</a></li>
+        <?php endif; ?>
+        <?php $CI->load->model('Report_model'); if (Report_model::allowed($current_user)): // Báo cáo: ADMIN hoặc được gán ít nhất một báo cáo (nhóm "Báo cáo" ở Gán quyền menu). ?>
+        <li class="nav-item"><a class="nav-link <?php echo strpos(uri_string(), 'me/reports') === 0 ? 'active' : ''; ?>" href="<?php echo site_url('me/reports'); ?>"><i class="bi bi-bar-chart-line"></i> Báo cáo</a></li>
         <?php endif; ?>
         <?php if ($show_inventory_menu):
           $CI->load->model('Inventory_item_model');

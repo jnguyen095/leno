@@ -112,6 +112,13 @@ $route['me/recipes/(:num)/delete'] = 'recipes/delete/$1';
 $route['me/recipes/(:num)/ingredients/add'] = 'recipes/add_ingredient/$1';
 $route['me/recipes/(:num)/ingredients/(:num)/delete'] = 'recipes/delete_ingredient/$1/$2';
 
+// Báo cáo — quyền từng báo cáo gán ở Quản trị → Gán quyền menu (nhóm "Báo cáo"), xem controllers/Reports.php.
+$route['me/reports'] = 'reports/index';
+$route['me/reports/products'] = 'reports/products';
+$route['me/reports/products-export'] = 'reports/products_export';
+$route['me/reports/categories'] = 'reports/categories';
+$route['me/reports/categories-export'] = 'reports/categories_export';
+
 $route['me/cashbook'] = 'cashbook/index';
 $route['me/cashbook/save'] = 'cashbook/save';
 $route['me/cashbook/export'] = 'cashbook/export';

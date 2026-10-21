@@ -43,20 +43,45 @@
   <div class="dash-grid <?php echo $show_activity ? '' : 'no-activity'; ?>">
     <div class="dash-main">
       <?php // ---------- Chỉ số chính ---------- ?>
+      <?php
+        // ADMIN có thêm ô Lãi gộp (5 ô): máy tính 5 ô một hàng, điện thoại 2 ô một hàng (ô cuối trải hết hàng).
+        $col = $profit ? 'col-6 col-md-4 col-xl' : 'col-6 col-xl-3';
+        $col_last = $profit ? 'col-12 col-md-4 col-xl' : 'col-6 col-xl-3';
+      ?>
       <div class="row g-2 g-md-3 mb-3">
-        <div class="col-6 col-xl-3">
+        <div class="<?php echo $col; ?>">
           <div class="dash-tile"><div class="dash-tile-label"><i class="bi bi-cash-stack"></i> Doanh thu</div>
             <div class="dash-tile-value"><?php echo $money($kpis['revenue']); ?><small>đ</small></div><?php echo $delta_html($rev_delta); ?></div>
         </div>
-        <div class="col-6 col-xl-3">
+        <?php if ($profit): ?>
+        <div class="<?php echo $col; ?>">
+          <?php // Lãi gộp = doanh thu (chưa VAT, sau giảm giá) − giá vốn, chỉ tính món có giá vốn — xem Dashboard_model::profit(). ?>
+          <div class="dash-tile"><div class="dash-tile-label"><i class="bi bi-graph-up-arrow"></i> Lãi gộp</div>
+            <?php if ($profit['coverage'] === NULL): ?>
+              <div class="dash-tile-value">—</div><span class="dash-sub">chưa có đơn</span>
+            <?php elseif ($profit['coverage'] === 0): ?>
+              <div class="dash-tile-value">—</div>
+              <span class="dash-sub"><a href="<?php echo site_url('me/products'); ?>">Nhập giá vốn món</a> để tính lãi</span>
+            <?php else: ?>
+              <div class="dash-tile-value <?php echo $profit['profit'] < 0 ? 'text-danger' : ''; ?>"><?php echo $money($profit['profit']); ?><small>đ</small></div>
+              <span class="dash-sub" data-bs-toggle="tooltip"
+                    title="Doanh thu (chưa VAT, sau giảm giá) <?php echo $money($profit['revenue']); ?>đ − giá vốn <?php echo $money($profit['cost']); ?>đ<?php echo $profit['coverage'] < 100 ? '. Chỉ tính món đã nhập giá vốn ('.$profit['coverage'].'% doanh thu) — lãi thật còn thêm phần món chưa có giá vốn.' : '.'; ?>">
+                biên lãi <?php echo (int) $profit['margin']; ?>%<?php echo $profit['coverage'] < 100 ? ' · <span class="text-warning-emphasis">trên '.$profit['coverage'].'% doanh thu</span>' : ''; ?>
+                <i class="bi bi-info-circle"></i>
+              </span>
+            <?php endif; ?>
+          </div>
+        </div>
+        <?php endif; ?>
+        <div class="<?php echo $col; ?>">
           <div class="dash-tile"><div class="dash-tile-label"><i class="bi bi-receipt"></i> Đơn đã thanh toán</div>
             <div class="dash-tile-value"><?php echo $kpis['orders']; ?></div><?php echo $delta_html($ord_delta); ?></div>
         </div>
-        <div class="col-6 col-xl-3">
+        <div class="<?php echo $col; ?>">
           <div class="dash-tile"><div class="dash-tile-label"><i class="bi bi-calculator"></i> Trung bình / đơn</div>
             <div class="dash-tile-value"><?php echo $money($kpis['avg']); ?><small>đ</small></div><span class="dash-sub"><?php echo $kpis['items']; ?> món đã bán</span></div>
         </div>
-        <div class="col-6 col-xl-3">
+        <div class="<?php echo $col_last; ?>">
           <div class="dash-tile"><div class="dash-tile-label"><i class="bi bi-hourglass-split"></i> Đang phục vụ</div>
             <div class="dash-tile-value"><?php echo $open_now['count']; ?> <small>đơn</small></div><span class="dash-sub">chưa thu <?php echo $money($open_now['total']); ?>đ · ngay lúc này</span></div>
         </div>

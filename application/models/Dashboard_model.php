@@ -35,6 +35,38 @@ class Dashboard_model extends CI_Model
         );
     }
 
+    /**
+     * Lãi gộp của đơn đã thanh toán trong khoảng: chỉ tính các món có giá vốn (order_items.cost_price chụp lúc bán).
+     * Mỗi đơn: doanh thu món có giá vốn − giá vốn − phần giảm giá tổng đơn chia theo tỉ lệ doanh thu của các món đó.
+     * VAT không tính vào doanh thu (không phải tiền của quán).
+     *  - profit: lãi gộp; revenue: doanh thu (sau giảm giá) của các món có giá vốn; cost: tổng giá vốn;
+     *  - margin: profit / revenue (%); coverage: tỉ lệ doanh thu món đã có giá vốn (%) — < 100 thì lãi thật chưa đủ.
+     */
+    public function profit($from, $to)
+    {
+        $w = $this->_paid_range($from, $to);
+        $r = $this->db->query("SELECT
+                COALESCE(SUM(t.sub_cost - t.cost - CASE WHEN t.sub_all > 0 THEN t.discount * t.sub_cost / t.sub_all ELSE 0 END), 0) AS profit,
+                COALESCE(SUM(t.sub_cost - CASE WHEN t.sub_all > 0 THEN t.discount * t.sub_cost / t.sub_all ELSE 0 END), 0) AS revenue,
+                COALESCE(SUM(t.cost), 0) AS cost, COALESCE(SUM(t.sub_cost), 0) AS sub_cost, COALESCE(SUM(t.sub_all), 0) AS sub_all
+            FROM (
+                SELECT o.id, o.discount_amount AS discount,
+                    SUM(i.amount) AS sub_all,
+                    SUM(CASE WHEN i.cost_price IS NOT NULL THEN i.amount ELSE 0 END) AS sub_cost,
+                    SUM(CASE WHEN i.cost_price IS NOT NULL THEN i.cost_price * i.qty ELSE 0 END) AS cost
+                FROM order_sessions o JOIN order_items i ON i.order_session_id = o.id AND i.status = 'ACTIVE'
+                WHERE $w GROUP BY o.id, o.discount_amount
+            ) t")->row_array();
+        $revenue = (float) $r['revenue'];
+        return array(
+            'profit'   => (float) $r['profit'],
+            'revenue'  => $revenue,
+            'cost'     => (float) $r['cost'],
+            'margin'   => $revenue > 0 ? round((float) $r['profit'] / $revenue * 100) : NULL,
+            'coverage' => (float) $r['sub_all'] > 0 ? (int) floor((float) $r['sub_cost'] / (float) $r['sub_all'] * 100) : NULL,
+        );
+    }
+
     /** Tiền đã thu theo hình thức (bảng payments, theo giờ thanh toán): method => total. */
     public function by_method($from, $to)
     {

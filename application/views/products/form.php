@@ -43,7 +43,18 @@
       </div>
       <div class="col-6">
         <label class="form-label">Giá bán (đ)</label>
-        <input type="number" name="price" class="form-control" required min="0" step="1000" value="<?php echo $product ? (int)$product['price'] : ''; ?>">
+        <input type="number" name="price" id="priceInput" class="form-control" required min="0" step="1000" value="<?php echo $product ? (int)$product['price'] : ''; ?>">
+      </div>
+      <?php
+        // Giá vốn (không bắt buộc): gửi lỗi thì giữ chữ vừa nhập, không thì giá đã lưu. Trống = chưa có giá vốn.
+        $cost_value = $this->input->post('cost_price') !== NULL ? (string) $this->input->post('cost_price')
+          : ($product && $product['cost_price'] !== NULL ? number_format((float) $product['cost_price'], 0, ',', '.') : '');
+      ?>
+      <div class="col-6">
+        <label class="form-label" for="costInput">Giá vốn (đ) <span class="text-muted fw-normal small">không bắt buộc</span></label>
+        <input type="text" name="cost_price" id="costInput" class="form-control" inputmode="numeric" maxlength="15" placeholder="VD: 12.000"
+               value="<?php echo htmlspecialchars($cost_value); ?>">
+        <div class="form-text" id="profitHint">Nhập để xem lãi mỗi món trên Tổng quan.</div>
       </div>
       <?php if ($product): ?>
       <div class="col-6">
@@ -84,6 +95,26 @@
   <?php echo form_close(); ?>
 </div>
 <script src="<?php echo asset_url('assets/js/image-compress.js'); ?>"></script>
+<script>
+// Giá vốn: tự thêm dấu chấm hàng nghìn khi rời ô; hiện lãi mỗi món + tỉ lệ lãi theo giá bán.
+(function(){
+  var price = document.getElementById('priceInput'), cost = document.getElementById('costInput'), hint = document.getElementById('profitHint');
+  var fmt = function(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
+  var num = function(s){ s = String(s).replace(/[\s.,]/g, ''); return /^\d+$/.test(s) ? parseInt(s, 10) : null; };
+  function show(){
+    var p = num(price.value), c = num(cost.value);
+    if (cost.value.trim() === '') { hint.className = 'form-text'; hint.textContent = 'Nhập để xem lãi mỗi món trên Tổng quan.'; return; }
+    if (c === null) { hint.className = 'form-text text-danger'; hint.textContent = 'Chỉ nhập chữ số.'; return; }
+    if ( ! p) { hint.className = 'form-text'; hint.textContent = ''; return; }
+    var profit = p - c, pct = Math.round(profit / p * 100);
+    hint.className = 'form-text ' + (profit < 0 ? 'text-danger' : 'text-success');
+    hint.innerHTML = profit < 0 ? '<i class="bi bi-exclamation-triangle"></i> Lỗ ' + fmt(-profit) + 'đ mỗi món'
+      : '<i class="bi bi-graph-up-arrow"></i> Lãi ' + fmt(profit) + 'đ mỗi món (' + pct + '% giá bán)';
+  }
+  cost.addEventListener('blur', function(){ var c = num(cost.value); if (c !== null) cost.value = fmt(c); show(); });
+  cost.addEventListener('input', show); price.addEventListener('input', show); show();
+})();
+</script>
 <?php if ( ! $product): ?>
 <script>
 // SKU tự động: đổi danh mục -> lấy SKU kế tiếp; gõ tay -> giữ mã tự nhập (bấm "Tự động" để quay lại).

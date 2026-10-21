@@ -95,6 +95,21 @@ img{ max-width:100%; height:auto; }
 /* ---------- Hero (đầu trang chủ): banner + thẻ thông tin đè lên mép dưới banner ---------- */
 .pap-hero{ background: linear-gradient(180deg, #eaf6ff 0%, #ffffff 100%); padding-bottom:1rem; }
 .pap-hero-banner{ display:block; width:100%; height:auto; max-height:520px; object-fit:cover; }
+/* Băng chuyền banner: mọi ảnh cùng khung 8:3 (không nhảy chiều cao khi chuyển); chấm chỉ số đặt cao hơn mép dưới
+   vì thẻ thông tin đè lên đáy banner; mũi tên tròn mờ, rõ hơn khi rê chuột. */
+.pap-hero-carousel .pap-hero-banner{ aspect-ratio:8 / 3; height:auto; }
+.pap-hero-carousel .carousel-indicators{ bottom:2rem; margin-bottom:0; }
+.pap-hero-carousel .carousel-indicators [data-bs-target]{ width:10px; height:10px; border-radius:50%; border:0; margin:0 5px; background:#fff; opacity:.6; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+.pap-hero-carousel .carousel-indicators .active{ opacity:1; background: var(--pap-secondary); }
+.pap-hero-carousel .carousel-control-prev, .pap-hero-carousel .carousel-control-next{ width:56px; opacity:1; }
+.pap-carousel-arrow{ width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.75); color: var(--pap-dark);
+  display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 2px 8px rgba(0,0,0,.2); transition:background .15s; }
+.pap-hero-carousel .carousel-control-prev:hover .pap-carousel-arrow, .pap-hero-carousel .carousel-control-next:hover .pap-carousel-arrow{ background:#fff; }
+@media (max-width: 575.98px){
+  .pap-carousel-arrow{ width:32px; height:32px; font-size:1rem; }
+  .pap-hero-carousel .carousel-control-prev, .pap-hero-carousel .carousel-control-next{ width:44px; }
+}
+@media (min-width: 992px){ .pap-hero-carousel .carousel-indicators{ bottom:5.25rem; } .pap-hero-carousel .carousel-control-prev, .pap-hero-carousel .carousel-control-next{ padding-bottom:4.5rem; } }
 .pap-hero-card{
   position:relative; background:#fff; border-radius: var(--pap-radius); box-shadow: 0 12px 32px rgba(28,43,57,.12);
   padding:1.25rem 1.25rem 1.4rem; margin-top:-1.5rem; text-align:center;

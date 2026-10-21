@@ -22,7 +22,7 @@ class Public_site extends CI_Controller
     {
         parent::__construct();
         $this->load->helper('kds');
-        $this->load->model(array('Setting_model', 'Promotion_model', 'Gallery_model', 'Page_model'));
+        $this->load->model(array('Setting_model', 'Promotion_model', 'Gallery_model', 'Page_model', 'Site_banner_model'));
     }
 
     public function index()
@@ -45,6 +45,9 @@ class Public_site extends CI_Controller
                 'promotions' => $this->Promotion_model->get_active(),
                 'gallery'    => $this->Gallery_model->get_active(),
                 'news'       => $this->Page_model->get_news_published(3), // khối "Tin mới" dưới banner
+                // Banner đầu trang (băng chuyền) — Quản trị → Banner trang chủ; rỗng thì dùng ảnh mặc định.
+                'banners'        => $this->Site_banner_model->get_showing(),
+                'banner_seconds' => (int) $this->Setting_model->get('site_banner_seconds', (string) Site_banner_model::DEFAULT_SECONDS),
             ),
             array(
                 'seo' => array(

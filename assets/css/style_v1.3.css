@@ -745,3 +745,25 @@ body.pos-focus .app-footer, body:has(.pos-topbar) .app-footer{ display:none; }
 .pg-banner.is-empty .pg-banner-empty{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.25rem; color:#868e96; font-size:.875rem; }
 .pg-banner.is-empty .pg-banner-empty i{ font-size:1.75rem; }
 @media (max-width: 575.98px){ .pg-banner{ aspect-ratio:16/7; } }
+
+/* ===== Quản trị → Banner trang chủ ===== */
+.bn-item{ display:flex; flex-direction:column; gap:.6rem; border:1px solid #e9ecef; border-radius:.85rem; padding:.6rem; margin-bottom:.6rem; background:#fff; }
+.bn-item.is-off .bn-thumb{ opacity:.45; filter:grayscale(.6); }
+.bn-thumb{ width:100%; aspect-ratio:8 / 3; object-fit:cover; border-radius:.6rem; background:#f1f3f5; }
+.bn-body{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:.45rem; }
+.bn-form{ display:grid; gap:.4rem; }
+.bn-actions{ display:flex; gap:.35rem; }
+.bn-actions form{ flex:1 1 0; }
+.bn-actions .btn{ width:100%; min-height:38px; }
+@media (min-width: 768px){
+  .bn-item{ flex-direction:row; align-items:center; }
+  .bn-thumb{ flex:0 0 200px; width:200px; }
+  .bn-form{ grid-template-columns:1fr 1fr auto; }
+  .bn-actions{ flex:0 0 auto; flex-direction:column; }
+  .bn-actions .btn{ min-height:0; }
+}
+.bn-drop{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.35rem; text-align:center; cursor:pointer;
+  border:2px dashed #ced4da; border-radius:.85rem; padding:1.25rem .75rem; background:#f8f9fa; color:#495057; margin:0; }
+.bn-drop:hover{ border-color:var(--bs-primary); background:#f1f7fe; }
+.bn-drop i{ font-size:2rem; color:var(--bs-primary); }
+.bn-drop small{ color:#6c757d; }

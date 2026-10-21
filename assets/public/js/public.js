@@ -27,6 +27,19 @@
       });
     }
 
+    /* ---------- Banner trang chủ: băng chuyền tự chạy (thời gian ở data-pap-interval), dừng khi rê chuột,
+       vuốt được trên điện thoại. Người dùng bật "giảm chuyển động" trên máy thì không tự chạy. ---------- */
+    var heroCarousel = document.getElementById('papHeroCarousel');
+    if (heroCarousel && window.bootstrap){
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.bootstrap.Carousel.getOrCreateInstance(heroCarousel, {
+        interval: reduceMotion ? false : (parseInt(heroCarousel.getAttribute('data-pap-interval'), 10) || 5000),
+        ride: reduceMotion ? false : 'carousel',
+        pause: 'hover',
+        touch: true
+      });
+    }
+
     /* ---------- Gallery filter ---------- */
     var filterBtns = document.querySelectorAll('.pap-filter-btn');
     var galleryItems = document.querySelectorAll('.pap-gallery-item');

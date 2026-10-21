@@ -183,8 +183,8 @@
         <div id="receivedGroup">
           <div class="mb-2">
             <label class="form-label">Khách đưa</label>
-            <input type="number" name="received_amount" id="receivedAmount" class="form-control form-control-lg" min="0" step="1000"
-                   value="<?php echo (int) $order['total_amount']; ?>" oninput="calcChange()">
+            <input type="number" name="received_amount" id="receivedAmount" class="form-control form-control-lg" min="0" step="any" inputmode="numeric"
+                   value="<?php echo (int) ceil((float) $order['total_amount']); ?>" oninput="calcChange()">
           </div>
           <?php // Gợi ý số tiền khách đưa (đủ tiền + làm tròn lên theo mệnh giá) — bấm để điền nhanh. Vẽ bởi renderCashSuggestions(). ?>
           <div class="cash-suggest mb-2" id="cashSuggest"></div>
@@ -286,7 +286,7 @@ function applyPanel(res){
     document.getElementById('provisionalSlipWrap').innerHTML = res.slip_html;
     ORDER_TOTAL = res.total;
     document.getElementById('payTotal').textContent = res.total_text;
-    document.getElementById('receivedAmount').value = Math.round(res.total);
+    document.getElementById('receivedAmount').value = Math.ceil(res.total);
     document.getElementById('payPendingCount').textContent = res.pending_count;
     document.getElementById('payPendingWarn').classList.toggle('d-none', ! res.pending_count);
   }
@@ -474,6 +474,9 @@ function onPayMethodChange(){
   var checked = document.querySelector('#payModal input[name="payment_method"]:checked');
   var isCash = ! checked || checked.value === 'CASH';
   document.getElementById('receivedGroup').classList.toggle('d-none', !isCash);
+  // Ô "Khách đưa" chỉ dùng cho tiền mặt: tắt hẳn khi chuyển khoản — trình duyệt bỏ qua kiểm tra ô ẩn (nếu không sẽ chặn nút
+  // Xác nhận với lỗi "An invalid form control ... is not focusable") và không gửi lên (máy chủ tính đủ tổng tiền).
+  document.getElementById('receivedAmount').disabled = !isCash;
   // Chuyển khoản: hiện tài khoản nhận (Cài đặt → Chuyển khoản) để đối chiếu.
   var info = document.getElementById('transferInfo');
   if (info) info.classList.toggle('d-none', isCash);

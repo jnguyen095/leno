@@ -20,10 +20,6 @@ class Pages extends MY_Controller
     );
 
     const UPLOAD_DIR = 'uploads/pages/';
-    const MAX_KB = 5120;   // giới hạn tệp gửi lên (trình duyệt đã tự thu nhỏ ảnh > SHRINK_KB trước khi gửi)
-    const SHRINK_KB = 2048; // ảnh lớn hơn 2MB được thu nhỏ (nếu máy chủ có thư viện ảnh GD)
-    const MAX_SIDE = 1920;
-    const IMAGE_TYPES = 'jpg|jpeg|png|webp|gif';
 
     public function __construct()
     {
@@ -35,6 +31,7 @@ class Pages extends MY_Controller
             exit;
         }
         $this->load->model('Page_model');
+        $this->load->library('image_upload');
     }
 
     public function index()
@@ -95,8 +92,8 @@ class Pages extends MY_Controller
             'page_title'   => 'Thư viện ảnh',
             'current_user' => $this->current_user,
             'images'       => $this->_list_images(TRUE),
-            'max_kb'       => self::MAX_KB,
-            'shrink_kb'    => self::SHRINK_KB,
+            'max_kb'       => Image_upload::MAX_KB,
+            'shrink_kb'    => Image_upload::SHRINK_KB,
             'error'        => $this->session->flashdata('error'),
             'success'      => $this->session->flashdata('success'),
         );
@@ -250,8 +247,8 @@ class Pages extends MY_Controller
             'values'       => $values,
             'error'        => $error,
             'success'      => $this->session->flashdata('success'),
-            'max_kb'       => self::MAX_KB,
-            'shrink_kb'    => self::SHRINK_KB,
+            'max_kb'       => Image_upload::MAX_KB,
+            'shrink_kb'    => Image_upload::SHRINK_KB,
         ) + $this->_view_vars();
         $this->load->view('layout/header', $data);
         $this->load->view('pages/form', $data);
@@ -270,62 +267,7 @@ class Pages extends MY_Controller
     /** Lưu ảnh tải lên vào assets/uploads/pages/, thu nhỏ nếu quá lớn. Trả về tên tệp hoặc NULL. */
     protected function _handle_upload($field, &$error)
     {
-        if (empty($_FILES[$field]['name']))
-        {
-            $error = 'Chưa chọn ảnh.';
-            return NULL;
-        }
-
-        $dir = FCPATH.'assets/'.self::UPLOAD_DIR;
-        if ( ! is_dir($dir)) mkdir($dir, 0755, TRUE);
-
-        $this->load->library('upload', array(
-            'upload_path'   => $dir,
-            'allowed_types' => self::IMAGE_TYPES,
-            'max_size'      => self::MAX_KB,
-            'encrypt_name'  => TRUE,
-            'file_ext_tolower' => TRUE,
-        ));
-        if ( ! $this->upload->do_upload($field))
-        {
-            $error = $this->upload->display_errors('', '');
-            return NULL;
-        }
-
-        $file = $this->upload->data();
-        $this->_shrink($file['full_path'], $file['file_ext']);
-        return $file['file_name'];
-    }
-
-    /**
-     * Ảnh lớn hơn 2MB: thu nhỏ dần (cạnh dài 1920 → 1600 → 1280 → 1024px, chất lượng 82) tới khi dưới 2MB.
-     * Cần GD; không có thì giữ nguyên (trình duyệt đã thu nhỏ trước khi gửi). Ảnh GIF giữ nguyên (mất ảnh động).
-     */
-    protected function _shrink($path, $ext)
-    {
-        clearstatcache(TRUE, $path);
-        if ( ! extension_loaded('gd') || $ext === '.gif' || filesize($path) <= self::SHRINK_KB * 1024) return;
-
-        $size = @getimagesize($path);
-        if ( ! $size) return;
-        $this->load->library('image_lib');
-        foreach (array(self::MAX_SIDE, 1600, 1280, 1024) as $side)
-        {
-            // Lần đầu giữ kích thước nếu ảnh vốn nhỏ hơn 1920px (chỉ nén lại).
-            $ratio = min(1, $side / max($size[0], $size[1]));
-            $this->image_lib->clear();
-            $this->image_lib->initialize(array(
-                'source_image'   => $path,
-                'maintain_ratio' => TRUE,
-                'width'          => max(1, (int) round($size[0] * $ratio)),
-                'height'         => max(1, (int) round($size[1] * $ratio)),
-                'quality'        => 82,
-            ));
-            if ( ! $this->image_lib->resize()) return;
-            clearstatcache(TRUE, $path);
-            if (filesize($path) <= self::SHRINK_KB * 1024) return;
-            $size = @getimagesize($path) ?: $size;
-        }
+        return $this->image_upload->save($field, self::UPLOAD_DIR, $error);
     }
 
     /** Ảnh trong thư mục, mới nhất trước. $with_usage: kèm danh sách trang đang dùng ảnh. */

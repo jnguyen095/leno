@@ -141,6 +141,15 @@ $route['me/news/(:num)/toggle'] = 'news/toggle/$1';
 $route['me/news/(:num)/delete'] = 'news/delete/$1';
 $route['tin-tuc'] = 'public/site_page/news_list';
 $route['tin-tuc/([a-z0-9-]+)'] = 'public/site_page/news/$1';
+
+// Banner trang chủ (chỉ ADMIN) — băng chuyền ảnh đầu trang chủ.
+$route['me/banners'] = 'banners/index';
+$route['me/banners/upload'] = 'banners/upload';
+$route['me/banners/settings'] = 'banners/settings';
+$route['me/banners/(:num)/update'] = 'banners/update/$1';
+$route['me/banners/(:num)/toggle'] = 'banners/toggle/$1';
+$route['me/banners/(:num)/delete'] = 'banners/delete/$1';
+$route['me/banners/(:num)/move/(up|down)'] = 'banners/move/$1/$2';
 $route['me/settings'] = 'settings/index';
 $route['me/audit-logs'] = 'audit_logs/index';
 $route['me/audit-logs/purge'] = 'audit_logs/purge';

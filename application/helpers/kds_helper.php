@@ -118,6 +118,7 @@ if ( ! function_exists('revenue_category_label'))
             'KHU_VUI_CHOI' => 'Khu Vui Chơi',
             'NUOC_DO_AN'   => 'Nước & Đồ Ăn',
             'PHOTOBOOTH'   => 'Photobooth',
+            'PICKLEBALL'   => 'Pickleball',
             'GRABFOOD'     => 'Grabfood',
         );
         return isset($map[$category]) ? $map[$category] : $category;
@@ -133,6 +134,7 @@ if ( ! function_exists('revenue_category_color'))
             'KHU_VUI_CHOI' => '#f59e0b',
             'NUOC_DO_AN'   => '#10b981',
             'PHOTOBOOTH'   => '#ec4899',
+            'PICKLEBALL'   => '#3b82f6',
             'GRABFOOD'     => '#8b5cf6',
         );
         return isset($map[$category]) ? $map[$category] : '#6f4e37';

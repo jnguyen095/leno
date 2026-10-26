@@ -118,6 +118,9 @@ $route['me/reports/products'] = 'reports/products';
 $route['me/reports/products-export'] = 'reports/products_export';
 $route['me/reports/categories'] = 'reports/categories';
 $route['me/reports/categories-export'] = 'reports/categories_export';
+// Báo cáo doanh thu nhập tay theo tháng (controllers/Revenue_report.php).
+$route['me/reports/revenue'] = 'revenue_report/index';
+$route['me/reports/revenue/entry'] = 'revenue_report/entry';
 
 $route['me/cashbook'] = 'cashbook/index';
 $route['me/cashbook/save'] = 'cashbook/save';

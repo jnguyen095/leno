@@ -12,6 +12,7 @@ class Report_model extends CI_Model
      * Thêm báo cáo mới: thêm dòng ở đây + method/view trong controllers/Reports.php + mục menu ở một migration mới.
      */
     const REPORTS = array(
+        'reports.revenue'    => array('revenue', 'bi-bar-chart', 'Báo cáo doanh thu', 'Doanh thu nhập tay theo tháng cho từng mảng, so với tháng trước.'),
         'reports.products'   => array('products', 'bi-box-seam', 'Báo cáo hàng hóa', 'Số lượng bán, doanh thu và lãi theo từng món.'),
         'reports.categories' => array('categories', 'bi-collection', 'Báo cáo danh mục', 'Số lượng bán, doanh thu và lãi theo từng danh mục món.'),
     );

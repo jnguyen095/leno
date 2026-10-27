@@ -1,26 +1,72 @@
-<div class="container-fluid py-3 py-md-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold mb-0">Danh mục kho</h4>
+<?php
+  // Danh mục kho: sắp xếp ngay trên danh sách — kéo thả (nắm ⋮⋮), gõ số vị trí hoặc nút lên / xuống, rồi "Lưu thứ tự"
+  // (đánh số lại 1, 2, 3...). Các trang kho (nhập / xuất / kiểm kho, hàng trong kho) xếp danh mục theo thứ tự này.
+  // Hành vi sắp xếp dùng chung: assets/js/sortable-list.js. Biến: $categories, $counts.
+?>
+<div class="container py-3 py-md-4" style="max-width:860px">
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-1">Danh mục kho</h4>
+      <div class="text-muted small">Kéo <i class="bi bi-grip-vertical"></i> để đổi thứ tự, hoặc gõ số / bấm <i class="bi bi-arrow-up"></i><i class="bi bi-arrow-down"></i>, rồi bấm <b>Lưu thứ tự</b>. Các trang nhập / xuất / kiểm kho và Hàng trong kho xếp danh mục theo thứ tự này.</div>
+    </div>
     <a href="<?php echo site_url('me/inventory/categories/create'); ?>" class="btn btn-brand"><i class="bi bi-plus-lg"></i> Thêm</a>
   </div>
-  <div class="table-responsive">
-    <table class="table bg-white shadow-sm rounded align-middle">
-      <thead class="table-light"><tr><th>Tên</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr></thead>
-      <tbody>
-      <?php foreach ($categories as $c): ?>
-        <tr>
-          <td><?php echo htmlspecialchars($c['name']); ?></td>
-          <td><?php echo $c['sort_order']; ?></td>
-          <td><span class="badge bg-<?php echo $c['status']==='ACTIVE'?'success':'secondary'; ?>"><?php echo $c['status']; ?></span></td>
-          <td>
+
+  <?php if ($this->session->flashdata('success')): ?>
+    <div class="alert alert-success py-2 small"><?php echo htmlspecialchars($this->session->flashdata('success')); ?></div>
+  <?php endif; ?>
+  <?php if ($this->session->flashdata('error')): ?>
+    <div class="alert alert-danger py-2 small"><?php echo htmlspecialchars($this->session->flashdata('error')); ?></div>
+  <?php endif; ?>
+
+  <?php if (empty($categories)): ?>
+    <div class="orders-card text-center text-muted py-5">Chưa có danh mục kho nào. Bấm <b>Thêm</b> để tạo.</div>
+  <?php else: ?>
+  <?php echo form_open('me/inventory/categories/reorder'); ?>
+    <ul class="sort-list" data-sort-list data-bar="#invCatSortBar" data-post-form="#invCatPostForm">
+      <?php foreach ($categories as $i => $c): $off = $c['status'] !== 'ACTIVE'; $cnt = isset($counts[$c['id']]) ? $counts[$c['id']] : array('total' => 0, 'active' => 0); ?>
+        <li class="sort-list-item <?php echo $off ? 'is-off' : ''; ?>" data-id="<?php echo $c['id']; ?>">
+          <input type="hidden" name="ids[]" value="<?php echo $c['id']; ?>">
+          <span class="sort-list-handle" data-bs-toggle="tooltip" title="Kéo để đổi thứ tự" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
+          <input type="number" class="form-control form-control-sm sort-list-pos" min="1" max="<?php echo count($categories); ?>" value="<?php echo $i + 1; ?>"
+                 aria-label="Vị trí của <?php echo htmlspecialchars($c['name']); ?>" inputmode="numeric">
+          <span class="sort-list-name">
+            <b><?php echo htmlspecialchars($c['name']); ?></b>
+            <?php if ($off): ?><span class="badge bg-secondary ms-1">Đã ẩn</span><?php endif; ?>
+            <span class="d-block small text-muted"><?php echo $cnt['active']; ?> mặt hàng<?php echo $cnt['total'] > $cnt['active'] ? ' · '.($cnt['total'] - $cnt['active']).' đã ẩn' : ''; ?></span>
+          </span>
+          <span class="sort-list-move">
+            <button type="button" class="btn btn-sm btn-light js-up" data-bs-toggle="tooltip" title="Lên trên" aria-label="Lên trên"><i class="bi bi-arrow-up"></i></button>
+            <button type="button" class="btn btn-sm btn-light js-down" data-bs-toggle="tooltip" title="Xuống dưới" aria-label="Xuống dưới"><i class="bi bi-arrow-down"></i></button>
+          </span>
+          <span class="sort-list-actions">
             <a href="<?php echo site_url('me/inventory/categories/'.$c['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa danh mục kho"><i class="bi bi-pencil"></i></a>
-            <?php echo form_open('me/inventory/categories/'.$c['id'].'/delete', array('class'=>'d-inline', 'data-confirm' => html_escape('Ẩn danh mục kho "'.$c['name'].'"?'), 'data-confirm-ok' => 'Ẩn')); ?>
-              <button class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="Ẩn danh mục kho"><i class="bi bi-eye-slash"></i></button>
-            <?php echo form_close(); ?>
-          </td>
-        </tr>
+            <?php if ( ! $off): ?>
+              <button type="button" class="btn btn-sm btn-light text-danger js-post" data-bs-toggle="tooltip" title="Ẩn danh mục kho"
+                      data-action="<?php echo site_url('me/inventory/categories/'.$c['id'].'/delete'); ?>"
+                      data-confirm="<?php echo htmlspecialchars('Ẩn danh mục kho "'.$c['name'].'"?'); ?>" data-confirm-ok="Ẩn"><i class="bi bi-eye-slash"></i></button>
+            <?php endif; ?>
+          </span>
+        </li>
       <?php endforeach; ?>
-      </tbody>
-    </table>
-  </div>
+    </ul>
+
+    <div class="sort-list-bar" id="invCatSortBar" hidden>
+      <span class="small"><i class="bi bi-info-circle"></i> Thứ tự đã thay đổi — chưa lưu.</span>
+      <span class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary js-sort-reset"><i class="bi bi-arrow-counterclockwise"></i> Hoàn tác</button>
+        <button class="btn btn-brand px-4"><i class="bi bi-check2"></i> Lưu thứ tự</button>
+      </span>
+    </div>
+  <?php echo form_close(); ?>
+
+  <?php // Form cho nút Ẩn trên từng dòng (form không lồng trong form thứ tự được). ?>
+  <?php echo form_open('', array('id' => 'invCatPostForm', 'class' => 'd-none', 'data-confirm' => '')); ?>
+  <?php echo form_close(); ?>
+  <?php endif; ?>
 </div>
+
+<?php if ( ! empty($categories)): ?>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="<?php echo asset_url('assets/js/sortable-list.js'); ?>"></script>
+<?php endif; ?>

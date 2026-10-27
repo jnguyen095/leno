@@ -184,6 +184,7 @@ $route['me/menu-permissions/user/(:num)'] = 'menu_permissions/user/$1';
 // Kho hàng (Inventory / Stock)
 $route['me/inventory/categories'] = 'inventory_categories/index';
 $route['me/inventory/categories/create'] = 'inventory_categories/create';
+$route['me/inventory/categories/reorder'] = 'inventory_categories/reorder';
 $route['me/inventory/categories/(:num)/edit'] = 'inventory_categories/edit/$1';
 $route['me/inventory/categories/(:num)/delete'] = 'inventory_categories/delete/$1';
 

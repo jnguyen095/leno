@@ -12,7 +12,7 @@
     <div class="row g-4">
       <div class="col-md-4">
         <div class="pap-footer-brand">Nắng Nghiêng</div>
-        <p class="pap-footer-tagline">Vui chơi • Thể thao • Cà phê • Check-in</p>
+        <p class="pap-footer-tagline">Vui chơi • Cà phê • Ăn vặt</p>
         <div class="pap-footer-social">
           <?php if ($site_facebook): ?><a href="<?php echo htmlspecialchars($site_facebook); ?>" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook"></i></a><?php endif; ?>
           <?php if ($site_tiktok): ?><a href="<?php echo htmlspecialchars($site_tiktok); ?>" target="_blank" rel="noopener" aria-label="TikTok"><i class="bi bi-tiktok"></i></a><?php endif; ?>

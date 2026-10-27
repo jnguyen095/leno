@@ -62,4 +62,30 @@ class Public_site extends CI_Controller
         $this->load->view('public/home', $data);
         $this->load->view('public/layouts/footer', $data);
     }
+
+    /**
+     * /thuc-don.html — thực đơn cho khách: danh mục + món (ảnh, tên, giá) lấy từ Quản trị → Món, chỉ món đang bán.
+     * Lọc theo danh mục ngay trên trình duyệt (views/public/menu.php).
+     */
+    public function menu()
+    {
+        $this->load->model('Product_model');
+        $current_user = $this->session->userdata('user') ?: attempt_remember_login();
+        $site = $this->Setting_model->get_public_site_data();
+        $menu = $this->Product_model->get_public_menu();
+
+        $data = $site + array(
+            'current_user' => $current_user,
+            'nav_current'  => 'thuc-don',
+            'menu'         => $menu,
+            'seo' => array(
+                'title'       => 'Thực đơn – '.$site['site_name'],
+                'description' => 'Thực đơn '.$site['site_name'].': '.implode(', ', array_slice(array_column($menu, 'name'), 0, 6)).'… Xem giá và hình ảnh từng món.',
+                'canonical'   => site_url('thuc-don'),
+            ),
+        );
+        $this->load->view('public/layouts/header', $data);
+        $this->load->view('public/menu', $data);
+        $this->load->view('public/layouts/footer', $data);
+    }
 }

@@ -404,3 +404,44 @@ img{ max-width:100%; height:auto; }
 .pap-back-link{ display:inline-flex; align-items:center; gap:.35rem; font-weight:700; text-decoration:none; margin-bottom:.75rem; min-height:44px; }
 .pap-pager{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.75rem 1rem; margin-top:2rem; }
 .pap-pager-info{ font-weight:600; color:#6b7a87; }
+
+/* ---------- Thực đơn (/thuc-don.html): điện thoại — dãy danh mục trượt ngang dính dưới header, món 2 cột;
+   máy tính — danh mục cột trái (dính khi cuộn), món 3–4 cột bên phải ---------- */
+.pap-menu-page{ padding-top:1.5rem; }
+.pap-menu-head{ margin-bottom:1rem; }
+.pap-menu{ display:block; }
+.pap-menu-cats{ position:sticky; top:var(--pap-header-h, 64px); z-index:20; display:flex; gap:.5rem; overflow-x:auto; scrollbar-width:none;
+  margin:0 -12px 1rem; padding:.6rem 12px; background:rgba(255,255,255,.96); backdrop-filter:blur(6px); border-bottom:1px solid #eef2f6; -webkit-overflow-scrolling:touch; }
+.pap-menu-cats::-webkit-scrollbar{ display:none; }
+.pap-menu-cat{ flex:0 0 auto; display:inline-flex; align-items:center; gap:.4rem; min-height:44px; padding:.45rem 1rem; border-radius:999px;
+  border:1.5px solid #dbe6ef; background:#fff; color: var(--pap-dark); font-weight:700; font-size:.95rem; white-space:nowrap; cursor:pointer; }
+.pap-menu-cat small{ font-weight:700; font-size:.75rem; color:#6b7a87; background: var(--pap-light); border-radius:999px; padding:.05rem .45rem; }
+.pap-menu-cat:hover{ border-color: var(--pap-primary); color: var(--pap-primary); }
+.pap-menu-cat.active{ background: var(--pap-primary); border-color: var(--pap-primary); color:#fff; }
+.pap-menu-cat.active small{ background:rgba(255,255,255,.25); color:#fff; }
+.pap-menu-group{ margin-bottom:1.75rem; scroll-margin-top:calc(var(--pap-header-h, 64px) + 70px); }
+.pap-menu-group[hidden]{ display:none; }
+.pap-menu-group-title{ font-size:1.2rem; font-weight:800; color: var(--pap-dark); margin:0 0 .75rem; display:flex; align-items:baseline; gap:.5rem; }
+.pap-menu-group-title small{ font-size:.85rem; font-weight:600; color:#6b7a87; }
+.pap-menu-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.75rem; }
+.pap-menu-item{ display:flex; flex-direction:column; background:#fff; border:1px solid #edf1f5; border-radius: var(--pap-radius-sm); overflow:hidden; box-shadow:0 2px 8px rgba(28,43,57,.05); }
+/* Khung ảnh món cố định hình vuông (bằng ô "chưa có ảnh"): ảnh không làm khung to / nhỏ theo kích thước ảnh gốc —
+   ảnh lớn hơn khung thì thu nhỏ vừa khung (giữ tỉ lệ, không méo, không cắt); ảnh nhỏ hơn giữ nguyên cỡ (không phóng to mờ), nằm giữa. */
+.pap-menu-img{ position:relative; width:100%; aspect-ratio:1 / 1; overflow:hidden; background:#fff; border-bottom:1px solid #f1f4f7; }
+.pap-menu-img img{ position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:auto; height:auto; max-width:calc(100% - 12px); max-height:calc(100% - 12px); object-fit:contain; display:block; }
+.pap-menu-img.is-empty{ display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #eaf6ff, #fff4e5); }
+.pap-menu-img.is-empty i{ font-size:2.25rem; color: var(--pap-primary); opacity:.45; }
+.pap-menu-body{ display:flex; flex-direction:column; gap:.25rem; padding:.6rem .7rem .75rem; flex:1; }
+.pap-menu-name{ font-size:1rem; font-weight:700; line-height:1.35; color: var(--pap-dark); margin:0;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.pap-menu-price{ margin-top:auto; font-size:1.05rem; font-weight:800; color: var(--pap-secondary-dark); }
+@media (min-width: 576px){ .pap-menu-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; } }
+@media (min-width: 992px){
+  .pap-menu{ display:grid; grid-template-columns:240px minmax(0, 1fr); gap:2rem; align-items:start; }
+  .pap-menu-cats{ top:calc(var(--pap-header-h, 75px) + 1rem); flex-direction:column; overflow:visible; margin:0; padding:.75rem; border:1px solid #edf1f5;
+    border-radius: var(--pap-radius); box-shadow: var(--pap-shadow); background:#fff; backdrop-filter:none; max-height:calc(100vh - var(--pap-header-h, 75px) - 2rem); overflow-y:auto; }
+  .pap-menu-cat{ justify-content:space-between; width:100%; border-radius:10px; border-color:transparent; white-space:normal; text-align:left; }
+  .pap-menu-cat span{ flex:1; }
+  .pap-menu-cat:not(.active):hover{ background: var(--pap-light); }
+}
+@media (min-width: 1200px){ .pap-menu-grid{ grid-template-columns:repeat(4, minmax(0, 1fr)); } }

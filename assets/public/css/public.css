@@ -423,10 +423,10 @@ img{ max-width:100%; height:auto; }
 .pap-menu-group-title small{ font-size:.85rem; font-weight:600; color:#6b7a87; }
 .pap-menu-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.75rem; }
 .pap-menu-item{ display:flex; flex-direction:column; background:#fff; border:1px solid #edf1f5; border-radius: var(--pap-radius-sm); overflow:hidden; box-shadow:0 2px 8px rgba(28,43,57,.05); }
-/* Khung ảnh món cố định hình vuông (bằng ô "chưa có ảnh"): ảnh không làm khung to / nhỏ theo kích thước ảnh gốc —
-   ảnh lớn hơn khung thì thu nhỏ vừa khung (giữ tỉ lệ, không méo, không cắt); ảnh nhỏ hơn giữ nguyên cỡ (không phóng to mờ), nằm giữa. */
-.pap-menu-img{ position:relative; width:100%; aspect-ratio:1 / 1; overflow:hidden; background:#fff; border-bottom:1px solid #f1f4f7; }
-.pap-menu-img img{ position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:auto; height:auto; max-width:calc(100% - 12px); max-height:calc(100% - 12px); object-fit:contain; display:block; }
+/* Khung ảnh món cố định hình vuông (bằng ô "chưa có ảnh"): kích thước ảnh gốc không làm khung to / nhỏ.
+   Ảnh phủ kín cả khung (giữ tỉ lệ, không méo) — phần thừa ở mép bị cắt, căn giữa. Ảnh vuông, món ở giữa ảnh là đẹp nhất. */
+.pap-menu-img{ position:relative; width:100%; aspect-ratio:1 / 1; overflow:hidden; background: var(--pap-light); }
+.pap-menu-img img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
 .pap-menu-img.is-empty{ display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #eaf6ff, #fff4e5); }
 .pap-menu-img.is-empty i{ font-size:2.25rem; color: var(--pap-primary); opacity:.45; }
 .pap-menu-body{ display:flex; flex-direction:column; gap:.25rem; padding:.6rem .7rem .75rem; flex:1; }

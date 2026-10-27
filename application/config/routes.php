@@ -90,6 +90,8 @@ $route['me/products/import-template'] = 'products/import_template';
 $route['me/categories'] = 'categories/index';
 $route['me/categories/create'] = 'categories/create';
 $route['me/categories/reorder'] = 'categories/reorder';
+$route['me/categories/(:num)/products'] = 'categories/products/$1';
+$route['me/categories/(:num)/products/reorder'] = 'categories/products_reorder/$1';
 $route['me/categories/(:num)/edit'] = 'categories/edit/$1';
 $route['me/categories/(:num)/delete'] = 'categories/delete/$1';
 

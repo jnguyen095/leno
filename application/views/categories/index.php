@@ -33,12 +33,15 @@
           <span class="sort-list-name">
             <b><?php echo htmlspecialchars($c['name']); ?></b>
             <?php if ($off): ?><span class="badge bg-secondary ms-1">Đã ẩn</span><?php endif; ?>
+            <?php $cnt = isset($counts[$c['id']]) ? $counts[$c['id']] : array('total' => 0, 'active' => 0); ?>
+            <span class="d-block small text-muted"><?php echo $cnt['active']; ?> món đang bán<?php echo $cnt['total'] > $cnt['active'] ? ' · '.($cnt['total'] - $cnt['active']).' đã ẩn' : ''; ?></span>
           </span>
           <span class="sort-list-move">
             <button type="button" class="btn btn-sm btn-light js-up" data-bs-toggle="tooltip" title="Lên trên" aria-label="Lên trên"><i class="bi bi-arrow-up"></i></button>
             <button type="button" class="btn btn-sm btn-light js-down" data-bs-toggle="tooltip" title="Xuống dưới" aria-label="Xuống dưới"><i class="bi bi-arrow-down"></i></button>
           </span>
           <span class="sort-list-actions">
+            <a href="<?php echo site_url('me/categories/'.$c['id'].'/products'); ?>" class="btn btn-sm btn-light text-primary" data-bs-toggle="tooltip" title="Sắp xếp món trong danh mục"><i class="bi bi-sort-down"></i></a>
             <a href="<?php echo site_url('me/categories/'.$c['id'].'/edit'); ?>" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Sửa danh mục"><i class="bi bi-pencil"></i></a>
             <?php if ( ! $off): ?>
               <button type="button" class="btn btn-sm btn-light text-danger js-post" data-bs-toggle="tooltip" title="Ẩn danh mục"

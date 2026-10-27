@@ -32,12 +32,14 @@ class Product_model extends CI_Model
             $this->db->where('products.status', $filters['status']);
         }
 
-        return $this->db->order_by('products.product_name', 'ASC')->get()->result_array();
+        // Theo thứ tự danh mục, rồi thứ tự món trong danh mục (Danh mục → Sắp xếp món) — ứng dụng POS (/api/v1/menu) dùng đúng thứ tự này.
+        return $this->db->order_by('categories.sort_order', 'ASC')->order_by('categories.name', 'ASC')
+            ->order_by('products.sort_order', 'ASC')->order_by('products.product_name', 'ASC')->get()->result_array();
     }
 
     /**
      * Thực đơn trên website (/thuc-don.html): danh mục đang bật có ít nhất 1 món đang bán, theo thứ tự danh mục
-     * (Quản trị → Danh mục), món xếp theo tên — cùng thứ tự với màn hình gọi món POS.
+     * (Quản trị → Danh mục), món theo thứ tự trong danh mục (Sắp xếp món) — cùng thứ tự với màn hình gọi món POS.
      * Trả về [['id', 'name', 'products' => [['id', 'name', 'price', 'image', 'description'], ...]], ...].
      */
     public function get_public_menu()
@@ -46,7 +48,7 @@ class Product_model extends CI_Model
             ->from($this->table.' p')
             ->join('categories c', 'c.id = p.category_id')
             ->where('p.status', 'ACTIVE')->where('c.status', 'ACTIVE')
-            ->order_by('c.sort_order', 'ASC')->order_by('c.name', 'ASC')->order_by('p.product_name', 'ASC')
+            ->order_by('c.sort_order', 'ASC')->order_by('c.name', 'ASC')->order_by('p.sort_order', 'ASC')->order_by('p.product_name', 'ASC')
             ->get()->result_array();
 
         $menu = array();
@@ -70,6 +72,8 @@ class Product_model extends CI_Model
             ->join('categories', 'categories.id = products.category_id', 'left')
             ->where('categories.status', 'ACTIVE')
             ->order_by('categories.sort_order', 'ASC')
+            ->order_by('categories.name', 'ASC')
+            ->order_by('products.sort_order', 'ASC')
             ->order_by('products.product_name', 'ASC')
             ->get()->result_array();
 
@@ -173,5 +177,54 @@ class Product_model extends CI_Model
             ->order_by('total_qty', 'DESC')
             ->limit($limit)
             ->get()->result_array();
+    }
+
+    // ---- Thứ tự món trong danh mục (products.sort_order — migration 018) ----
+
+    /** Mọi món của một danh mục (cả món đã ẩn), theo thứ tự hiện tại — trang Sắp xếp món. */
+    public function get_by_category($category_id)
+    {
+        return $this->db->where('category_id', (int) $category_id)
+            ->order_by('sort_order', 'ASC')->order_by('product_name', 'ASC')
+            ->get($this->table)->result_array();
+    }
+
+    /** Số món theo danh mục: [category_id => ['total' => n, 'active' => n]]. */
+    public function count_by_category()
+    {
+        $out = array();
+        foreach ($this->db->select("category_id, COUNT(*) AS total, SUM(status = 'ACTIVE') AS active", FALSE)
+                     ->group_by('category_id')->get($this->table)->result_array() as $r)
+        {
+            $out[(int) $r['category_id']] = array('total' => (int) $r['total'], 'active' => (int) $r['active']);
+        }
+        return $out;
+    }
+
+    /** Thứ tự cho món mới / món vừa chuyển sang danh mục này: xếp cuối danh mục. */
+    public function next_sort_order($category_id)
+    {
+        return (int) $this->db->select_max('sort_order')->where('category_id', (int) $category_id)->get($this->table)->row('sort_order') + 1;
+    }
+
+    /**
+     * Sắp xếp lại món trong một danh mục: sort_order = 1, 2, 3... theo đúng thứ tự $ids.
+     * $ids phải gồm đủ mọi món của danh mục (không thiếu, không thừa, không trùng) — sai thì FALSE.
+     */
+    public function reorder($category_id, array $ids)
+    {
+        $ids = array_map('intval', $ids);
+        $all = array_map('intval', array_column($this->db->select('id')->where('category_id', (int) $category_id)->get($this->table)->result_array(), 'id'));
+        if ( ! $all || count($ids) !== count($all) || count(array_unique($ids)) !== count($ids) || array_diff($all, $ids))
+        {
+            return FALSE;
+        }
+        $this->db->trans_start();
+        foreach ($ids as $i => $id)
+        {
+            $this->db->where('id', $id)->where('category_id', (int) $category_id)->update($this->table, array('sort_order' => $i + 1));
+        }
+        $this->db->trans_complete();
+        return $this->db->trans_status();
     }
 }

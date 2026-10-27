@@ -8,7 +8,7 @@ class Categories extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('Category_model');
+        $this->load->model(array('Category_model', 'Product_model'));
     }
 
     public function index()
@@ -17,10 +17,54 @@ class Categories extends MY_Controller
             'page_title'   => 'Danh mục',
             'current_user' => $this->current_user,
             'categories'   => $this->Category_model->get_all(),
+            'counts'       => $this->Product_model->count_by_category(),
         );
         $this->load->view('layout/header', $data);
         $this->load->view('categories/index', $data);
         $this->load->view('layout/footer');
+    }
+
+    /**
+     * Sắp xếp món trong một danh mục (kéo thả / nhập số / nút lên-xuống, dùng chung assets/js/sortable-list.js).
+     * POS web, ứng dụng POS và thực đơn website xếp món theo thứ tự này.
+     */
+    public function products($id)
+    {
+        $category = $this->Category_model->get_by_id($id);
+        if ( ! $category) show_404();
+
+        $data = array(
+            'page_title'   => 'Sắp xếp món — '.$category['name'],
+            'current_user' => $this->current_user,
+            'category'     => $category,
+            'categories'   => $this->Category_model->get_all(),
+            'counts'       => $this->Product_model->count_by_category(),
+            'products'     => $this->Product_model->get_by_category($category['id']),
+        );
+        $this->load->view('layout/header', $data);
+        $this->load->view('categories/products', $data);
+        $this->load->view('layout/footer');
+    }
+
+    /** Lưu thứ tự món của danh mục: POST ids[] theo thứ tự hiển thị -> sort_order 1, 2, 3... */
+    public function products_reorder($id)
+    {
+        if ($this->input->method() !== 'post') show_404();
+        $category = $this->Category_model->get_by_id($id);
+        if ( ! $category) show_404();
+
+        $ids = (array) $this->input->post('ids');
+        $old = array_column($this->Product_model->get_by_category($category['id']), 'product_name', 'id');
+        if ( ! $this->Product_model->reorder($category['id'], $ids))
+        {
+            $this->session->set_flashdata('error', 'Danh sách món đã thay đổi trong lúc sắp xếp (có món mới thêm / chuyển danh mục). Tải lại trang rồi sắp xếp lại.');
+            redirect('me/categories/'.$category['id'].'/products');
+            return;
+        }
+        $this->audit('product', 'REORDER', array('category' => $category['name'], 'order' => array_values($old)),
+            array('category' => $category['name'], 'order' => array_map(function ($pid) use ($old) { return isset($old[$pid]) ? $old[$pid] : $pid; }, array_map('intval', $ids))));
+        $this->session->set_flashdata('success', 'Đã lưu thứ tự món trong "'.$category['name'].'".');
+        redirect('me/categories/'.$category['id'].'/products');
     }
 
     /**

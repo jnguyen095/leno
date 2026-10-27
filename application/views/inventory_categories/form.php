@@ -7,7 +7,9 @@
     </div>
     <div class="mb-3">
       <label class="form-label">Thứ tự hiển thị</label>
-      <input type="number" name="sort_order" class="form-control" value="<?php echo $category ? $category['sort_order'] : 0; ?>">
+      <input type="number" name="sort_order" class="form-control" min="0" value="<?php echo $category ? $category['sort_order'] : ''; ?>"
+             placeholder="<?php echo $category ? '' : 'Để trống = xếp cuối'; ?>">
+      <div class="form-text">Sắp xếp nhanh nhiều danh mục: kéo thả ngay ở trang Danh mục kho.</div>
     </div>
     <?php if ($category): ?>
     <div class="mb-3">

@@ -198,6 +198,129 @@ class Recipes extends MY_Controller
         return 'uploads/recipes/'.$this->upload->data('file_name');
     }
 
+    /**
+     * Xuất Excel để in dán tường cho nhân viên: các công thức được chọn (GET ids[] — theo thứ tự danh sách công thức),
+     * mỗi công thức một khối 3 cột "Món | Thành phần (công thức) | Khối lượng (ml/g)", ô Món gộp dọc theo số thành phần.
+     * ?instructions=1: thêm dòng "Cách làm" dưới mỗi công thức.
+     */
+    public function export()
+    {
+        $ids = array_filter(array_map('intval', (array) $this->input->get('ids')));
+        $with_steps = $this->input->get('instructions') === '1';
+        $one_per_page = $this->input->get('per_page') === '1'; // mỗi công thức một trang (dán riêng từng chỗ)
+        $recipes = array_values(array_filter($this->Recipe_model->get_all(), function ($r) use ($ids) { return in_array((int) $r['id'], $ids, TRUE); }));
+        if ( ! $recipes)
+        {
+            $this->session->set_flashdata('error', 'Chọn ít nhất một công thức để xuất Excel.');
+            redirect('me/recipes');
+            return;
+        }
+
+        // Định dạng số lượng: 100.000 -> "100", 1.500 -> "1,5"; kèm đơn vị (g, ml, gói, ly...).
+        $qty = function ($q, $unit) {
+            $n = rtrim(rtrim(number_format((float) $q, 3, ',', '.'), '0'), ',');
+            return trim($n.' '.(string) $unit);
+        };
+        // Excel không tự giãn dòng có ô gộp — ước lượng chiều cao theo độ dài chữ / độ rộng cột (cỡ chữ 13–14).
+        $lines = function ($text, $width, $chars_per_unit = 0.95) {
+            $n = 0;
+            foreach (explode("\n", (string) $text) as $part) $n += max(1, (int) ceil(mb_strlen($part, 'UTF-8') / max(1, $width * $chars_per_unit)));
+            return $n;
+        };
+        $widths = array(24, 50, 18);
+
+        $this->load->library('xlsx_print_sheet');
+        $s = $this->xlsx_print_sheet;
+        $s->set_sheet_name('Công thức')->set_widths($widths);
+        $s->add('CÔNG THỨC PHA CHẾ', 'title', 36, 3);
+        $s->add('In ngày '.date('d/m/Y').' · '.count($recipes).' công thức', 'subtitle', 20, 3);
+        $s->add(array('Món', 'Thành phần (công thức)', 'Khối lượng (ml/g)'), 'header', 28)->repeat_rows(3, 3);
+
+        $blocks = array(); // [dòng đầu, dòng cuối] của từng công thức — để ngắt trang không cắt ngang công thức
+        $gap_pt = 18;      // dòng trắng (không kẻ ô) giữa 2 công thức — dễ cắt rời, không nhìn nhầm sang món bên cạnh
+        foreach ($recipes as $k => $r)
+        {
+            if ($k > 0) $s->add(array('', '', ''), 'text', $gap_pt);
+            $name = $r['name'].($r['yield_quantity'] ? "\n(".$qty($r['yield_quantity'], $r['yield_unit']).')' : '');
+            $items = $this->Recipe_ingredient_model->get_by_recipe($r['id']);
+            $start = $s->row_count() + 1;
+            $used = 0; // tổng chiều cao (pt) các dòng của công thức — để ô Món gộp đủ chỗ cho tên
+            if ( ! $items)
+            {
+                $s->add(array($name, '(chưa có thành phần)', ''), array('name', 'note', 'qty'), $h = max(30, 20 * $lines($name, $widths[0])));
+                $used += $h;
+            }
+            foreach ($items as $i => $it)
+            {
+                $h = max(26, 19 * $lines($it['item_name'], $widths[1]));
+                $s->add(array($i === 0 ? $name : '', $it['item_name'], $qty($it['quantity'], $it['unit_label'])), array('name', 'cell', 'qty'), $h);
+                $used += $h;
+            }
+            if ($with_steps && trim((string) $r['instructions']) !== '')
+            {
+                $text = "Cách làm:\n".self::numbered_steps($r['instructions']);
+                $h = max(26, 15 * $lines($text, $widths[1] + $widths[2], 1.25) + 8); // chữ nghiêng cỡ 11 — nhiều chữ hơn mỗi dòng
+                $s->add(array('', $text, ''), array('name', 'note', 'note'), $h);
+                $row = $s->row_count();
+                $s->merge('B'.$row.':C'.$row);
+                $used += $h;
+            }
+            $end = $s->row_count();
+            if ($end > $start) $s->merge('A'.$start.':A'.$end);
+            // Tên dài mà công thức ít dòng: kéo dòng cuối cao thêm để tên không bị cắt.
+            $need = 22 * $lines($name, $widths[0]) + 8;
+            if ($need > $used) $s->add_height($end, $need - $used);
+            $blocks[] = array($start, $end);
+        }
+
+        // Ngắt trang: không để một công thức bị cắt sang trang sau (trừ công thức dài hơn cả trang).
+        // PAGE_PT: tổng chiều cao dòng vừa 1 trang A4 dọc khi co vừa bề ngang (đo thực tế ~950pt, chừa dư).
+        $page_pt = 900;
+        $used = $s->row_height(1) + $s->row_height(2) + $s->row_height(3);
+        foreach ($blocks as $i => $b)
+        {
+            $h = 0;
+            for ($row = $b[0]; $row <= $b[1]; $row++) $h += $s->row_height($row);
+            if ($i > 0 && ($one_per_page || $used + $gap_pt + $h > $page_pt))
+            {
+                // Dòng trắng phía trước nằm lại cuối trang trước; trang mới bắt đầu bằng dòng tiêu đề cột (lặp lại).
+                $s->page_break_before($b[0]);
+                $used = $s->row_height(3);
+            }
+            elseif ($i > 0)
+            {
+                $used += $gap_pt;
+            }
+            $used += $h;
+        }
+
+        $this->audit('recipe', 'EXPORT_PRINT', NULL, array('recipes' => array_column($recipes, 'name'), 'instructions' => $with_steps, 'one_per_page' => $one_per_page));
+        $s->download('cong_thuc_pha_che_'.date('Ymd').'.xlsx');
+    }
+
+    /**
+     * Đánh số bước cho phần Cách làm khi in: mỗi dòng là một bước "1. ...", "2. ...". Không đánh số (giữ nguyên) các dòng:
+     * kẻ ngăn (=====), mục con (+, -, *, •), dòng trong ngoặc / ghi chú (Lưu ý, Chú ý), tiêu đề kết thúc bằng ":",
+     * và dòng đã tự đánh số sẵn (1. / 1) / Bước 1).
+     */
+    public static function numbered_steps($instructions)
+    {
+        $out = array();
+        $n = 0;
+        foreach (explode("\n", str_replace(array("\r\n", "\r"), "\n", (string) $instructions)) as $line)
+        {
+            $line = trim($line);
+            if ($line === '') continue;
+            if (preg_match('/^(\d+\s*[.)]|bước\s*\d+)/iu', $line))                         { $out[] = $line; continue; } // đã có số
+            if (preg_match('/^[=\-_*~.]{3,}$/u', $line)
+                || preg_match('/^(\+|-|\*|•|\()/u', $line)
+                || preg_match('/^(lưu ý|chú ý|ghi chú|note)\b/iu', $line)
+                || preg_match('/:\s*$/u', $line))                                              { $out[] = $line; continue; } // không phải bước
+            $out[] = (++$n).'. '.$line;
+        }
+        return implode("\n", $out);
+    }
+
     public function delete($id)
     {
         $recipe = $this->Recipe_model->get_by_id($id);

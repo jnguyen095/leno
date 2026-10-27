@@ -111,6 +111,7 @@ $route['me/discounts/(:num)/toggle'] = 'discounts/toggle/$1';
 $route['me/discounts/(:num)/delete'] = 'discounts/delete/$1';
 $route['me/recipes'] = 'recipes/index';
 $route['me/recipes/create'] = 'recipes/create';
+$route['me/recipes/export'] = 'recipes/export';
 $route['me/recipes/(:num)/edit'] = 'recipes/edit/$1';
 $route['me/recipes/(:num)/delete'] = 'recipes/delete/$1';
 $route['me/recipes/(:num)/ingredients/add'] = 'recipes/add_ingredient/$1';

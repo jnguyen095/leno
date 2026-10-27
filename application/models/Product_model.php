@@ -35,6 +35,33 @@ class Product_model extends CI_Model
         return $this->db->order_by('products.product_name', 'ASC')->get()->result_array();
     }
 
+    /**
+     * Thực đơn trên website (/thuc-don.html): danh mục đang bật có ít nhất 1 món đang bán, theo thứ tự danh mục
+     * (Quản trị → Danh mục), món xếp theo tên — cùng thứ tự với màn hình gọi món POS.
+     * Trả về [['id', 'name', 'products' => [['id', 'name', 'price', 'image', 'description'], ...]], ...].
+     */
+    public function get_public_menu()
+    {
+        $rows = $this->db->select('p.id, p.product_name, p.price, p.image, p.description, c.id AS category_id, c.name AS category_name')
+            ->from($this->table.' p')
+            ->join('categories c', 'c.id = p.category_id')
+            ->where('p.status', 'ACTIVE')->where('c.status', 'ACTIVE')
+            ->order_by('c.sort_order', 'ASC')->order_by('c.name', 'ASC')->order_by('p.product_name', 'ASC')
+            ->get()->result_array();
+
+        $menu = array();
+        foreach ($rows as $r)
+        {
+            $cid = (int) $r['category_id'];
+            if ( ! isset($menu[$cid])) $menu[$cid] = array('id' => $cid, 'name' => $r['category_name'], 'products' => array());
+            $menu[$cid]['products'][] = array(
+                'id' => (int) $r['id'], 'name' => $r['product_name'], 'price' => (float) $r['price'],
+                'image' => $r['image'], 'description' => $r['description'],
+            );
+        }
+        return array_values($menu);
+    }
+
     public function get_active_grouped_by_category()
     {
         $products = $this->db->where('products.status', 'ACTIVE')

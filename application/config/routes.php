@@ -149,6 +149,8 @@ $route['me/news/create'] = 'news/create';
 $route['me/news/(:num)/edit'] = 'news/edit/$1';
 $route['me/news/(:num)/toggle'] = 'news/toggle/$1';
 $route['me/news/(:num)/delete'] = 'news/delete/$1';
+// Thực đơn cho khách (danh mục + món đang bán, lấy từ Quản trị → Món).
+$route['thuc-don'] = 'public/public_site/menu';
 $route['tin-tuc'] = 'public/site_page/news_list';
 $route['tin-tuc/([a-z0-9-]+)'] = 'public/site_page/news/$1';
 

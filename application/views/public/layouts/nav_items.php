@@ -8,10 +8,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 return array(
     array('',                   'bi-house-door',   'Trang chủ'),
+    array('thuc-don',           'bi-journal-text', 'Thực đơn'),
     array('page/khu-vui-choi',  'bi-balloon',      'Khu vui chơi'),
-    array('page/cafe-anvat',    'bi-cup-hot',      'Cà phê & Ăn vặt'),
-    array('page/photobooth',    'bi-camera',       'Photobooth'),
-    array('page/pickleball',    'bi-trophy',       'Pickleball'),
+    array('page/cafe-nuoc',     'bi-cup-hot',      'Cà phê & Nước'),
+    array('page/an-vat',        'bi-camera',       'Ăn vặt'),
     array('page/khuyen-mai',    'bi-gift',         'Khuyến mãi'),
     array('tin-tuc',            'bi-megaphone',    'Tin tức'),
 );

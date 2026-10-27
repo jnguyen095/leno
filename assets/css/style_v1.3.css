@@ -793,3 +793,34 @@ body.pos-focus .app-footer, body:has(.pos-topbar) .app-footer{ display:none; }
 .rp-share{ width:80px; height:6px; border-radius:999px; background:#e9ecef; overflow:hidden; flex-shrink:0; }
 .rp-share span{ display:block; height:100%; background:var(--bs-primary); border-radius:999px; }
 .rp-item .rp-share{ width:100%; margin-top:.5rem; }
+
+/* ===== Danh sách sắp xếp kéo thả (Danh mục, Quản lý bàn — assets/js/sortable-list.js) ===== */
+.sort-list{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; }
+.sort-list-item{ display:grid; grid-template-columns:auto 64px minmax(0, 1fr) auto auto; align-items:center; gap:.6rem;
+  background:#fff; border:1px solid #e9ecef; border-radius:.85rem; padding:.5rem .6rem; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.sort-list-item.is-off{ background:#f8f9fa; }
+.sort-list-item.is-off .sort-list-name b{ color:#6c757d; }
+.sort-list-handle{ cursor:grab; color:#adb5bd; font-size:1.35rem; line-height:1; padding:.35rem .15rem; touch-action:none; user-select:none; }
+.sort-list-handle:hover{ color:var(--bs-primary); }
+.sort-list-pos{ text-align:center; font-weight:700; }
+.sort-list-name{ min-width:0; overflow-wrap:anywhere; }
+.sort-list-move, .sort-list-actions{ display:flex; gap:.25rem; }
+.sort-list-item.is-ghost{ opacity:.35; background:#eef5ff; border-style:dashed; }
+.sort-list-item.is-chosen{ box-shadow:0 8px 24px rgba(0,0,0,.15); }
+.sort-list-item.is-moved{ animation:sort-list-moved 1.2s ease; }
+@keyframes sort-list-moved{ 0%{ background:#fff3cd; } 100%{ background:#fff; } }
+.sort-list-bar{ position:sticky; bottom:0; z-index:5; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem;
+  margin-top:.75rem; padding:.75rem 1rem; background:#fff; border:1px solid #ffe08a; border-radius:.85rem; box-shadow:0 -4px 16px rgba(0,0,0,.08); }
+.sort-list-bar[hidden]{ display:none; }
+@media (max-width: 575.98px){
+  /* Điện thoại: tên xuống hàng riêng; tay cầm + số + lên/xuống + thao tác cùng một hàng dưới. */
+  .sort-list-item{ grid-template-columns:auto 56px 1fr auto; grid-template-areas:"handle name name name" "handle pos move actions"; row-gap:.4rem; }
+  .sort-list-handle{ grid-area:handle; align-self:stretch; display:flex; align-items:center; }
+  .sort-list-name{ grid-area:name; }
+  .sort-list-pos{ grid-area:pos; }
+  .sort-list-move{ grid-area:move; }
+  .sort-list-actions{ grid-area:actions; }
+  .sort-list-bar{ flex-direction:column; align-items:stretch; }
+  .sort-list-move .btn, .sort-list-actions .btn{ min-width:40px; min-height:40px; }
+  .sort-list-bar .d-flex .btn{ flex:1; }
+}

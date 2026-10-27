@@ -41,6 +41,7 @@ $route['me/dashboard/activity'] = 'dashboard/activity';
 $route['me/tables'] = 'tables/index';
 $route['me/tables/manage'] = 'tables/manage';
 $route['me/tables/manage/create'] = 'tables/manage_create';
+$route['me/tables/manage/reorder'] = 'tables/manage_reorder';
 $route['me/tables/manage/(:num)/edit'] = 'tables/manage_edit/$1';
 $route['me/tables/manage/(:num)/delete'] = 'tables/manage_delete/$1';
 $route['me/tables/manage/(:num)/reset-status'] = 'tables/manage_reset_status/$1';
@@ -88,6 +89,7 @@ $route['me/products/import-template'] = 'products/import_template';
 
 $route['me/categories'] = 'categories/index';
 $route['me/categories/create'] = 'categories/create';
+$route['me/categories/reorder'] = 'categories/reorder';
 $route['me/categories/(:num)/edit'] = 'categories/edit/$1';
 $route['me/categories/(:num)/delete'] = 'categories/delete/$1';
 

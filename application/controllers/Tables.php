@@ -170,6 +170,28 @@ class Tables extends MY_Controller
         $this->load->view('layout/footer');
     }
 
+    /**
+     * Lưu thứ tự bàn từ trang Quản lý bàn (kéo thả / nhập số / nút lên-xuống): POST ids[] theo thứ tự hiển thị,
+     * đánh số lại 1, 2, 3... — màn hình Bàn (POS web + ứng dụng) xếp bàn theo số này.
+     */
+    public function manage_reorder()
+    {
+        $this->_require_admin();
+        if ($this->input->method() !== 'post') show_404();
+        $ids = (array) $this->input->post('ids');
+        $old = array_column($this->Table_model->get_all(), 'table_name', 'id');
+        if ( ! $this->Table_model->reorder($ids))
+        {
+            $this->session->set_flashdata('error', 'Danh sách bàn đã thay đổi trong lúc sắp xếp (có bàn mới thêm / xoá). Tải lại trang rồi sắp xếp lại.');
+            redirect('me/tables/manage');
+            return;
+        }
+        $this->audit('table', 'REORDER', array('order' => array_values($old)),
+            array('order' => array_map(function ($id) use ($old) { return isset($old[$id]) ? $old[$id] : $id; }, array_map('intval', $ids))));
+        $this->session->set_flashdata('success', 'Đã lưu thứ tự bàn.');
+        redirect('me/tables/manage');
+    }
+
     public function manage_create()
     {
         $this->_require_admin();
@@ -190,7 +212,8 @@ class Tables extends MY_Controller
                     'table_name'     => $this->input->post('table_name', TRUE),
                     'note'           => clean_note($this->input->post('note', TRUE)),
                     'capacity'       => (int) $this->input->post('capacity'),
-                    'sort_order'     => (int) $this->input->post('sort_order'),
+                    // Để trống thứ tự -> xếp cuối danh sách bàn.
+                    'sort_order'     => trim((string) $this->input->post('sort_order')) === '' ? $this->Table_model->next_sort_order() : (int) $this->input->post('sort_order'),
                     'status'         => 'AVAILABLE',
                 ));
                 $this->audit('table', 'CREATE', NULL, array('id' => $id));

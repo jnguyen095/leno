@@ -25,8 +25,9 @@
     </div>
     <div class="mb-3">
       <label class="form-label">Thứ tự hiển thị</label>
-      <input type="number" name="sort_order" class="form-control" value="<?php echo $table ? (int) $table['sort_order'] : 0; ?>">
-      <div class="form-text">Số nhỏ hơn hiện trước — dùng để sắp xếp thứ tự bàn trong sơ đồ.</div>
+      <input type="number" name="sort_order" class="form-control" min="0" value="<?php echo $table ? (int) $table['sort_order'] : ''; ?>"
+             placeholder="<?php echo $table ? '' : 'Để trống = xếp cuối'; ?>">
+      <div class="form-text">Số nhỏ hơn hiện trước. Sắp xếp nhanh nhiều bàn: kéo thả ngay ở trang Quản lý bàn.</div>
     </div>
     <div class="d-grid gap-2">
       <button class="btn btn-brand btn-lg">Lưu</button>

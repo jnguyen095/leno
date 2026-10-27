@@ -34,6 +34,9 @@
       </div>
       <div class="col-md-auto d-flex gap-2">
         <button class="btn btn-brand"><i class="bi bi-funnel"></i> Lọc</button>
+        <?php if ($filters['category_id']): // lối tắt: sắp xếp món của danh mục đang lọc ?>
+          <a href="<?php echo site_url('me/categories/'.(int) $filters['category_id'].'/products'); ?>" class="btn btn-outline-primary"><i class="bi bi-sort-down"></i> Sắp xếp món</a>
+        <?php endif; ?>
         <?php if ($filters['q'] !== '' || $filters['category_id'] || $filters['status'] !== ''): ?>
           <a href="<?php echo site_url('me/products'); ?>" class="btn btn-outline-secondary">Xoá lọc</a>
         <?php endif; ?>

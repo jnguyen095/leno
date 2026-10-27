@@ -64,6 +64,7 @@ class Products extends MY_Controller
             {
                 $data = $this->_form_data($image);
                 $data['sku'] = $sku;
+                $data['sort_order'] = $this->Product_model->next_sort_order($data['category_id']); // món mới xếp cuối danh mục
                 $id = $this->Product_model->create($data);
                 $this->audit('product', 'CREATE', NULL, array('id' => $id, 'sku' => $sku));
                 redirect('me/products');
@@ -106,7 +107,10 @@ class Products extends MY_Controller
 
             if ( ! $error)
             {
-                $this->Product_model->update($id, $this->_form_data($image));
+                $data = $this->_form_data($image);
+                // Chuyển sang danh mục khác: xếp cuối danh mục mới (giữ nguyên vị trí nếu không đổi danh mục).
+                if ((int) $data['category_id'] !== (int) $product['category_id']) $data['sort_order'] = $this->Product_model->next_sort_order($data['category_id']);
+                $this->Product_model->update($id, $data);
                 $this->audit('product', 'UPDATE', $product, array('id' => $id));
                 redirect('me/products');
                 return;
@@ -179,12 +183,14 @@ class Products extends MY_Controller
                     if ($existing)
                     {
                         // Import không đụng tới ảnh sản phẩm hiện có (Excel không mang được file ảnh).
+                        if ((int) $product_data['category_id'] !== (int) $existing['category_id']) $product_data['sort_order'] = $this->Product_model->next_sort_order($product_data['category_id']);
                         $this->Product_model->update($existing['id'], $product_data);
                         $updated++;
                     }
                     else
                     {
                         $product_data['image'] = NULL;
+                        $product_data['sort_order'] = $this->Product_model->next_sort_order($product_data['category_id']);
                         $this->Product_model->create($product_data);
                         $created++;
                     }

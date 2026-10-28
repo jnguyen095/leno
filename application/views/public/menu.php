@@ -1,6 +1,7 @@
 <?php
-  // /thuc-don.html — Thực đơn: danh mục (trái trên máy tính, dãy nút trượt ngang dính trên đầu trên điện thoại) + món
-  // (ảnh, tên, giá). Bấm danh mục lọc ngay (không tải lại trang); "Tất cả" hiện mọi danh mục theo từng nhóm.
+  // /thuc-don.html — Thực đơn: ô tìm món trên cùng + danh mục (cột dọc bên trái, cả điện thoại lẫn máy tính) + món
+  // (điện thoại: mỗi món một hàng — ảnh, tên, giá; máy tính: thẻ). Bấm danh mục lọc ngay (không tải lại trang);
+  // "Tất cả" hiện mọi danh mục theo từng nhóm. Tìm món: gõ có dấu / không dấu đều được, tìm trên mọi danh mục.
   // Địa chỉ giữ danh mục đang chọn (#danh-muc-<id>) để chia sẻ / bấm Quay lại. Biến: $menu.
   $price = function ($v) { return number_format((float) $v, 0, ',', '.').'đ'; };
   $total = array_sum(array_map(function ($c) { return count($c['products']); }, $menu));
@@ -9,7 +10,7 @@
   <div class="container">
     <div class="pap-menu-head">
       <h1 class="pap-page-title mb-1"><i class="bi bi-journal-text" aria-hidden="true"></i> Thực đơn</h1>
-      <?php if ($menu): ?><p class="pap-section-subtitle mb-0">Bấm vào danh mục để xem món.</p><?php endif; ?>
+      <?php if ($menu): ?><p class="pap-section-subtitle mb-0">Bấm vào danh mục hoặc gõ tên món để tìm.</p><?php endif; ?>
     </div>
 
     <?php if (empty($menu)): ?>
@@ -18,8 +19,14 @@
         Thực đơn đang được cập nhật. Mời bạn quay lại sau nhé!
       </div>
     <?php else: ?>
+    <div class="pap-menu-search" role="search">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input type="search" id="papMenuSearch" placeholder="Tìm món… (vd: cà phê, trà sữa)" aria-label="Tìm món" autocomplete="off" enterkeyhint="search">
+      <button type="button" class="pap-menu-search-clear" aria-label="Xoá tìm kiếm" hidden><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+
     <div class="pap-menu">
-      <?php // Danh mục: nav có role tablist-like nhưng dùng nút thường để đơn giản; aria-pressed cho trình đọc màn hình. ?>
+      <?php // Danh mục: nút thường cho đơn giản; aria-pressed cho trình đọc màn hình. ?>
       <nav class="pap-menu-cats" aria-label="Danh mục món">
         <button type="button" class="pap-menu-cat active" data-cat="all" aria-pressed="true">
           <i class="bi bi-grid" aria-hidden="true"></i><span>Tất cả</span><small><?php echo $total; ?></small>
@@ -54,6 +61,10 @@
             </div>
           </section>
         <?php endforeach; ?>
+        <div class="pap-menu-empty" hidden>
+          <i class="bi bi-search fs-2 d-block mb-2 opacity-50" aria-hidden="true"></i>
+          Không tìm thấy món phù hợp. Bạn thử gõ từ khác nhé!
+        </div>
       </div>
     </div>
     <?php endif; ?>
@@ -65,25 +76,62 @@
 (function(){
   var buttons = document.querySelectorAll('.pap-menu-cat'), groups = document.querySelectorAll('.pap-menu-group');
   var bar = document.querySelector('.pap-menu-cats'), header = document.querySelector('.pap-header');
+  var input = document.getElementById('papMenuSearch'), clearBtn = document.querySelector('.pap-menu-search-clear');
+  var empty = document.querySelector('.pap-menu-empty'), current = 'all', trackTimer;
 
-  // Thanh danh mục (điện thoại) dính ngay dưới header — header cao khác nhau tuỳ máy nên đo thật.
+  // Bỏ dấu tiếng Việt + chữ thường: "Cà Phê Sữa" → "ca phe sua", để khách gõ không dấu vẫn ra.
+  function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/\s+/g, ' ').trim(); }
+  document.querySelectorAll('.pap-menu-item').forEach(function(it){ it.dataset.search = norm(it.querySelector('.pap-menu-name').textContent); });
+
+  // Cột danh mục dính ngay dưới header — header cao khác nhau tuỳ máy nên đo thật.
   function setOffset(){ document.documentElement.style.setProperty('--pap-header-h', (header ? header.offsetHeight : 0) + 'px'); }
   setOffset(); window.addEventListener('resize', setOffset);
 
+  // Hiện món theo danh mục đang chọn + từ khoá (mọi từ gõ vào đều phải có trong tên món).
+  function apply(){
+    var words = norm(input.value).split(' ').filter(Boolean), any = false;
+    groups.forEach(function(g){
+      var shown = 0;
+      g.querySelectorAll('.pap-menu-item').forEach(function(it){
+        var ok = words.every(function(w){ return it.dataset.search.indexOf(w) !== -1; });
+        it.hidden = !ok; if (ok) shown++;
+      });
+      g.hidden = (current !== 'all' && g.dataset.cat !== current) || shown === 0;
+      if (!g.hidden) any = true;
+    });
+    empty.hidden = any;
+    clearBtn.hidden = !input.value;
+  }
+
+  function scrollToList(){
+    var list = document.querySelector('.pap-menu-list'), top = list.getBoundingClientRect().top + window.scrollY - (header ? header.offsetHeight : 0) - 12;
+    if (window.scrollY > top) window.scrollTo({ top: top, behavior: 'smooth' });
+  }
+
   function select(cat, push){
+    current = cat;
     buttons.forEach(function(b){ var on = b.dataset.cat === cat; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-    groups.forEach(function(g){ g.hidden = cat !== 'all' && g.dataset.cat !== cat; });
-    // Đưa nút đang chọn vào giữa dãy trượt ngang (điện thoại).
+    apply();
+    // Đưa nút đang chọn vào tầm nhìn trong cột danh mục (cột cuộn riêng khi nhiều danh mục).
     var active = bar.querySelector('.pap-menu-cat.active');
-    if (active && bar.scrollWidth > bar.clientWidth) bar.scrollTo({ left: active.offsetLeft - (bar.clientWidth - active.offsetWidth) / 2, behavior: 'smooth' });
+    if (active && bar.scrollHeight > bar.clientHeight) bar.scrollTo({ top: active.offsetTop - (bar.clientHeight - active.offsetHeight) / 2, behavior: 'smooth' });
     if (push !== false) history.replaceState(null, '', cat === 'all' ? location.pathname + location.search : '#danh-muc-' + cat);
     // Về đầu danh sách món để khách thấy ngay món của danh mục vừa chọn.
-    var list = document.querySelector('.pap-menu-list'), top = list.getBoundingClientRect().top + window.scrollY - (header ? header.offsetHeight : 0) - (getComputedStyle(bar).position === 'sticky' && window.innerWidth < 992 ? bar.offsetHeight : 0) - 12;
-    if (window.scrollY > top) window.scrollTo({ top: top, behavior: 'smooth' });
-    if (typeof papTrack === 'function') papTrack('menu_category', { category: cat });
+    if (push !== false) scrollToList();
+    if (push !== false && typeof papTrack === 'function') papTrack('menu_category', { category: cat });
   }
 
   buttons.forEach(function(b){ b.addEventListener('click', function(){ select(b.dataset.cat); }); });
+
+  // Gõ tìm: tìm trên mọi danh mục (chuyển về "Tất cả") để khách không bỏ sót món.
+  input.addEventListener('input', function(){
+    if (input.value.trim() && current !== 'all') { select('all', false); history.replaceState(null, '', location.pathname + location.search); } else apply();
+    clearTimeout(trackTimer);
+    if (input.value.trim() && typeof papTrack === 'function') trackTimer = setTimeout(function(){ papTrack('menu_search', { search_term: input.value.trim() }); }, 1200);
+  });
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { input.blur(); scrollToList(); } });
+  clearBtn.addEventListener('click', function(){ input.value = ''; apply(); input.focus(); });
+
   // Mở link có sẵn danh mục (#danh-muc-6) hoặc đổi địa chỉ / bấm Quay lại trên cùng trang.
   function fromHash(){
     var m = location.hash.match(/^#danh-muc-(\d+)$/);

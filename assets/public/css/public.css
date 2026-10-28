@@ -403,43 +403,79 @@ img{ max-width:100%; height:auto; }
 .pap-pager{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.75rem 1rem; margin-top:2rem; }
 .pap-pager-info{ font-weight:600; color:#6b7a87; }
 
-/* ---------- Thực đơn (/thuc-don.html): điện thoại — dãy danh mục trượt ngang dính dưới header, món 2 cột;
-   máy tính — danh mục cột trái (dính khi cuộn), món 3–4 cột bên phải ---------- */
+/* ---------- Thực đơn (/thuc-don.html) ----------
+   Điện thoại / máy tính bảng: cột danh mục dọc hẹp bên trái (dính khi cuộn, cuộn riêng), món dạng danh sách bên phải —
+   mỗi món một hàng: ảnh trái, tên + giá hai dòng. Máy tính: danh mục cột trái 240px, món dạng thẻ 3–4 cột.
+   Ô tìm món ở trên cùng (lọc theo tên, gõ có dấu / không dấu đều được). */
 .pap-menu-page{ padding-top:1.5rem; }
-.pap-menu-head{ margin-bottom:1rem; }
-.pap-menu{ display:block; }
-.pap-menu-cats{ position:sticky; top:var(--pap-header-h, 64px); z-index:20; display:flex; gap:.5rem; overflow-x:auto; scrollbar-width:none;
-  margin:0 -12px 1rem; padding:.6rem 12px; background:rgba(255,255,255,.96); backdrop-filter:blur(6px); border-bottom:1px solid #eef2f6; -webkit-overflow-scrolling:touch; }
+.pap-menu-head{ margin-bottom:.75rem; }
+.pap-menu-search{ position:relative; margin-bottom:1rem; }
+.pap-menu-search i.bi-search{ position:absolute; left:.95rem; top:50%; transform:translateY(-50%); color:#8a97a3; pointer-events:none; }
+.pap-menu-search input{ width:100%; min-height:48px; padding:.6rem 2.75rem .6rem 2.6rem; border:1.5px solid #dbe6ef; border-radius:999px; font-size:1rem; background:#fff; }
+.pap-menu-search input:focus{ outline:none; border-color: var(--pap-primary); box-shadow:0 0 0 3px rgba(1,144,219,.15); }
+.pap-menu-search input::-webkit-search-cancel-button{ display:none; }
+.pap-menu-search-clear{ position:absolute; right:.4rem; top:50%; transform:translateY(-50%); width:38px; height:38px; border:0; border-radius:50%;
+  background:transparent; color:#6b7a87; font-size:1.1rem; display:flex; align-items:center; justify-content:center; }
+.pap-menu-search-clear:hover{ background: var(--pap-light); color: var(--pap-dark); }
+.pap-menu-search-clear[hidden]{ display:none; }
+.pap-menu-empty{ text-align:center; color:#6b7a87; padding:2rem 1rem; }
+.pap-menu-empty[hidden]{ display:none; }
+
+.pap-menu{ display:grid; grid-template-columns:88px minmax(0, 1fr); gap:.6rem; align-items:start; }
+.pap-menu-cats{ position:sticky; top:calc(var(--pap-header-h, 64px) + .5rem); z-index:5; display:flex; flex-direction:column; gap:.3rem;
+  max-height:calc(100vh - var(--pap-header-h, 64px) - 90px); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none;
+  padding:.3rem; background: var(--pap-light); border-radius:14px; }
 .pap-menu-cats::-webkit-scrollbar{ display:none; }
-.pap-menu-cat{ flex:0 0 auto; display:inline-flex; align-items:center; gap:.4rem; min-height:44px; padding:.45rem 1rem; border-radius:999px;
-  border:1.5px solid #dbe6ef; background:#fff; color: var(--pap-dark); font-weight:700; font-size:.95rem; white-space:nowrap; cursor:pointer; }
-.pap-menu-cat small{ font-weight:700; font-size:.75rem; color:#6b7a87; background: var(--pap-light); border-radius:999px; padding:.05rem .45rem; }
-.pap-menu-cat:hover{ border-color: var(--pap-primary); color: var(--pap-primary); }
-.pap-menu-cat.active{ background: var(--pap-primary); border-color: var(--pap-primary); color:#fff; }
-.pap-menu-cat.active small{ background:rgba(255,255,255,.25); color:#fff; }
-.pap-menu-group{ margin-bottom:1.75rem; scroll-margin-top:calc(var(--pap-header-h, 64px) + 70px); }
+.pap-menu-cat{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.15rem; width:100%; min-height:52px;
+  padding:.45rem .3rem; border:0; border-radius:10px; background:transparent; color: var(--pap-dark); font-weight:700; font-size:.8rem;
+  line-height:1.25; text-align:center; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
+.pap-menu-cat i{ font-size:1rem; }
+.pap-menu-cat small{ display:none; } /* Điện thoại: bỏ số món cho cột danh mục gọn — máy tính vẫn hiện. */
+.pap-menu-cat:hover{ color: var(--pap-primary); }
+.pap-menu-cat.active{ background:#fff; color: var(--pap-primary); box-shadow:0 2px 8px rgba(28,43,57,.08); }
+.pap-menu-cat.active small{ color: var(--pap-primary); }
+
+.pap-menu-group{ margin-bottom:1.25rem; scroll-margin-top:calc(var(--pap-header-h, 64px) + 12px); }
 .pap-menu-group[hidden]{ display:none; }
-.pap-menu-group-title{ font-size:1.2rem; font-weight:800; color: var(--pap-dark); margin:0 0 .75rem; display:flex; align-items:baseline; gap:.5rem; }
-.pap-menu-group-title small{ font-size:.85rem; font-weight:600; color:#6b7a87; }
-.pap-menu-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.75rem; }
-.pap-menu-item{ display:flex; flex-direction:column; background:#fff; border:1px solid #edf1f5; border-radius: var(--pap-radius-sm); overflow:hidden; box-shadow:0 2px 8px rgba(28,43,57,.05); }
-/* Khung ảnh món cố định hình vuông (bằng ô "chưa có ảnh"): kích thước ảnh gốc không làm khung to / nhỏ.
-   Ảnh phủ kín cả khung (giữ tỉ lệ, không méo) — phần thừa ở mép bị cắt, căn giữa. Ảnh vuông, món ở giữa ảnh là đẹp nhất. */
-.pap-menu-img{ position:relative; width:100%; aspect-ratio:1 / 1; overflow:hidden; background: var(--pap-light); }
+.pap-menu-group-title{ font-size:1.05rem; font-weight:800; color: var(--pap-dark); margin:0 0 .5rem; display:flex; align-items:baseline; gap:.4rem; }
+.pap-menu-group-title small{ font-size:.8rem; font-weight:600; color:#6b7a87; }
+.pap-menu-grid{ display:grid; grid-template-columns:minmax(0, 1fr); gap:.5rem; }
+/* Một món = một hàng: ảnh vuông bên trái, tên (dòng 1) + giá (dòng 2) bên phải. */
+.pap-menu-item{ display:flex; align-items:center; gap:.7rem; padding:.45rem; background:#fff; border:1px solid #edf1f5; border-radius: var(--pap-radius-sm); box-shadow:0 1px 4px rgba(28,43,57,.04); }
+.pap-menu-item[hidden]{ display:none; }
+/* Khung ảnh cố định hình vuông: ảnh phủ kín khung (giữ tỉ lệ, cắt mép, căn giữa) — kích thước ảnh gốc không làm khung to / nhỏ. */
+.pap-menu-img{ position:relative; flex:0 0 72px; width:72px; aspect-ratio:1 / 1; overflow:hidden; border-radius:10px; background: var(--pap-light); }
 .pap-menu-img img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
 .pap-menu-img.is-empty{ display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #eaf6ff, #fff4e5); }
-.pap-menu-img.is-empty i{ font-size:2.25rem; color: var(--pap-primary); opacity:.45; }
-.pap-menu-body{ display:flex; flex-direction:column; gap:.25rem; padding:.6rem .7rem .75rem; flex:1; }
-.pap-menu-name{ font-size:1rem; font-weight:700; line-height:1.35; color: var(--pap-dark); margin:0;
+.pap-menu-img.is-empty i{ font-size:1.6rem; color: var(--pap-primary); opacity:.45; }
+.pap-menu-body{ display:flex; flex-direction:column; gap:.2rem; min-width:0; flex:1; }
+.pap-menu-name{ font-size:.98rem; font-weight:700; line-height:1.3; color: var(--pap-dark); margin:0;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.pap-menu-price{ margin-top:auto; font-size:1.05rem; font-weight:800; color: var(--pap-secondary-dark); }
-@media (min-width: 576px){ .pap-menu-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; } }
+.pap-menu-price{ font-size:1rem; font-weight:800; color: var(--pap-secondary-dark); }
+@media (min-width: 576px){
+  .pap-menu{ grid-template-columns:120px minmax(0, 1fr); gap:1rem; }
+  .pap-menu-cat{ font-size:.88rem; }
+  .pap-menu-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.75rem; }
+}
+/* Máy tính: danh mục cột trái rộng (tên + số món cùng hàng), món dạng thẻ dọc (ảnh trên, tên + giá dưới). */
 @media (min-width: 992px){
-  .pap-menu{ display:grid; grid-template-columns:240px minmax(0, 1fr); gap:2rem; align-items:start; }
-  .pap-menu-cats{ top:calc(var(--pap-header-h, 75px) + 1rem); flex-direction:column; overflow:visible; margin:0; padding:.75rem; border:1px solid #edf1f5;
-    border-radius: var(--pap-radius); box-shadow: var(--pap-shadow); background:#fff; backdrop-filter:none; max-height:calc(100vh - var(--pap-header-h, 75px) - 2rem); overflow-y:auto; }
-  .pap-menu-cat{ justify-content:space-between; width:100%; border-radius:10px; border-color:transparent; white-space:normal; text-align:left; }
+  .pap-menu-search{ max-width:480px; }
+  .pap-menu{ grid-template-columns:240px minmax(0, 1fr); gap:2rem; }
+  .pap-menu-cats{ top:calc(var(--pap-header-h, 75px) + 1rem); padding:.75rem; background:#fff; border:1px solid #edf1f5; box-shadow: var(--pap-shadow);
+    border-radius: var(--pap-radius); max-height:calc(100vh - var(--pap-header-h, 75px) - 2rem); }
+  .pap-menu-cat{ flex-direction:row; justify-content:space-between; gap:.4rem; min-height:44px; padding:.45rem .9rem; font-size:.95rem; text-align:left; }
   .pap-menu-cat span{ flex:1; }
+  .pap-menu-cat small{ display:inline; font-weight:700; font-size:.75rem; background: var(--pap-light); border-radius:999px; padding:.05rem .45rem; color:#6b7a87; }
   .pap-menu-cat:not(.active):hover{ background: var(--pap-light); }
+  .pap-menu-cat.active{ background: var(--pap-primary); color:#fff; box-shadow:none; }
+  .pap-menu-cat.active small{ background:rgba(255,255,255,.25); color:#fff; }
+  .pap-menu-group-title{ font-size:1.2rem; margin-bottom:.75rem; }
+  .pap-menu-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; }
+  .pap-menu-item{ flex-direction:column; align-items:stretch; gap:0; padding:0; overflow:hidden; box-shadow:0 2px 8px rgba(28,43,57,.05); }
+  .pap-menu-img{ flex:none; width:100%; border-radius:0; }
+  .pap-menu-img.is-empty i{ font-size:2.25rem; }
+  .pap-menu-body{ padding:.6rem .7rem .75rem; gap:.25rem; }
+  .pap-menu-name{ font-size:1rem; }
+  .pap-menu-price{ margin-top:auto; font-size:1.05rem; }
 }
 @media (min-width: 1200px){ .pap-menu-grid{ grid-template-columns:repeat(4, minmax(0, 1fr)); } }

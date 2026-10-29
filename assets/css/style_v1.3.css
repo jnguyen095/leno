@@ -730,6 +730,23 @@ body.pos-focus .app-footer, body:has(.pos-topbar) .app-footer{ display:none; }
 .pg-img-item{ border:2px solid transparent; border-radius:.6rem; padding:0; background:#f1f3f5; aspect-ratio:1; overflow:hidden; cursor:pointer; }
 .pg-img-item:hover, .pg-img-item:focus-visible{ border-color:var(--bs-primary); }
 .pg-img-item img{ width:100%; height:100%; object-fit:cover; display:block; }
+.pg-img-item{ position:relative; }
+.pg-img-item.is-picked{ border-color:var(--bs-success); }
+.pg-img-item.is-picked::after{ content:"\F26E"; font-family:"bootstrap-icons"; position:absolute; top:.3rem; right:.3rem; width:1.6rem; height:1.6rem; border-radius:50%;
+  background:var(--bs-success); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+/* Bộ sưu tập ảnh cuối trang (form Trang nội dung / Tin tức): lưới ảnh kéo thả đổi thứ tự + ô chú thích. */
+.pg-gal{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:.75rem; }
+.pg-gal-item{ display:flex; flex-direction:column; gap:.35rem; background:#fff; }
+.pg-gal-thumb{ position:relative; aspect-ratio:4/3; border-radius:.6rem; overflow:hidden; background:#f1f3f5; border:1px solid #e9ecef; }
+.pg-gal-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.pg-gal-handle, .pg-gal-remove, .pg-gal-pos{ position:absolute; top:.35rem; display:flex; align-items:center; justify-content:center; border-radius:50%;
+  width:1.9rem; height:1.9rem; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:.85rem; }
+.pg-gal-handle{ left:.35rem; cursor:grab; }
+.pg-gal-pos{ left:2.5rem; font-weight:700; font-size:.75rem; background:rgba(255,255,255,.9); color:#333; }
+.pg-gal-remove{ right:.35rem; }
+.pg-gal-remove:hover{ background:var(--bs-danger); }
+.pg-gal-item.sortable-ghost{ opacity:.4; }
+.pg-gal-item.sortable-chosen .pg-gal-thumb{ box-shadow:0 6px 18px rgba(0,0,0,.18); }
 .pg-lib{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:.75rem; }
 .pg-lib-item{ background:#fff; border-radius:1rem; box-shadow:0 1px 3px rgba(0,0,0,.06); overflow:hidden; display:flex; flex-direction:column; }
 .pg-lib-thumb{ display:block; aspect-ratio:4/3; background:#f1f3f5; }

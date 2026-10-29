@@ -1,6 +1,7 @@
 <?php
   // Thêm / sửa trang nội dung hoặc tin tức: mã (đường dẫn), tiêu đề, nội dung (CKEditor 5 — ảnh tải lên máy chủ
-  // + chọn ảnh có sẵn từ Thư viện ảnh), bật / tắt. Tin tức thêm: tóm tắt, ngày đăng (hẹn giờ), ghim.
+  // + chọn ảnh có sẵn từ Thư viện ảnh), bộ sưu tập ảnh cuối trang (kéo thả thứ tự, chú thích), bật / tắt.
+  // Tin tức thêm: tóm tắt, ngày đăng (hẹn giờ), ghim.
   // Thông tin tạo / sửa ở cột phải. Biến: $type (PAGE | NEWS), $base, $labels.
   $is_news = $type === 'NEWS';
   $noun = $labels['noun'];
@@ -77,6 +78,43 @@
               <div class="form-text"><i class="bi bi-image"></i> Kéo thả / dán ảnh vào nội dung để tải lên (ảnh lớn hơn <?php echo round($shrink_kb / 1024); ?> MB được tự thu nhỏ), hoặc bấm <b>Thư viện ảnh</b> trên thanh công cụ để chọn ảnh có sẵn.</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <?php // Bộ sưu tập ảnh cuối trang: thêm (tải lên / chọn từ thư viện), kéo thả đổi thứ tự, chú thích, bỏ ảnh. Lưu cùng form. ?>
+      <section class="settings-card mt-3" id="pgGallery">
+        <div class="settings-card-body">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+            <div>
+              <div class="fw-semibold"><i class="bi bi-images"></i> Bộ sưu tập ảnh <span class="badge text-bg-light border" id="pgGalCount"><?php echo count($values['gallery']); ?></span></div>
+              <div class="small text-muted">Hiện cuối <?php echo $noun; ?> trên website: ảnh trượt ngang, khách bấm vào để xem ảnh lớn. Không bắt buộc.</div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <label class="btn btn-sm btn-outline-primary mb-0"><i class="bi bi-upload"></i> Tải ảnh lên
+                <input type="file" id="pgGalFile" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+              </label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="pgGalPick"><i class="bi bi-images"></i> Chọn từ thư viện</button>
+            </div>
+          </div>
+          <div class="small text-muted mb-2" id="pgGalStatus"></div>
+          <ul class="pg-gal" id="pgGalList">
+            <?php foreach ($values['gallery'] as $g): ?>
+              <li class="pg-gal-item">
+                <input type="hidden" name="gallery_image[]" value="<?php echo htmlspecialchars($g['image']); ?>">
+                <div class="pg-gal-thumb">
+                  <img src="<?php echo htmlspecialchars(base_url('assets/'.$g['image'])); ?>" alt="" loading="lazy">
+                  <span class="pg-gal-handle" title="Kéo để đổi thứ tự"><i class="bi bi-arrows-move"></i></span>
+                  <span class="pg-gal-pos"></span>
+                  <button type="button" class="pg-gal-remove" title="Bỏ ảnh khỏi bộ sưu tập" aria-label="Bỏ ảnh"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <input type="text" name="gallery_caption[]" class="form-control form-control-sm" maxlength="200" placeholder="Chú thích (không bắt buộc)" value="<?php echo htmlspecialchars($g['caption']); ?>">
+              </li>
+            <?php endforeach; ?>
+          </ul>
+          <div class="pg-gal-empty text-center text-muted small py-4 <?php echo $values['gallery'] ? 'd-none' : ''; ?>" id="pgGalEmpty">
+            <i class="bi bi-images fs-3 d-block mb-1 opacity-50"></i>Chưa có ảnh. Bấm <b>Tải ảnh lên</b> (chọn được nhiều ảnh một lúc) hoặc <b>Chọn từ thư viện</b>.
+          </div>
+          <div class="form-text">Kéo ảnh để đổi thứ tự. Tối đa <?php echo $gallery_max; ?> ảnh. Bỏ ảnh ở đây không xoá ảnh khỏi Thư viện ảnh. Bấm <b>Lưu</b> để áp dụng.</div>
         </div>
       </section>
     </div>
@@ -176,7 +214,7 @@
       </div>
       <div class="modal-body">
         <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
-          <div class="small text-muted">Bấm vào ảnh để chèn vào nội dung.</div>
+          <div class="small text-muted" id="pgImgHint">Bấm vào ảnh để chèn vào nội dung.</div>
           <label class="btn btn-sm btn-brand mb-0"><i class="bi bi-upload"></i> Tải ảnh lên
             <input type="file" id="pgImgFile" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
           </label>
@@ -189,6 +227,7 @@
 </div>
 
 <script src="<?php echo asset_url('assets/js/image-compress.js'); ?>"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script type="importmap">
 { "imports": { "ckeditor5": "<?php echo $ck; ?>/browser/ckeditor5.js", "ckeditor5/translations/vi.js": "<?php echo $ck; ?>/translations/vi.js" } }
 </script>
@@ -257,7 +296,8 @@ class ImageLibrary extends Plugin {
 const modalEl = document.getElementById('pgImgModal');
 const grid = document.getElementById('pgImgGrid');
 const msg = document.getElementById('pgImgMsg');
-let libraryPick = null; // việc làm khi bấm 1 ảnh: chèn vào nội dung, hoặc đặt làm banner
+let libraryPick = null; // việc làm khi bấm 1 ảnh: chèn vào nội dung, đặt làm banner, hoặc thêm vào bộ sưu tập
+let libraryMulti = null;
 
 function showMsg(text) { msg.textContent = text || ''; msg.classList.toggle('d-none', ! text); }
 
@@ -275,7 +315,10 @@ function loadLibrary() {
         b.title = img.name + (img.width ? ' · ' + img.width + '×' + img.height : '');
         b.innerHTML = '<img loading="lazy" alt="">';
         b.querySelector('img').src = img.url;
+        if (libraryMulti && libraryMulti.has(img.name)) b.classList.add('is-picked');
         b.addEventListener('click', () => {
+          // Bộ sưu tập: chọn liền nhiều ảnh, hộp vẫn mở (ảnh đã thêm có dấu ✓); chèn nội dung / banner: chọn 1 ảnh rồi đóng.
+          if (libraryMulti) { if (libraryPick(img) !== false) b.classList.add('is-picked'); return; }
           bootstrap.Modal.getInstance(modalEl).hide();
           libraryPick(img);
         });
@@ -285,8 +328,13 @@ function loadLibrary() {
     .catch(() => { grid.innerHTML = '<div class="text-danger small">Không tải được danh sách ảnh.</div>'; });
 }
 
-function openLibrary(onPick) {
+const imgHint = document.getElementById('pgImgHint');
+const IMG_HINT = imgHint.textContent;
+// multi: Set tên ảnh đã có (bộ sưu tập) — hộp không đóng sau mỗi lần bấm.
+function openLibrary(onPick, multi, hint) {
   libraryPick = onPick;
+  libraryMulti = multi || null;
+  imgHint.textContent = hint || IMG_HINT;
   showMsg('');
   bootstrap.Modal.getOrCreateInstance(modalEl).show();
   loadLibrary();
@@ -341,6 +389,61 @@ bannerRemove.addEventListener('click', () => {
   bannerStatus.textContent = '';
   showBanner('');
 });
+
+// ---- Bộ sưu tập ảnh cuối trang ----
+const galList = document.getElementById('pgGalList');
+const galEmpty = document.getElementById('pgGalEmpty');
+const galCount = document.getElementById('pgGalCount');
+const galStatus = document.getElementById('pgGalStatus');
+const GALLERY_MAX = <?php echo (int) $gallery_max; ?>;
+const ASSETS_URL = <?php echo json_encode(base_url('assets/')); ?>;
+
+function galNames() { return new Set(Array.from(galList.querySelectorAll('input[name="gallery_image[]"]')).map(i => i.value.slice(UPLOAD_DIR.length))); }
+function galRefresh() {
+  const items = galList.querySelectorAll('.pg-gal-item');
+  items.forEach((li, i) => { li.querySelector('.pg-gal-pos').textContent = i + 1; });
+  galCount.textContent = items.length;
+  galEmpty.classList.toggle('d-none', items.length > 0);
+  document.getElementById('pgForm').dispatchEvent(new Event('input'));
+}
+// Thêm 1 ảnh (tên tệp trong thư mục Thư viện ảnh). Trả về false nếu trùng / đã đủ số ảnh.
+function galAdd(name, caption) {
+  if (galNames().has(name)) { galStatus.textContent = 'Ảnh này đã có trong bộ sưu tập.'; return false; }
+  if (galList.children.length >= GALLERY_MAX) { galStatus.textContent = 'Đã đủ ' + GALLERY_MAX + ' ảnh.'; return false; }
+  const li = document.createElement('li');
+  li.className = 'pg-gal-item';
+  li.innerHTML = '<input type="hidden" name="gallery_image[]"><div class="pg-gal-thumb"><img alt="">'
+    + '<span class="pg-gal-handle" title="Kéo để đổi thứ tự"><i class="bi bi-arrows-move"></i></span><span class="pg-gal-pos"></span>'
+    + '<button type="button" class="pg-gal-remove" title="Bỏ ảnh khỏi bộ sưu tập" aria-label="Bỏ ảnh"><i class="bi bi-x-lg"></i></button></div>'
+    + '<input type="text" name="gallery_caption[]" class="form-control form-control-sm" maxlength="200" placeholder="Chú thích (không bắt buộc)">';
+  li.querySelector('input[type=hidden]').value = UPLOAD_DIR + name;
+  li.querySelector('img').src = ASSETS_URL + UPLOAD_DIR + name;
+  li.querySelector('input[type=text]').value = caption || '';
+  galList.appendChild(li);
+  galRefresh();
+  return true;
+}
+galList.addEventListener('click', e => {
+  const btn = e.target.closest('.pg-gal-remove');
+  if (btn) { btn.closest('.pg-gal-item').remove(); galStatus.textContent = ''; galRefresh(); }
+});
+document.getElementById('pgGalFile').addEventListener('change', async e => {
+  const files = Array.from(e.target.files).slice(0, Math.max(0, GALLERY_MAX - galList.children.length));
+  e.target.value = '';
+  let done = 0, errors = [];
+  for (const f of files) {
+    galStatus.textContent = 'Đang tải ảnh ' + (done + 1) + '/' + files.length + '...';
+    try { const r = await uploadImage(f); galAdd(r.name); } catch (err) { errors.push(err); }
+    done++;
+  }
+  galStatus.textContent = errors.length ? errors.join(' ') : (files.length ? 'Đã thêm ' + files.length + ' ảnh — bấm Lưu để áp dụng.' : 'Đã đủ ' + GALLERY_MAX + ' ảnh.');
+});
+document.getElementById('pgGalPick').addEventListener('click', () => {
+  galStatus.textContent = '';
+  openLibrary(img => galAdd(img.name), galNames(), 'Bấm vào các ảnh muốn thêm vào bộ sưu tập (chọn được nhiều ảnh), xong bấm ✕ để đóng.');
+});
+if (window.Sortable) Sortable.create(galList, { handle: '.pg-gal-handle', animation: 150, onEnd: galRefresh });
+galRefresh();
 
 ClassicEditor.create(document.getElementById('pgDescription'), {
   licenseKey: 'GPL',

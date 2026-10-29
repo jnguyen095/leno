@@ -15,9 +15,9 @@
       <div class="card shadow-lg border-0 rounded-4">
         <div class="card-body p-4 p-sm-5 pt-sm-0">
           <div class="text-center mb-4">
-            <img src="<?=base_url('/assets/img/nang_nghieng_logo.png')?>" style="width:300px;margin-top:20px"?>
-            <h4 class="mt-2 mb-0 fw-bold"></h4>
-            <small class="text-muted"></small>
+            <img src="<?=base_url('/assets/img/nang-nghieng-brand.png')?>" style="width:300px;margin-top:20px"?>
+            <h4 class="mt-2 mb-0 fw-bold">Đăng Nhập</h4>
+            <small class="text-muted">Đăng nhập để tiếp tục</small>
           </div>
 
           <?php if ( ! empty($error)): ?>

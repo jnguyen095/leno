@@ -1,6 +1,7 @@
 <?php
   // Trang nội dung (/page/<code>.html) hoặc một tin (/tin-tuc/<code>.html) — nội dung soạn bằng CKEditor.
-  // Tin tức thêm: ngày đăng, link "Tất cả tin" và 3 tin khác ở cuối. Biến: $page, $content, $banner, $is_preview, $more_news.
+  // Cuối trang: bộ sưu tập ảnh (nếu có — partials/page_gallery.php). Tin tức thêm: ngày đăng, link "Tất cả tin" và 3 tin khác ở cuối.
+  // Biến: $page, $content, $banner, $gallery, $is_preview, $more_news.
   $is_news = $page['type'] === 'NEWS';
 ?>
 <?php if ($is_preview): ?>
@@ -33,6 +34,7 @@
     </article>
   </div>
 </section>
+<?php if ( ! empty($gallery)) $this->load->view('public/partials/page_gallery', array('gallery' => $gallery, 'title' => $page['title'])); ?>
 <?php if ( ! empty($more_news)): ?>
   <section class="pap-section pap-section-soft" aria-labelledby="more-news-title">
     <div class="container">

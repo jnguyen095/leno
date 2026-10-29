@@ -106,6 +106,7 @@ class Site_page extends CI_Controller
             'page'         => $page,
             'content'      => $content,
             'banner'       => $banner,
+            'gallery'      => Page_model::gallery($page),
             'is_preview'   => ! $this->_is_live($page),
             'more_news'    => array(),
             'seo' => array(

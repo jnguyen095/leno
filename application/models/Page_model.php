@@ -81,6 +81,25 @@ class Page_model extends CI_Model
         return NULL;
     }
 
+    /**
+     * Bộ sưu tập ảnh cuối trang (cột gallery, JSON): [['image' => 'uploads/pages/x.jpg', 'caption' => '...'], ...]
+     * theo thứ tự hiện. Bỏ ảnh đã bị xoá khỏi Thư viện ảnh.
+     */
+    public static function gallery($page)
+    {
+        $items = json_decode((string) (isset($page['gallery']) ? $page['gallery'] : ''), TRUE);
+        if ( ! is_array($items)) return array();
+        $out = array();
+        foreach ($items as $it)
+        {
+            if ( ! empty($it['image']) && is_file(FCPATH.'assets/'.$it['image']))
+            {
+                $out[] = array('image' => (string) $it['image'], 'caption' => isset($it['caption']) ? (string) $it['caption'] : '');
+            }
+        }
+        return $out;
+    }
+
     public function get_by_id($id)
     {
         return $this->db->where('id', (int) $id)->get($this->table)->row_array();
@@ -136,11 +155,11 @@ class Page_model extends CI_Model
         return $this->db->where('id', (int) $id)->delete($this->table);
     }
 
-    /** Trang / tin nào đang dùng tệp ảnh này (trong nội dung hoặc làm banner): [[code, type, title], ...]. */
+    /** Trang / tin nào đang dùng tệp ảnh này (trong nội dung, làm banner hoặc trong bộ sưu tập ảnh): [[code, type, title], ...]. */
     public function pages_using($file_name)
     {
         return $this->db->select('code, type, title')
-            ->group_start()->like('description', $file_name)->or_like('banner', $file_name)->group_end()
+            ->group_start()->like('description', $file_name)->or_like('banner', $file_name)->or_like('gallery', $file_name)->group_end()
             ->get($this->table)->result_array();
     }
 

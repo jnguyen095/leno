@@ -364,6 +364,46 @@ img{ max-width:100%; height:auto; }
 .pap-page-banner img{ width:100%; height:clamp(180px, 38vw, 460px); max-height: 250px; object-fit:cover; object-position:center; }
 .pap-page-has-banner{ padding-top:2rem; }
 
+/* Bộ sưu tập ảnh cuối trang nội dung / tin: băng chuyền vuốt ngang (điện thoại ~1,2 ảnh, máy tính bảng 2, máy tính 4), bấm mở xem lớn. */
+.pap-gallery-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.pap-gallery-head .pap-section-title{ display:flex; align-items:baseline; gap:.5rem; flex-wrap:wrap; }
+.pap-gallery-head .pap-section-title small{ font-size:.9rem; font-weight:600; color:#6b7a87; }
+.pap-gallery-nav{ display:flex; gap:.5rem; flex-shrink:0; }
+.pap-gallery-arrow{ width:44px; height:44px; border-radius:50%; border:1.5px solid #dbe6ef; background:#fff; color: var(--pap-dark); font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center; }
+.pap-gallery-arrow:hover{ border-color: var(--pap-primary); color: var(--pap-primary); }
+.pap-gallery-track{ display:flex; gap:.75rem; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding-bottom:.25rem; overscroll-behavior-x:contain; }
+.pap-gallery-track::-webkit-scrollbar{ display:none; }
+.pap-gallery-track:focus-visible{ outline:3px solid rgba(1,144,219,.35); outline-offset:4px; border-radius: var(--pap-radius-sm); }
+.pap-gallery-slide{ flex:0 0 82%; scroll-snap-align:start; margin:0; }
+.pap-gallery-open{ position:relative; display:block; width:100%; padding:0; border:0; background: var(--pap-light); border-radius: var(--pap-radius-sm); overflow:hidden;
+  aspect-ratio:4 / 3; cursor:zoom-in; }
+.pap-gallery-open img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s ease; }
+.pap-gallery-open:hover img{ transform:scale(1.04); }
+.pap-gallery-zoom{ position:absolute; right:.5rem; bottom:.5rem; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.5); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:.85rem; }
+.pap-gallery-slide figcaption{ font-size:.92rem; color:#5c6b78; margin-top:.4rem; line-height:1.4; }
+@media (min-width: 576px){ .pap-gallery-slide{ flex-basis:calc((100% - .75rem) / 2); } }
+@media (min-width: 992px){ .pap-gallery-track{ gap:1rem; } .pap-gallery-slide{ flex-basis:calc((100% - 3rem) / 4); } }
+@media (prefers-reduced-motion: reduce){ .pap-gallery-open img{ transition:none; } }
+
+/* Xem ảnh lớn (lightbox) */
+.pap-lightbox-on, .pap-lightbox-on body{ overflow:hidden; }
+.pap-lightbox{ position:fixed; inset:0; z-index:2000; background:rgba(10,16,22,.94); display:flex; flex-direction:column; color:#fff; }
+.pap-lightbox[hidden]{ display:none; }
+.pap-lightbox-top{ display:flex; align-items:center; justify-content:space-between; padding:.5rem .75rem; }
+.pap-lightbox-count{ font-weight:700; font-size:.95rem; opacity:.85; padding-left:.25rem; }
+.pap-lightbox-stage{ flex:1; min-height:0; position:relative; display:flex; align-items:center; justify-content:center; padding:0 .5rem; }
+.pap-lightbox-img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; user-select:none; }
+.pap-lightbox-btn{ width:48px; height:48px; border-radius:50%; border:0; background:rgba(255,255,255,.14); color:#fff; font-size:1.3rem;
+  display:flex; align-items:center; justify-content:center; }
+.pap-lightbox-btn:hover, .pap-lightbox-btn:focus-visible{ background:rgba(255,255,255,.28); }
+.pap-lightbox-prev, .pap-lightbox-next{ position:absolute; top:50%; transform:translateY(-50%); z-index:1; }
+.pap-lightbox-prev{ left:.5rem; } .pap-lightbox-next{ right:.5rem; }
+.pap-lightbox-caption{ text-align:center; padding:.75rem 1rem 1.25rem; font-size:1rem; line-height:1.45; max-width:900px; margin:0 auto; }
+.pap-lightbox-caption[hidden]{ display:none; }
+@media (min-width: 992px){ .pap-lightbox-stage{ padding:0 5rem; } .pap-lightbox-prev{ left:1.25rem; } .pap-lightbox-next{ right:1.25rem; } }
+
 /* ---------- Tin tức: khối "Tin mới" (trang chủ), /tin-tuc.html, "Tin khác" dưới bài ---------- */
 .pap-news-section{ padding-top:1.5rem; padding-bottom:.5rem; }
 .pap-news-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }

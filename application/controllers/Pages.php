@@ -20,6 +20,7 @@ class Pages extends MY_Controller
     );
 
     const UPLOAD_DIR = 'uploads/pages/';
+    const GALLERY_MAX = 40; // số ảnh tối đa trong bộ sưu tập ảnh cuối trang
 
     public function __construct()
     {
@@ -163,6 +164,7 @@ class Pages extends MY_Controller
             'description'  => $page ? Page_model::render($page['description']) : '',
             'status'       => $page ? (int) $page['status'] : 1,
             'banner'       => $page ? (string) $page['banner'] : '',
+            'gallery'      => $page ? Page_model::gallery($page) : array(),
             // Tin tức: tóm tắt, ngày đăng (ô datetime-local: Y-m-d\TH:i), ghim.
             'summary'      => $page ? (string) $page['summary'] : '',
             'published_at' => $page && $page['published_at'] ? date('Y-m-d\TH:i', strtotime($page['published_at'])) : date('Y-m-d\TH:i'),
@@ -178,6 +180,7 @@ class Pages extends MY_Controller
                 $banner = $page ? (string) $page['banner'] : '';
             }
             $values = array(
+                'gallery'     => $this->_posted_gallery(),
                 'code'        => strtolower(trim((string) $this->input->post('code'))),
                 'title'       => trim(preg_replace('/\s+/u', ' ', (string) $this->input->post('title', TRUE))),
                 'description' => (string) $this->input->post('description'),
@@ -213,6 +216,7 @@ class Pages extends MY_Controller
             elseif ($values['title'] === '')                                $error = 'Nhập tiêu đề.';
             elseif (mb_strlen($values['title'], 'UTF-8') > 200)             $error = 'Tiêu đề tối đa 200 ký tự.';
             elseif ($is_news && mb_strlen($values['summary'], 'UTF-8') > 300) $error = 'Tóm tắt tối đa 300 ký tự.';
+            elseif (count($values['gallery']) > self::GALLERY_MAX)          $error = 'Bộ sưu tập ảnh tối đa '.self::GALLERY_MAX.' ảnh.';
             elseif ($is_news && ( ! $published || $published->format('Y-m-d\TH:i') !== $values['published_at'])) $error = 'Ngày đăng không hợp lệ.';
             else
             {
@@ -223,6 +227,7 @@ class Pages extends MY_Controller
                     'description' => $values['description'],
                     'status'      => $values['status'],
                     'banner'      => $values['banner'] !== '' ? $values['banner'] : NULL,
+                    'gallery'     => $values['gallery'] ? json_encode($values['gallery'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : NULL,
                 );
                 if ($is_news)
                 {
@@ -249,10 +254,32 @@ class Pages extends MY_Controller
             'success'      => $this->session->flashdata('success'),
             'max_kb'       => Image_upload::MAX_KB,
             'shrink_kb'    => Image_upload::SHRINK_KB,
+            'gallery_max'  => self::GALLERY_MAX,
         ) + $this->_view_vars();
         $this->load->view('layout/header', $data);
         $this->load->view('pages/form', $data);
         $this->load->view('layout/footer');
+    }
+
+    /**
+     * Bộ sưu tập ảnh từ form (gallery_image[] + gallery_caption[], theo thứ tự đã kéo thả).
+     * Chỉ nhận ảnh có trong thư mục Thư viện ảnh; bỏ ảnh trùng; chú thích tối đa 200 ký tự.
+     */
+    protected function _posted_gallery()
+    {
+        $images = (array) $this->input->post('gallery_image');
+        $captions = (array) $this->input->post('gallery_caption', TRUE);
+        $out = array();
+        $seen = array();
+        foreach ($images as $i => $image)
+        {
+            $image = trim((string) $image);
+            if ( ! preg_match('#^'.preg_quote(self::UPLOAD_DIR, '#').'[A-Za-z0-9_.-]+$#', $image) || ! is_file(FCPATH.'assets/'.$image) || isset($seen[$image])) continue;
+            $seen[$image] = TRUE;
+            $caption = trim(preg_replace('/\s+/u', ' ', (string) (isset($captions[$i]) ? $captions[$i] : '')));
+            $out[] = array('image' => $image, 'caption' => mb_substr($caption, 0, 200, 'UTF-8'));
+        }
+        return $out;
     }
 
     /** Tên người tạo / sửa (để hiện trên form sửa). */

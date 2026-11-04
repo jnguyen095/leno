@@ -208,7 +208,7 @@ class Payroll extends MY_Controller
      * Bảng tổng hợp lương tất cả nhân viên trong 1 tháng — ADMIN. Nhân viên
      * đã nghỉ việc vẫn hiện ra cho tháng họ còn làm (xem
      * User_model::get_for_payroll()) để vẫn chi được lương tháng cuối,
-     * biến mất kể từ tháng sau.
+     * biến mất kể từ tháng sau. Nhân viên mới chỉ hiện từ tháng bắt đầu làm.
      */
     public function admin()
     {

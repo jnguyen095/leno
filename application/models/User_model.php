@@ -38,10 +38,20 @@ class User_model extends CI_Model
      * không có end_date — thời điểm tài khoản bị vô hiệu hóa), chỉ biến
      * mất kể từ tháng SAU tháng họ nghỉ, để vẫn tính/chi được lương tháng
      * cuối của họ.
+     * Ngược lại, nhân viên mới chỉ hiện từ tháng bắt đầu làm (start_date, hoặc
+     * ngày tạo tài khoản nếu chưa nhập ngày bắt đầu) — không hiện ở các tháng
+     * trước đó. Ai đã có bảng lương của tháng đó (payroll_records) thì luôn hiện.
      */
     public function get_for_payroll($period, $role = NULL, $keyword = NULL)
     {
         $period_start = $period.'-01';
+        $period_end = date('Y-m-t', strtotime($period_start));
+
+        $this->db->group_start()
+            ->where('COALESCE(start_date, DATE(created_at)) <=', $period_end)
+            ->or_where('COALESCE(start_date, created_at) IS NULL', NULL, FALSE)
+            ->or_where('id IN (SELECT user_id FROM payroll_records WHERE period = '.$this->db->escape($period).')', NULL, FALSE)
+        ->group_end();
 
         $this->db->group_start()
             ->where('status', 'ACTIVE')
